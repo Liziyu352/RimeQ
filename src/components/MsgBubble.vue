@@ -40,9 +40,13 @@
         class="ui-flex-x gap-2 mb-1 select-none leading-none"
         :class="isMe ? 'flex-row-reverse mr-1' : 'ml-1'"
       >
-        <span class="text-xs font-medium ui-text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
-        <span v-if="msg.sender.role === 'owner'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-yellow-500/10 text-yellow-600 font-bold">群主</span>
-        <span v-if="msg.sender.role === 'admin'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-green-500/10 text-green-600 font-bold">管理</span>
+        <!-- 昵称 / 头衔 -->
+        <template v-if="msg.message_type === 'group'">
+          <span class="text-xs font-medium ui-text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
+          <span v-if="msg.sender.role === 'owner'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-yellow-500/10 text-yellow-600 font-bold">群主</span>
+          <span v-if="msg.sender.role === 'admin'" class="text-[10px] px-1.5 py-0.5 rounded-sm bg-green-500/10 text-green-600 font-bold">管理</span>
+        </template>
+        <!-- 撤回状态 -->
         <span v-if="isRecalled" class="text-[10px] ui-text-foreground-dim flex items-center gap-1 bg-background-dim/50 px-1.5 py-0.5 rounded-sm">
           <div class="i-ri-arrow-go-back-line" /> 已撤回
         </span>

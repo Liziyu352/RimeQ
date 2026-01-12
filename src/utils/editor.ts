@@ -183,11 +183,18 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
     return segments
   }
 
+  // 插入提及
+  const insertMention = (id: string, label: string) => {
+    editor.value?.commands.insertContent({ type: 'mention', attrs: { id, label } })
+    editor.value?.commands.insertContent(' ')
+    editor.value?.commands.focus()
+  }
+
   // 方法封装
   const focus = () => editor.value?.commands.focus()
   const insertText = (text: string) => editor.value?.commands.insertContent(text)
   const insertImage = (src: string) => editor.value?.commands.setImage({ src })
   const clear = () => editor.value?.commands.clearContent()
 
-  return { editor, focus, insertText, insertImage, clear, getSegments }
+  return { editor, focus, insertText, insertImage, insertMention, clear, getSegments }
 }
