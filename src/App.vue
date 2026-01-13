@@ -116,8 +116,9 @@
           <div v-if="isGroup" class="flex items-center gap-1 text-foreground-dim">
              <Button v-tooltip.bottom="'群精华'" icon="i-ri-star-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/essence`)" />
              <Button v-tooltip.bottom="'群公告'" icon="i-ri-megaphone-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/notice`)" />
+             <Button v-tooltip.bottom="'群相册'" icon="i-ri-gallery-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/album`)" />
              <Button v-tooltip.bottom="'群文件'" icon="i-ri-folder-open-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/file`)" />
-             <Button v-tooltip.bottom="'群成员'" icon="i-ri-group-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/member`)" />
+             <Button v-tooltip.bottom="'群信息'" icon="i-ri-profile-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/info`)" />
           </div>
         </header>
         <!-- 内容路由视图 -->

@@ -2,18 +2,19 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-rou
 import { useSettingStore } from '@/stores/setting'
 
 // 视图组件
-import LoginView from '@/views/Login.vue'
 import ChatView from '@/views/Chat.vue'
-import SettingsView from '@/views/Settings.vue'
+import LoginView from '@/views/Login.vue'
 import NoticeView from '@/views/Notice.vue'
 import SessionList from '@/views/Session.vue'
 import ContactList from '@/views/Contact.vue'
+import SettingsView from '@/views/Settings.vue'
 
 // 侧边栏组件
+import GroupInfo from '@/components/GroupInfo.vue'
 import GroupFile from '@/components/GroupFile.vue'
+import GroupAlbum from '@/components/GroupAlbum.vue'
 import GroupNotice from '@/components/GroupNotice.vue'
 import GroupEssence from '@/components/GroupEssence.vue'
-import GroupMember from '@/components/GroupMember.vue'
 import MultiForward from '@/components/MultiForward.vue'
 
 const routes: RouteRecordRaw[] = [
@@ -42,16 +43,22 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '通知' }
   },
   {
-    path: '/:id/member',
-    name: 'GroupMember',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupMember },
-    meta: { title: '群成员' }
+    path: '/:id/info',
+    name: 'GroupInfo',
+    components: { default: ChatView, nav: SessionList, sidebar: GroupInfo },
+    meta: { title: '群信息' }
   },
   {
     path: '/:id/file',
     name: 'GroupFile',
     components: { default: ChatView, nav: SessionList, sidebar: GroupFile },
     meta: { title: '群文件' }
+  },
+  {
+    path: '/:id/album',
+    name: 'GroupAlbum',
+    components: { default: ChatView, nav: SessionList, sidebar: GroupAlbum },
+    meta: { title: '群相册' }
   },
   {
     path: '/:id/notice',

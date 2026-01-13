@@ -1,25 +1,58 @@
 <template>
-  <div class="h-full w-full flex flex-col bg-main">
-    <div class="md:hidden h-14 flex-x px-4 border-b border-dim">
-      <div class="i-ri-arrow-left-s-line text-xl mr-2 cursor-pointer" @click="goBack" />
-      <span class="font-bold">群公告</span>
-    </div>
+  <div class="ui-flex-col-full bg-background-sub relative">
+    <!-- 头部 -->
+    <header class="h-14 shrink-0 px-4 border-b border-background-dim/50 flex items-center gap-3">
+      <Button
+        icon="i-ri-arrow-right-s-line"
+        text rounded
+        class="md:hidden !w-8 !h-8 !text-foreground-sub"
+        @click="router.back()"
+      />
+      <span class="font-bold text-base text-foreground-main">群公告</span>
+    </header>
 
-    <div class="flex-1 p-4 overflow-y-auto my-scrollbar">
-      <div class="flex flex-col gap-4">
+    <!-- 列表区域 -->
+    <div class="flex-1 overflow-y-auto ui-scrollbar p-3">
+      <div v-if="loading" class="flex-center py-20 text-foreground-sub gap-2">
+        <div class="i-ri-loader-4-line animate-spin text-xl" />
+        <span class="text-sm">加载中...</span>
+      </div>
+
+      <div v-else-if="notices.length === 0" class="flex-col flex-center py-20 text-foreground-dim opacity-60">
+        <div class="i-ri-notification-off-line text-4xl mb-2" />
+        <span class="text-sm">暂无公告</span>
+      </div>
+
+      <div v-else class="flex flex-col gap-3">
         <div
-          v-for="(item, idx) in list"
-          :key="idx"
-          class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30 p-4 rounded-2xl relative overflow-hidden"
+          v-for="(notice, index) in notices"
+          :key="index"
+          class="relative bg-background-main border border-background-dim rounded-2xl p-4 overflow-hidden shadow-sm ui-trans hover:shadow-md"
         >
-          <div class="absolute top-0 right-0 p-2 opacity-10"><div class="i-ri-pushpin-line text-4xl" /></div>
-          <div class="font-bold text-main mb-2 truncate pr-8">
-            {{ item.msg?.text || '无标题' }}
+          <!-- 装饰图标 -->
+          <div class="absolute -right-2 -top-2 text-6xl text-primary/5 rotate-12 pointer-events-none">
+            <div class="i-ri-pushpin-fill" />
           </div>
-          <div class="text-sm text-sub whitespace-pre-wrap leading-6">{{ item.msg?.text }}</div>
-          <div class="mt-4 pt-3 border-t border-yellow-200/50 flex-between text-xs text-sub">
-            <span>发布者: {{ item.u }}</span
-            ><span>{{ item.t ? formatTime(item.t * 1000) : '' }}</span>
+
+          <!-- 发布者信息 -->
+          <div class="flex items-center gap-2 mb-3 relative z-10">
+            <Avatar
+              :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${notice.sender_id}`"
+              shape="circle"
+              class="!w-8 !h-8 bg-background-dim border border-background-dim"
+            />
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-foreground-main">{{ contactStore.getUserName(notice.sender_id) }}</span>
+              <span class="text-[10px] text-foreground-dim">{{ formatTime(notice.publish_time * 1000) }}</span>
+            </div>
+          </div>
+
+          <!-- 内容 -->
+          <div class="text-sm text-foreground-sub whitespace-pre-wrap leading-relaxed relative z-10">
+            <div v-if="notice.msg.image" class="mb-2">
+               <img :src="notice.msg.image.id" class="max-w-full rounded-lg max-h-40 object-cover bg-background-dim/50" loading="lazy"/>
+            </div>
+            {{ notice.msg.text }}
           </div>
         </div>
       </div>
@@ -29,36 +62,35 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { Button, Avatar } from 'primevue'
 import { bot } from '@/api'
+import { useContactStore } from '@/stores'
 import { formatTime } from '@/utils/format'
 
-const props = defineProps<{ groupId?: string }>()
-
-defineOptions({
-  name: 'NoticePanel'
-})
-
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
+const contactStore = useContactStore()
 
-const groupId = computed(() => (route.params.id as string) || props.groupId || '')
+const groupId = computed(() => Number(route.params.id))
+const loading = ref(false)
+const notices = ref<any[]>([])
 
-const goBack = () => router.back()
-
-const list = ref<any[]>([])
-
-const loadNotices = async () => {
+onMounted(async () => {
+  if (!groupId.value) return
+  loading.value = true
   try {
-    const notices = await bot.getGroupNotice(Number(groupId.value))
-    list.value = notices
+    const res = await bot.getGroupNotice(groupId.value)
+    // 适配不同的后端返回结构，这里假设通用结构，实际根据后端可能需要调整
+    notices.value = res.map((n: any) => ({
+      sender_id: n.sender_id || n.u,
+      publish_time: n.publish_time || n.t,
+      msg: n.msg || { text: n.c } // 兼容性处理
+    })).sort((a: any, b: any) => b.publish_time - a.publish_time)
   } catch (e) {
-    console.error('加载群公告失败', e)
-    list.value = []
+    console.error(e)
+  } finally {
+    loading.value = false
   }
-}
-
-onMounted(() => {
-  if (groupId.value) loadNotices()
 })
 </script>
