@@ -51,7 +51,7 @@
             <!-- 备注 -->
             <div class="group/remark flex items-center gap-2 text-sm ui-text-foreground-dim cursor-pointer" @click="openEditDialog('remark')">
               <span class="opacity-70 shrink-0">备注:</span>
-              <span class="truncate ui-trans max-w-[180px] ui-text-foreground-sub">
+              <span class="truncate ui-trans ui-text-foreground-sub">
                 {{ currentGroup?.group_remark }}
               </span>
               <div class="i-ri-edit-2-line text-[10px] opacity-0 group-hover/remark:opacity-100 ui-trans" />
@@ -146,14 +146,14 @@
               <!-- 昵称与头衔 -->
               <div class="ui-flex-x gap-1.5">
                 <span
-                  class="text-sm font-medium ui-text-foreground-main truncate max-w-[140px]"
+                  class="text-sm font-medium ui-text-foreground-main truncate"
                   :class="{'text-primary': item.data.user_id === myUserId}"
                 >
                   {{ item.data.card || item.data.nickname }}
                 </span>
                 <span v-if="item.data.role === 'owner'" class="text-[9px] px-1 rounded bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 leading-tight shrink-0">群主</span>
                 <span v-else-if="item.data.role === 'admin'" class="text-[9px] px-1 rounded bg-green-500/10 text-green-600 border border-green-500/20 leading-tight shrink-0">管理</span>
-                <span v-if="item.data.title" class="text-[9px] px-1 rounded bg-primary/10 text-primary border border-primary/20 leading-tight shrink-0 truncate max-w-[60px]">{{ item.data.title }}</span>
+                <span v-if="item.data.title" class="text-[9px] px-1 rounded bg-primary/10 text-primary border border-primary/20 leading-tight shrink-0 truncate">{{ item.data.title }}</span>
               </div>
               <!-- 账号与状态 -->
               <div class="text-[10px] ui-flex-x gap-2 leading-none">
@@ -165,11 +165,11 @@
               </div>
             </div>
             <!-- 操作按钮 -->
-             <div v-if="!isBatchMode" class="shrink-0 opacity-0 group-hover:opacity-100 ui-trans">
+             <div v-if="!isBatchMode" class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
                 <Button
                   icon="i-ri-more-2-fill"
                   text rounded
-                  class="!w-7 !h-7 !text-foreground-dim hover:!bg-background-dim"
+                  class="!w-8 !h-8 !text-foreground-dim hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim transition-all"
                   @click.stop="openMenu($event, item.data)"
                 />
              </div>
@@ -189,27 +189,9 @@
             <span>已选 {{ selectedMembers.size }} 人</span>
           </div>
           <!-- 功能按钮组 -->
-          <div class="flex items-center gap-2 overflow-x-auto ui-scrollbar">
-            <!-- 批量禁言 -->
-            <Button
-              v-tooltip.top="'批量禁言'"
-              icon="i-ri-mic-off-line"
-              severity="warning"
-              outlined rounded
-              class="!w-8 !h-8 shrink-0"
-              :disabled="selectedMembers.size === 0"
-              @click="openBanDialog()"
-            />
-            <!-- 批量踢出 -->
-            <Button
-              v-tooltip.top="'批量踢出'"
-              icon="i-ri-delete-bin-line"
-              severity="danger"
-              rounded
-              class="!w-8 !h-8 shrink-0"
-              :disabled="selectedMembers.size === 0"
-              @click="handleKick(members.filter(m => selectedMembers.has(m.user_id)))"
-            />
+          <div class="flex items-center gap-2">
+            <Button label="禁言" size="small" severity="warning" class="!px-3" outlined :disabled="selectedMembers.size === 0" @click="openBanDialog()"/>
+            <Button label="踢出" size="small" severity="danger" class="!px-3" :disabled="selectedMembers.size === 0" @click="handleKick(members.filter(m => selectedMembers.has(m.user_id)))"/>
           </div>
         </div>
       </Transition>

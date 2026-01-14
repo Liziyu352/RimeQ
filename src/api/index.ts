@@ -24,6 +24,14 @@ export class ExtendedClient extends BaseClient {
     this.backend = type
   }
 
+  /**
+   * 获取后端类型
+   * @returns 后端类型
+   */
+  getBackendType() {
+    return this.backend
+  }
+
   // ============================================================================
   // 连接管理
   // ============================================================================
