@@ -161,7 +161,7 @@
         <div class="w-24 h-24 rounded-3xl bg-background-dim/30 ui-flex-center mb-6">
            <div class="i-ri-notification-off-line text-4xl" />
         </div>
-        <span class="text-base font-bold">暂无新消息</span>
+        <span class="text-base font-bold">暂无通知</span>
       </div>
     </div>
   </div>

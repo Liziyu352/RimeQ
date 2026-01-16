@@ -520,7 +520,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群相册列表 (LLOneBot)
+   * 获取群相册列表
    * @param group_id - 群号
    */
   getGroupAlbumList(group_id: number) {
@@ -557,16 +557,17 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群相册照片列表 (LLOneBot/Lagrange)
+   * 获取群相册媒体列表
    * @param group_id - 群号
    * @param album_id - 相册 ID
+   * @param attach_info - [可选] 分页定位
    */
-  getGroupAlbumMediaList(group_id: number, album_id: string) {
-    return this.request<any>('get_group_album_media_list', { group_id, album_id })
+  getGroupAlbumMediaList(group_id: number, album_id: string, attach_info?: string) {
+    return this.request<any>('get_group_album_media_list', { group_id, album_id, attach_info })
   }
 
   /**
-   * 删除群相册照片 (LLOneBot)
+   * 删除群相册照片 (NapCat)
    * @param params - 删除参数对象
    * @param params.group_id - 群号
    * @param params.album_id - 相册 ID
@@ -581,7 +582,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 设置群相册照片点赞 (LLOneBot)
+   * 设置群相册照片点赞 (NapCat)
    * @param params - 点赞参数对象
    * @param params.group_id - 群号
    * @param params.album_id - 相册 ID
@@ -609,7 +610,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群相册列表 (NapCat 专用)
+   * 获取群相册总列表 (NapCat)
    * @param group_id - 群号
    */
   getQunAlbumList(group_id: number) {

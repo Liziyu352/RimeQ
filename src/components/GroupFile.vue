@@ -103,7 +103,7 @@
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-20 text-foreground-dim opacity-60">
         <div class="i-ri-folder-open-line text-4xl mb-2" />
-        <span class="text-xs">无文件</span>
+        <span class="text-xs">暂无文件</span>
       </div>
     </div>
     <!-- 批量操作栏 -->
@@ -181,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, reactive, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, ContextMenu } from 'primevue'
 import type { MenuItem } from 'primevue/menuitem'
@@ -219,6 +219,9 @@ const moveDialog = reactive({ visible: false, submitting: false, pathStack: [] a
 const fileInput = ref<HTMLInputElement>()
 const menu = ref()
 const menuTarget = ref<any>(null)
+
+// 数据缓存
+const fileCache = reactive(new Map<string, any[]>())
 
 // 计算属性
 const currentFolderId = computed(() => pathStack.value[pathStack.value.length - 1]?.id || '/')
@@ -270,15 +273,21 @@ const getFileIcon = (item: any) => {
 
 // 初始化
 onMounted(() => {
-  backendType.value = bot.getBackendType?.() || ''
-  loadResources()
-  loadSpaceInfo()
-  if (groupId.value && !contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
+  backendType.value = bot.getBackendType?.()
+  if (groupId.value) {
+    loadResources()
+    loadSpaceInfo()
+    if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
+  }
 })
 
 // 资源加载
-async function loadResources(folderId = '/', listRef = items.value) {
+async function loadResources(folderId = '/', listRef = items.value, force = false) {
   if (!groupId.value) return
+  if (!force && listRef === items.value && fileCache.has(folderId)) {
+    items.value = fileCache.get(folderId)!
+    return
+  }
   loading.value = true
   try {
     const res = folderId === '/' ? await bot.getGroupRootFiles(groupId.value) : await bot.getGroupFilesByFolder(groupId.value, folderId)
@@ -286,8 +295,13 @@ async function loadResources(folderId = '/', listRef = items.value) {
     const result = listRef === moveDialog.folders
       ? folders
       : [...folders, ...(res.files || []).map((f: any) => ({ id: f.file_id, name: f.file_name, type: 'file', size: formatFileSize(f.file_size), uploader: f.uploader_name, busid: f.busid, expire_time: f.dead_time }))]
-    if (listRef === items.value) items.value = result.sort((a, b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1))
-    else moveDialog.folders = result
+    if (listRef === items.value) {
+      const sortedResult = result.sort((a, b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1))
+      fileCache.set(folderId, sortedResult)
+      items.value = sortedResult
+    } else {
+      moveDialog.folders = result
+    }
   } catch {
     toast.add({ severity: 'error', summary: '加载列表失败', life: 3000 })
   } finally {
@@ -349,7 +363,7 @@ const handleUploadFile = async (e: Event) => {
       try {
         await bot.uploadGroupFile(groupId.value, `base64://${(ev.target.result as string).split(',')[1]}`, file.name, currentFolderId.value === '/' ? undefined : currentFolderId.value)
         toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
-        loadResources(currentFolderId.value)
+        loadResources(currentFolderId.value, items.value, true)
       } catch (err) { toast.add({ severity: 'error', summary: '上传失败', detail: String(err), life: 3000 }) }
     }
   }
@@ -371,7 +385,7 @@ const handleInputSubmit = async () => {
     }
     toast.add({ severity: 'success', summary: '操作成功', life: 3000 })
     inputDialog.visible = false
-    loadResources(currentFolderId.value)
+    loadResources(currentFolderId.value, items.value, true)
   } catch (e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 }) }
   finally { inputDialog.loading = false }
 }
@@ -393,7 +407,8 @@ const handleMoveSubmit = async () => {
     toast.add({ severity: 'success', summary: '移动成功', life: 3000 })
     moveDialog.visible = false
     isBatchMode.value = false; selectedFiles.value.clear()
-    loadResources(currentFolderId.value)
+    fileCache.delete(targetId)
+    loadResources(currentFolderId.value, items.value, true)
   } catch (e) { toast.add({ severity: 'error', summary: '移动失败', detail: String(e), life: 3000 }) }
   finally { moveDialog.submitting = false }
 }
@@ -412,7 +427,7 @@ const handleDelete = () => {
         }
         toast.add({ severity: 'success', summary: '删除成功', life: 3000 })
         isBatchMode.value = false; selectedFiles.value.clear()
-        loadResources(currentFolderId.value)
+        loadResources(currentFolderId.value, items.value, true)
       } catch (e) { toast.add({ severity: 'error', summary: '删除失败', detail: String(e), life: 3000 }) }
     }
   })
@@ -422,8 +437,8 @@ const handleDelete = () => {
 const menuItems = computed((): MenuItem[] => {
   if (!menuTarget.value) return []
   const t = menuTarget.value
-  const items: MenuItem[] = []
-  items.push({
+  const menuCommands: MenuItem[] = []
+  menuCommands.push({
     label: t.type === 'folder' ? '打开' : '下载',
     icon: t.type === 'folder' ? 'i-ri-folder-open-line' : 'i-ri-download-line',
     command: async () => {
@@ -438,7 +453,7 @@ const menuItems = computed((): MenuItem[] => {
   })
   if (t.type !== 'folder') {
     if (backendType.value === 'Lagrange') {
-      items.push({
+      menuCommands.push({
         label: '转存微云',
         icon: 'i-ri-save-line',
         command: async () => {
@@ -452,14 +467,14 @@ const menuItems = computed((): MenuItem[] => {
       })
     }
     if (backendType.value === 'LLOneBot' && t.expire_time) {
-      items.push({
+      menuCommands.push({
         label: '转为永久',
         icon: 'i-ri-infinite-line',
         command: async () => {
           try {
             await bot.setGroupFileForever(groupId.value, t.id)
             toast.add({ severity: 'success', summary: '设置成功', life: 3000 })
-            loadResources(currentFolderId.value)
+            loadResources(currentFolderId.value, items.value, true)
           } catch (e) {
             toast.add({ severity: 'error', summary: '设置失败', detail: String(e), life: 3000 })
           }
@@ -468,10 +483,10 @@ const menuItems = computed((): MenuItem[] => {
     }
   }
   if (canManage.value) {
-    items.push({ separator: true })
-    items.push({ label: '重命名', icon: 'i-ri-edit-line', command: () => openInputDialog('rename', t) })
+    menuCommands.push({ separator: true })
+    menuCommands.push({ label: '重命名', icon: 'i-ri-edit-line', command: () => openInputDialog('rename', t) })
     if (t.type !== 'folder') {
-      items.push({
+      menuCommands.push({
         label: '移动',
         icon: 'i-ri-drag-move-2-line',
         command: () => {
@@ -480,9 +495,14 @@ const menuItems = computed((): MenuItem[] => {
         }
       })
     }
-    items.push({ separator: true })
-    items.push({ label: '删除', icon: 'i-ri-delete-bin-line text-red-500', command: handleDelete })
+    menuCommands.push({ separator: true })
+    menuCommands.push({ label: '删除', icon: 'i-ri-delete-bin-line text-red-500', command: handleDelete })
   }
-  return items
+  return menuCommands
+})
+
+// 清空缓存
+onUnmounted(() => {
+  fileCache.clear()
 })
 </script>

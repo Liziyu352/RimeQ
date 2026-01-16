@@ -605,19 +605,108 @@ export interface FileSystemInfo {
 }
 
 /**
- * 群相册 (LLOneBot)
+ * 媒体信息结构
+ */
+export interface AlbumUrlInfo {
+  url: string;
+  width?: number;
+  height?: number;
+  spec?: number;
+}
+
+/**
+ * 群相册信息
  */
 export interface GroupAlbum {
   /** 相册 ID */
-  album_id: string
-  /** 相册名 */
-  name: string
-  /** 描述 */
-  desc: string
+  album_id: string;
+  /** 相册名称 */
+  name: string;
+  /** 相册描述 */
+  desc: string;
+  /** 所有者 QQ */
+  owner: number | string;
   /** 创建时间 */
-  create_time: number
-  /** 图片数量 */
-  upload_number: number
+  create_time: number | string;
+  /** 最后上传时间 */
+  last_upload_time: number | string;
+  /** 修改时间 */
+  modify_time?: number | string;
+  /** 图片/视频数量 */
+  upload_number: number | string;
+  /** 权限类型 */
+  type?: number;
+  /** 封面信息 */
+  cover?: {
+    batch_id?: string;
+    image?: {
+      default_url?: AlbumUrlInfo;
+      photo_url?: AlbumUrlInfo[];
+    };
+  };
+  /** 创建者信息 */
+  creator?: {
+    uin: string | number;
+    nick: string;
+    is_special?: boolean;
+  };
+  /** 允许分享 */
+  allow_share?: boolean;
+}
+
+/**
+ * 群相册媒体信息
+ */
+export interface GroupAlbumMedia {
+  /** 资源类型 */
+  type: number;
+  /** 批次 ID */
+  batch_id?: string;
+  /** 唯一标识 */
+  lloc: string;
+  /** 描述 */
+  desc: string;
+  /** 上传者 QQ */
+  uploader: string | number;
+  /** 上传者信息 */
+  upload_user?: {
+    uin: string | number;
+    nick: string;
+  };
+  /** 上传时间 */
+  upload_time: string | number;
+  /** 是否为 GIF */
+  is_gif?: boolean;
+  /** 图片信息 */
+  image?: {
+    default_url?: AlbumUrlInfo;
+    photo_url?: AlbumUrlInfo[];
+  };
+  /** 视频信息 */
+  video?: {
+    id?: string;
+    /** 视频地址 */
+    url: string;
+    /** 视频时长 */
+    video_time?: string;
+    cover?: {
+      default_url?: AlbumUrlInfo;
+    };
+  };
+  /** 点赞信息 */
+  like?: {
+    count?: number;
+    num?: number;
+    /** 是否已点赞 */
+    liked: boolean;
+    /** Key (NapCat) */
+    key?: string;
+  };
+  /** 评论信息 */
+  comment?: {
+    count?: number;
+    num?: number;
+  };
 }
 
 /**
