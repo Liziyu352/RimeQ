@@ -117,65 +117,57 @@
       />
     </div>
     <!-- 成员列表容器 -->
-    <div class="flex-1 min-h-0 relative flex flex-col">
-      <div v-bind="containerProps" class="flex-1 ui-scrollbar ui-bg-background-sub">
-        <!-- 列表内容 -->
-        <div v-bind="wrapperProps" class="p-2 pb-20 flex flex-col gap-1">
-          <div
-            v-for="item in virtualList"
-            :key="item.data.user_id"
-            class="group ui-flex-x gap-3 px-2 rounded-lg hover:ui-bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none"
-            :class="{
-              'bg-primary/5 border-primary/20': selectedMembers.has(item.data.user_id) && isBatchMode,
-              'opacity-50 cursor-not-allowed grayscale': isBatchMode && !canManage(item.data),
-              'cursor-pointer': isBatchMode
-            }"
-            @click="isBatchMode && handleBatchSelect(item.data)"
-            @contextmenu.prevent="openMenu($event, item.data)"
-          >
-            <!-- 成员头像 -->
-            <div class="relative shrink-0 flex items-center h-full">
-              <Avatar
-                :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.data.user_id}`"
-                shape="circle"
-                class="!w-8 !h-8 border ui-border-background-dim ui-bg-background-dim"
-              />
-            </div>
-            <!-- 成员信息 -->
-            <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 h-full">
-              <!-- 昵称与头衔 -->
-              <div class="ui-flex-x gap-1.5">
-                <span
-                  class="text-sm font-medium ui-text-foreground-main truncate"
-                  :class="{'text-primary': item.data.user_id === myUserId}"
-                >
-                  {{ item.data.card || item.data.nickname }}
-                </span>
-                <span v-if="item.data.role === 'owner'" class="text-[9px] px-1 rounded bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 leading-tight shrink-0">群主</span>
-                <span v-else-if="item.data.role === 'admin'" class="text-[9px] px-1 rounded bg-green-500/10 text-green-600 border border-green-500/20 leading-tight shrink-0">管理</span>
-                <span v-if="item.data.title" class="text-[9px] px-1 rounded bg-primary/10 text-primary border border-primary/20 leading-tight shrink-0 truncate">{{ item.data.title }}</span>
-              </div>
-              <!-- 账号与状态 -->
-              <div class="text-[10px] ui-flex-x gap-2 leading-none">
-                <span class="ui-text-foreground-dim font-mono opacity-60">{{ item.data.user_id }}</span>
-                <div v-if="(item.data as any).shut_up_timestamp > Date.now() / 1000" class="text-red-500 ui-flex-x gap-0.5">
-                   <div class="i-ri-mic-off-line text-[9px]" />
-                   <span>{{ formatDuration((item.data as any).shut_up_timestamp - Date.now() / 1000) }}</span>
+    <div class="flex-1 min-h-0 relative flex flex-col w-full">
+      <VirtualScroller :items="sortedMembers" :item-size="56" class="size-full ui-scrollbar ui-bg-background-sub" :pt="{ content: { class: '!w-full' } }" >
+        <template #item="{ item }">
+          <div class="px-2 py-0.5 w-full">
+             <div
+               class="group ui-flex-x gap-3 px-2 rounded-lg hover:ui-bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none w-full"
+               :class="{
+                 'bg-primary/5 border-primary/20': selectedMembers.has(item.user_id) && isBatchMode,
+                 'opacity-50 cursor-not-allowed grayscale': isBatchMode && !canManage(item),
+                 'cursor-pointer': isBatchMode
+               }"
+               @click="isBatchMode && handleBatchSelect(item)"
+               @contextmenu.prevent="openMenu($event, item)"
+             >
+               <!-- 成员头像 -->
+               <div class="relative shrink-0 flex items-center h-full">
+                 <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`" shape="circle" class="!w-8 !h-8 border ui-border-background-dim ui-bg-background-dim" />
+               </div>
+               <!-- 成员信息 -->
+               <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 h-full">
+                 <!-- 昵称与头衔 -->
+                 <div class="ui-flex-x gap-1.5">
+                   <span class="text-sm font-medium ui-text-foreground-main truncate" :class="{'text-primary': item.user_id === myUserId}" >
+                     {{ item.card || item.nickname }}
+                   </span>
+                   <span v-if="item.role === 'owner'" class="text-[9px] px-1 rounded bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 leading-tight shrink-0">群主</span>
+                   <span v-else-if="item.role === 'admin'" class="text-[9px] px-1 rounded bg-green-500/10 text-green-600 border border-green-500/20 leading-tight shrink-0">管理</span>
+                   <span v-if="item.title" class="text-[9px] px-1 rounded bg-primary/10 text-primary border border-primary/20 leading-tight shrink-0 truncate">{{ item.title }}</span>
+                 </div>
+                 <!-- 账号与状态 -->
+                 <div class="text-[10px] ui-flex-x gap-2 leading-none">
+                   <span class="ui-text-foreground-dim font-mono opacity-60">{{ item.user_id }}</span>
+                   <div v-if="(item as any).shut_up_timestamp > Date.now() / 1000" class="text-red-500 ui-flex-x gap-0.5">
+                      <div class="i-ri-mic-off-line text-[9px]" />
+                      <span>{{ formatDuration((item as any).shut_up_timestamp - Date.now() / 1000) }}</span>
+                   </div>
+                 </div>
+               </div>
+               <!-- 操作按钮 -->
+                <div v-if="!isBatchMode" class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
+                   <Button
+                     icon="i-ri-more-2-fill"
+                     text rounded
+                     class="!w-8 !h-8 !text-foreground-dim hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim transition-all"
+                     @click.stop="openMenu($event, item)"
+                   />
                 </div>
-              </div>
-            </div>
-            <!-- 操作按钮 -->
-             <div v-if="!isBatchMode" class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
-                <Button
-                  icon="i-ri-more-2-fill"
-                  text rounded
-                  class="!w-8 !h-8 !text-foreground-dim hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim transition-all"
-                  @click.stop="openMenu($event, item.data)"
-                />
              </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </VirtualScroller>
       <!-- 批量操作栏 -->
       <Transition
         enter-active-class="ui-trans duration-200"
@@ -271,9 +263,8 @@ import { useRouter, useRoute } from 'vue-router'
 import {
   Avatar, IconField, InputIcon, InputText, Button,
   Dialog, useToast, ContextMenu, useConfirm,
-  InputNumber, RadioButton
+  InputNumber, RadioButton, VirtualScroller
 } from 'primevue'
-import { useVirtualList } from '@vueuse/core'
 import { useContactStore, useSettingStore } from '@/stores'
 import { bot } from '@/api'
 import { formatDuration } from '@/utils/format'
@@ -337,12 +328,6 @@ const sortedMembers = computed(() => {
     return b.join_time - a.join_time
   })
 })
-
-// 虚拟列表配置
-const { list: virtualList, containerProps, wrapperProps } = useVirtualList(
-  sortedMembers,
-  { itemHeight: 56, overscan: 10 }
-)
 
 // 初始化
 onMounted(async () => {

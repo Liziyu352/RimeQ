@@ -20,7 +20,7 @@
       </div>
     </header>
     <!-- 内容区域 -->
-    <div class="flex-1 min-h-0 relative bg-background-main">
+    <div class="flex-1 min-h-0 relative bg-background-sub">
       <!-- 相册列表 -->
       <div v-if="!data.current" class="h-full overflow-y-auto ui-scrollbar p-3">
         <div v-if="data.albums.length" class="flex flex-col gap-3">
@@ -31,12 +31,19 @@
             @click="openAlbum(album)"
           >
             <!-- 背景图 -->
-            <img
-              :src="getAlbumCover(album)"
-              class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
-              referrerpolicy="no-referrer"
-              loading="lazy"
-            />
+            <template v-if="Number(album.upload_number) > 0">
+              <img
+                :src="getAlbumCover(album)"
+                class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                referrerpolicy="no-referrer"
+                loading="lazy"
+              />
+            </template>
+            <template v-else>
+              <div class="absolute inset-0 size-full bg-background-dim ui-flex-center">
+                <div class="i-ri-gallery-line text-4xl text-foreground-dim opacity-50" />
+              </div>
+            </template>
             <!-- 信息 -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3">
               <div class="mb-1">

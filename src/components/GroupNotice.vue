@@ -10,7 +10,7 @@
       <Button v-if="canPublish" v-tooltip.bottom="'新公告'" icon="i-ri-add-line" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-primary" @click="openDialog()" />
     </header>
     <!-- 公告列表区域 -->
-    <div class="flex-1 overflow-y-auto ui-scrollbar p-3 relative bg-background-main/50">
+    <div class="flex-1 overflow-y-auto ui-scrollbar p-3 relative bg-background-sub">
       <!-- 空状态 -->
       <div v-if="!notices.length" class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
         <div class="i-ri-notification-off-line text-4xl" />
@@ -21,7 +21,7 @@
         <div
           v-for="item in notices"
           :key="item.id"
-          class="group relative bg-background-sub border border-background-dim/50 rounded-xl p-3 shadow-sm hover:shadow-md ui-trans"
+          class="group relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm hover:shadow-md ui-trans"
         >
           <!-- 头部信息 -->
           <div class="flex items-center gap-2 mb-2 relative z-10 h-6">
@@ -60,7 +60,7 @@
             <div
               v-if="shouldExpand(item)"
               class="absolute inset-x-0 bottom-0 z-10 flex justify-center items-end transition-all duration-300 pointer-events-none"
-              :class="isExpanded(item.id) ? 'h-8' : 'h-20 bg-gradient-to-t from-background-sub from-10% to-transparent'"
+              :class="isExpanded(item.id) ? 'h-8' : 'h-20 bg-gradient-to-t from-background-main from-10% to-transparent'"
             >
               <!-- 控制按钮 -->
               <div

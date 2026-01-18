@@ -1,57 +1,67 @@
 <template>
-  <div class="ui-flex-col-full bg-background-sub relative">
-    <!-- 头部 -->
-    <header class="h-14 shrink-0 px-4 border-b border-background-dim/50 flex items-center gap-3">
-      <Button
-        icon="i-ri-arrow-right-s-line"
-        text rounded
-        class="md:hidden !w-8 !h-8 !text-foreground-sub"
-        @click="router.back()"
-      />
-      <span class="font-bold text-base text-foreground-main">精华消息</span>
+  <div class="ui-flex-col-full bg-background-sub relative select-none">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
+      <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
+      <div class="flex-1 min-w-0 flex items-center gap-2">
+        <span class="font-bold text-base text-foreground-main truncate">群精华</span>
+        <span class="text-[10px] px-1.5 rounded-md bg-background-dim/50 text-foreground-dim font-mono">{{ items.length }}</span>
+      </div>
     </header>
-
     <!-- 列表区域 -->
-    <div class="flex-1 overflow-y-auto ui-scrollbar p-3">
-      <div v-if="loading" class="flex-center py-20 text-foreground-sub gap-2">
-        <div class="i-ri-loader-4-line animate-spin text-xl" />
-        <span class="text-sm">加载中...</span>
-      </div>
-
-      <div v-else-if="items.length === 0" class="flex-col flex-center py-20 text-foreground-dim opacity-60">
-        <div class="i-ri-star-off-line text-4xl mb-2" />
-        <span class="text-sm">暂无精华</span>
-      </div>
-
-      <div v-else class="flex flex-col gap-3">
-        <div
-          v-for="item in items"
-          :key="item.msg_id"
-          class="bg-background-main border border-background-dim rounded-2xl p-3 shadow-sm hover:shadow-md ui-trans cursor-pointer flex flex-col gap-2"
-          @click="jumpToMessage(item.msg_id)"
-        >
-          <!-- 发送者 -->
-          <div class="flex items-center gap-2">
-            <Avatar
-              :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
-              shape="circle"
-              class="!w-6 !h-6 bg-background-dim"
-            />
-            <span class="text-xs font-bold text-foreground-main">{{ item.sender_nick }}</span>
-            <span class="text-[10px] text-foreground-dim ml-auto">{{ formatTime(item.msg_time * 1000) }}</span>
+    <div class="flex-1 min-h-0 bg-background-sub relative w-full overflow-hidden">
+      <VirtualScroller v-if="items.length > 0" :items="items" auto-size class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
+        <template #item="{ item }">
+          <div class="w-full px-3 py-2">
+            <div class="relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm group hover:shadow-md ui-trans">
+              <div class="flex items-center gap-3 mb-2">
+                <!-- 头像 -->
+                <Avatar
+                  :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
+                  shape="circle"
+                  class="!w-8 !h-8 bg-background-dim shrink-0 cursor-pointer border border-background-dim"
+                  @click.stop="router.push(`/${item.sender_id}`)"
+                />
+                <!-- 昵称 -->
+                <div class="flex-1 min-w-0 font-bold text-sm text-foreground-main truncate">
+                  {{ item.sender_nick }}
+                </div>
+                <!-- 删除按钮 -->
+                <Button
+                  v-if="canManage"
+                  v-tooltip.left="'删除'"
+                  icon="i-ri-delete-bin-line"
+                  text rounded severity="danger"
+                  class="!w-7 !h-7 !p-0 opacity-0 group-hover:opacity-100 ui-trans shrink-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  @click.stop="handleDelete(item)"
+                />
+                <!-- 操作信息 -->
+                <div class="flex flex-col items-end shrink-0 text-[10px] text-foreground-dim font-mono leading-tight">
+                  <span>{{ formatTime(item.operator_time * 1000) }}</span>
+                  <div class="flex items-center gap-0.5 mt-0.5">
+                    <div class="i-ri-star-fill text-yellow-500 text-[9px]" />
+                    <span class="max-w-[80px] truncate">{{ item.operator_nick }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 消息内容 -->
+              <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text pl-1">
+                <template v-for="(seg, idx) in (item.content || [])" :key="idx">
+                  <component
+                    :is="getElement(seg.type)"
+                    :segment="seg"
+                    :group-id="groupId"
+                  />
+                </template>
+              </div>
+            </div>
           </div>
-
-          <!-- 消息预览 (简单的文本解析) -->
-          <div class="text-sm text-foreground-sub line-clamp-4 bg-background-dim/20 rounded-lg p-2">
-             {{ parseContent(item.msg_content) }}
-          </div>
-
-          <!-- 底部操作人 -->
-          <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-foreground-dim opacity-70">
-            <div class="i-ri-star-fill text-yellow-500" />
-            <span>由 {{ item.operator_nick }} 设置</span>
-          </div>
-        </div>
+        </template>
+      </VirtualScroller>
+      <!-- 空状态 -->
+      <div v-else class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
+        <div class="i-ri-star-line text-4xl" />
+        <span class="text-xs">暂无精华</span>
       </div>
     </div>
   </div>
@@ -60,45 +70,54 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Button, Avatar, useToast } from 'primevue'
+import { Button, Avatar, useToast, useConfirm, VirtualScroller } from 'primevue'
 import { bot } from '@/api'
 import { formatTime } from '@/utils/format'
+import { getElement } from '@/components/elements'
+import { useContactStore, useSettingStore } from '@/stores'
 
+// 全局 Hooks
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const confirm = useConfirm()
+const contactStore = useContactStore()
+const settingStore = useSettingStore()
 
+// 状态数据
 const groupId = computed(() => Number(route.params.id))
-const loading = ref(false)
 const items = ref<any[]>([])
 
-const parseContent = (content: any[]) => {
-  if (!Array.isArray(content)) return '[未知消息]'
-  return content.map(c => {
-    if (c.type === 'text') return c.data.text
-    if (c.type === 'image') return '[图片]'
-    if (c.type === 'face') return '[表情]'
-    if (c.type === 'at') return `@${c.data.name || c.data.qq}`
-    return '[其他]'
-  }).join('')
+// 计算属性：当前用户信息
+const myInfo = computed(() => contactStore.members.get(groupId.value)?.find(m => m.user_id === settingStore.user?.user_id))
+// 计算属性：是否管理权限
+const canManage = computed(() => ['owner', 'admin'].includes(myInfo.value?.role || ''))
+
+// 删除精华消息
+const handleDelete = (item: any) => {
+  confirm.require({
+    message: '确定要删除这条精华吗？', header: '删除精华', icon: 'i-ri-error-warning-line text-red-500', acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await bot.deleteEssenceMsg(item.message_id)
+        const index = items.value.findIndex(i => i.message_id === item.message_id)
+        if (index > -1) items.value.splice(index, 1)
+      } catch (e) {
+        toast.add({ severity: 'error', summary: '删除失败', detail: String(e), life: 3000 })
+      }
+    }
+  })
 }
 
-const jumpToMessage = (msgId: number) => {
-  // 这里未来可以集成 MessageStore 的跳转逻辑
-  console.log('Jump to message:', msgId)
-  toast.add({ severity: 'info', summary: '提示', detail: '暂不支持跳转到历史消息上下文', life: 2000 })
-}
-
+// 组件挂载
 onMounted(async () => {
   if (!groupId.value) return
-  loading.value = true
+  if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
   try {
     const res = await bot.getEssenceMsgList(groupId.value)
-    items.value = res || []
+    items.value = (res || []).sort((a, b) => b.operator_time - a.operator_time)
   } catch (e) {
-    console.error(e)
-  } finally {
-    loading.value = false
+    toast.add({ severity: 'error', summary: '加载精华列表失败', detail: String(e), life: 3000 })
   }
 })
 </script>

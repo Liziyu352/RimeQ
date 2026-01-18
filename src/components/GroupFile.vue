@@ -303,7 +303,7 @@ async function loadResources(folderId = '/', listRef = items.value, force = fals
       moveDialog.folders = result
     }
   } catch {
-    toast.add({ severity: 'error', summary: '加载列表失败', life: 3000 })
+    toast.add({ severity: 'error', summary: '加载文件列表失败', life: 3000 })
   } finally {
     loading.value = false
   }
