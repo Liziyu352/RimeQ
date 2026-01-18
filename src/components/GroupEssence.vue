@@ -111,9 +111,7 @@ const handleDelete = (item: any) => {
 
 // 组件挂载
 onMounted(async () => {
-  if (!groupId.value) return
-  if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
-  try {
+  if (groupId.value) try {
     const res = await bot.getEssenceMsgList(groupId.value)
     items.value = (res || []).sort((a, b) => b.operator_time - a.operator_time)
   } catch (e) {

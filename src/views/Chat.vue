@@ -61,37 +61,56 @@
         <ContextMenu
           ref="contextMenu"
           :model="menuItems"
-          :pt="{ root: { class: '!min-w-0 w-auto !rounded-lg bg-background-sub/95 backdrop-blur border border-background-dim/50 shadow-xl z-50' } }"
+          :pt="{ root: { class: '!min-w-[128px] w-auto' } }"
         >
           <template #item="{ item, props }">
             <a
               v-bind="props.action"
-              class="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer select-none transition-colors"
-              :class="item.class || 'text-foreground-main hover:bg-background-dim/50'"
+              class="flex items-center gap-3 px-2 py-1.5 rounded-lg cursor-pointer select-none transition-colors group"
+              :class="item.class || 'text-foreground-main hover:bg-primary/10 hover:text-primary'"
             >
               <span
                 v-if="item.icon"
-                :class="[item.icon, 'text-sm opacity-80 shrink-0']"
+                :class="[item.icon, 'text-base opacity-80 shrink-0 group-hover:opacity-100']"
               />
-              <span class="whitespace-nowrap text-sm font-medium">
+              <span class="whitespace-nowrap text-sm font-medium flex-1">
                 {{ item.label }}
               </span>
+              <span v-if="item.items" class="i-ri-arrow-right-s-line text-base opacity-50 ml-auto" />
             </a>
           </template>
         </ContextMenu>
+        <!-- 禁言设置弹窗 -->
+        <Dialog v-model:visible="banDialog.visible" modal header="禁言时长" :style="{ width: '22rem' }">
+          <div class="flex flex-col gap-4 py-2">
+            <!-- 时间选择器 -->
+            <div class="flex items-center justify-between gap-2">
+              <InputNumber v-model="banForm.d" :min="0" :max="30" show-buttons button-layout="vertical" suffix=" 天" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
+              <InputNumber v-model="banForm.h" :min="0" :max="23" show-buttons button-layout="vertical" suffix=" 时" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
+              <InputNumber v-model="banForm.m" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 分" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
+              <InputNumber v-model="banForm.s" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 秒" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
+            </div>
+            <!-- 操作按钮 -->
+            <div class="flex gap-2">
+               <Button label="解除" severity="success" outlined class="flex-1 !text-xs" @click="executeBan(0)" />
+               <Button label="禁言" class="flex-1 !text-xs" :disabled="(banForm.d * 86400 + banForm.h * 3600 + banForm.m * 60 + banForm.s) === 0" @click="executeBan()" />
+            </div>
+          </div>
+        </Dialog>
       </div>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ContextMenu } from 'primevue'
+import { ref, computed, watch, nextTick, reactive } from 'vue'
+import { useRoute } from 'vue-router'
+import { ContextMenu, useToast, Dialog, InputNumber, Button } from 'primevue'
 import { useIntersectionObserver } from '@vueuse/core'
 
 import { bot } from '@/api'
 import { useMessageStore, useSessionStore, useContactStore, useSettingStore } from '@/stores'
+import { getTextPreview } from '@/utils/format'
 import type { Message } from '@/types'
 import MsgBubble from '@/components/MsgBubble.vue'
 import ChatInput from '@/components/ChatInput.vue'
@@ -99,8 +118,8 @@ import ChatInput from '@/components/ChatInput.vue'
 defineOptions({ name: 'ChatView' })
 
 // 全局实例
-const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 const messageStore = useMessageStore()
 const sessionStore = useSessionStore()
 const contactStore = useContactStore()
@@ -109,7 +128,10 @@ const settingStore = useSettingStore()
 // 会话上下文
 const id = computed(() => (route.params.id as string) || '') // 当前会话 ID
 const session = computed(() => sessionStore.getSession(id.value)) // 当前会话对象
-const list = computed(() => messageStore.messages) // 当前会话消息列表
+const list = computed(() => {
+  if (settingStore.config.enableAntiRecall) return messageStore.messages
+  return messageStore.messages.filter(msg => !(msg as any).recalled)
+}) // 当前会话消息列表
 const isGroup = computed(() => !!id.value && (session.value?.type === 'group' || contactStore.checkIsGroup(id.value))) // 当前会话是否为群聊
 
 // UI 状态
@@ -117,6 +139,8 @@ const contextMenu = ref() // 右键菜单实例
 const contextMsg = ref<Message | null>(null) // 右键菜单目标消息
 const markdownId = ref(new Set<number>()) // Markdown 渲染消息 ID
 const rawJsonId = ref(new Set<number>()) // 原始数据渲染消息 ID
+const banDialog = reactive({ visible: false, target: null as Message | null })
+const banForm = reactive({ d: 0, h: 0, m: 10, s: 0 })
 
 // DOM 引用
 const scrollRef = ref<HTMLElement>() // 消息列表滚动容器
@@ -155,10 +179,13 @@ const onScroll = async (e: Event) => {
 }
 
 // 生命周期监听
-watch(() => id.value, (v) => {
-  if (v) messageStore.openSession(v)
-  markdownId.value.clear()
-  rawJsonId.value.clear()
+watch(() => id.value, (newId) => {
+  if (newId) {
+    messageStore.openSession(newId)
+    markdownId.value.clear()
+    rawJsonId.value.clear()
+    if (isGroup.value) contactStore.fetchGroupMembers(Number(newId))
+  }
 }, { immediate: true })
 
 // 消息列表监听
@@ -196,55 +223,103 @@ const onContextMenu = (e: MouseEvent, msg: Message) => {
   contextMenu.value.show(e)
 }
 
+// 打开禁言弹窗
+const openBanDialog = (msg: Message) => {
+  banDialog.target = msg
+  banForm.d = 0; banForm.h = 0; banForm.m = 10; banForm.s = 0;
+  banDialog.visible = true
+}
+
+// 执行禁言
+const executeBan = async (duration?: number) => {
+  if (!banDialog.target || !banDialog.target.group_id) return
+  const finalDuration = duration ?? (banForm.d * 86400 + banForm.h * 3600 + banForm.m * 60 + banForm.s)
+  try {
+    await bot.setGroupBan(banDialog.target.group_id, banDialog.target.sender.user_id, finalDuration)
+    toast.add({ severity: 'success', summary: finalDuration === 0 ? '已解禁' : '已禁言', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+  }
+  banDialog.visible = false
+}
 // 菜单选项
 const menuItems = computed(() => {
   const m = contextMsg.value
   if (!m) return []
-  // 是否可撤回
-  const isMe = m.sender.user_id === settingStore.user?.user_id
-  let showRecall = isMe
-  if (isGroup.value && !showRecall) {
-    const members = contactStore.members.get(Number(id.value))
-    const myRole = members?.find(u => u.user_id === settingStore.user?.user_id)?.role || 'member'
-    if (myRole !== 'member') showRecall = true
-  } else if (!isGroup.value) {
-    showRecall = true
-  }
+  const myRole = m.message_type === 'group' ? contactStore.members.get(Number(id.value))?.find(u => u.user_id === settingStore.user?.user_id)?.role || 'member' : 'owner'
+  // 基础菜单
   const items: any[] = [
+    { label: '+1', icon: 'i-ri-add-circle-line', command: () => bot.sendMsg({ message_type: m.message_type, user_id: m.user_id, group_id: m.group_id, message: m.message }) },
     { label: '引用', icon: 'i-ri-reply-line', command: () => messageStore.setReplyTarget(m) },
-    { label: '多选', icon: 'i-ri-check-double-line', command: () => messageStore.setMultiSelect(m.message_id) },
-    {
-      label: '转发',
-      icon: 'i-ri-share-forward-line',
-      command: () => {
-        messageStore.setMultiSelect(m.message_id)
-        if (messageStore.selectedIds.length) router.push(`/${id.value}/forward`)
-      }
-    }
+    { label: '转发', icon: 'i-ri-share-forward-line', command: () => messageStore.setMultiSelect(m.message_id) },
   ]
-  if (showRecall) {
-    items.push({
-      label: '撤回',
-      icon: 'i-ri-arrow-go-back-line',
-      class: 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20',
-      command: () => bot.deleteMsg(m.message_id)
+  // 工具子菜单
+  const toolMenu: any[] = []
+  toolMenu.push({ label: '戳一戳', icon: 'i-ri-magic-line', command: () => onPoke(m.sender.user_id) })
+  if (m.message.some(s => s.type === 'record')) {
+    toolMenu.push({
+      label: '转文字', icon: 'i-ri-voice-recognition-line',
+      command: async () => {
+        try {
+          const res = await bot.voiceMsgToText(m.message_id)
+          if (res.text) toast.add({ severity: 'info', summary: '转文字结果', detail: res.text, life: 5000 })
+        } catch (e) {
+          toast.add({ severity: 'error', summary: '转文字失败', detail: String(e), life: 3000 })
+        }
+      }
     })
   }
-  items.push(
-    { separator: true },
-    {
-      label: 'Markdown',
-      icon: markdownId.value.has(m.message_id) ? 'i-ri-markdown-fill' : 'i-ri-markdown-line',
-      class: markdownId.value.has(m.message_id) ? 'text-primary bg-primary/10' : '',
-      command: () => markdownId.value.has(m.message_id) ? markdownId.value.delete(m.message_id) : markdownId.value.add(m.message_id)
-    },
-    {
-      label: 'Raw Json',
-      icon: rawJsonId.value.has(m.message_id) ? 'i-ri-code-s-slash-fill' : 'i-ri-code-s-slash-line',
-      class: rawJsonId.value.has(m.message_id) ? 'text-primary bg-primary/10' : '',
-      command: () => rawJsonId.value.has(m.message_id) ? rawJsonId.value.delete(m.message_id) : rawJsonId.value.add(m.message_id)
+  toolMenu.push({
+    label: '复制', icon: 'i-ri-file-copy-line',
+    command: () => {
+      navigator.clipboard.writeText(getTextPreview(m.message))
+      toast.add({ severity: 'success', summary: '已复制', life: 3000 })
     }
-  )
+  })
+  if (bot.getBackendType() === 'NapCat') {
+    toolMenu.push({
+      label: '收藏', icon: 'i-ri-star-line',
+      command: () => {
+        bot.createCollection(JSON.stringify(m.message), getTextPreview(m.message))
+        toast.add({ severity: 'success', summary: '已收藏', life: 3000 })
+      }
+    })
+  }
+  const imgSeg = m.message.find(s => s.type === 'image')
+  if (imgSeg?.data?.url) {
+    toolMenu.push({
+      label: '另存为', icon: 'i-ri-download-2-line',
+      command: () => {
+        const a = document.createElement('a')
+        a.href = imgSeg.data.url!; a.download = `image_${m.message_id}`; a.target = '_blank';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+    })
+  }
+  toolMenu.push({
+      label: 'Markdown', icon: markdownId.value.has(m.message_id) ? 'i-ri-markdown-fill' : 'i-ri-markdown-line',
+      command: () => markdownId.value.has(m.message_id) ? markdownId.value.delete(m.message_id) : markdownId.value.add(m.message_id)
+  })
+  // 管理子菜单
+  const manageMenu: any[] = []
+  if (m.sender.user_id === settingStore.user?.user_id || myRole !== 'member') {
+    manageMenu.push({ label: '撤回', icon: 'i-ri-arrow-go-back-line', command: () => bot.deleteMsg(m.message_id) })
+  }
+  if (m.message_type === 'group' && myRole !== 'member') {
+    if (!(m.sender.user_id === settingStore.user?.user_id)) {
+      manageMenu.push({ label: '禁言', icon: 'i-ri-chat-off-line', command: () => openBanDialog(m) })
+    }
+    manageMenu.push({ label: '设为精华', icon: 'i-ri-star-line', command: () => bot.setEssenceMsg(m.message_id) })
+  }
+  manageMenu.push({
+    label: 'Raw Json', icon: rawJsonId.value.has(m.message_id) ? 'i-ri-code-s-slash-fill' : 'i-ri-code-s-slash-line',
+    command: () => rawJsonId.value.has(m.message_id) ? rawJsonId.value.delete(m.message_id) : rawJsonId.value.add(m.message_id)
+  })
+  // 整合菜单
+  if (toolMenu.length > 0 || manageMenu.length > 0) items.push({ separator: true })
+  if (toolMenu.length > 0) items.push({ label: '工具', icon: 'i-ri-apps-2-line', items: toolMenu })
+  if (manageMenu.length > 0) items.push({ label: '管理', icon: 'i-ri-settings-3-line', items: manageMenu })
+
   return items
 })
 </script>

@@ -374,12 +374,10 @@ export class ExtendedClient extends BaseClient {
    */
   async getGroupNotice(group_id: number) {
     try {
-      // 尝试标准/常规扩展接口
-      const res = await this.request<any[]>('get_group_notice', { group_id })
+      const res = await this.request<any[]>('_get_group_notice', { group_id })
       return Array.isArray(res) ? res : []
     } catch {
-      // 尝试下划线前缀接口
-      const res = await this.request<any[]>('_get_group_notice', { group_id })
+      const res = await this.request<any[]>('get_group_notice', { group_id })
       return Array.isArray(res) ? res : []
     }
   }
@@ -479,7 +477,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群详细信息 (扩展)
+   * 获取群详细信息 (NapCat)
    * @param group_id - 群号
    */
   getGroupInfoEx(group_id: number) {

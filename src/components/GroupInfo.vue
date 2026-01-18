@@ -1,28 +1,22 @@
 <template>
   <div class="ui-flex-col-full ui-bg-background-sub relative overflow-hidden">
-    <!-- 顶部信息面板 -->
-    <section class="shrink-0 p-3 pb-0 z-20">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
+      <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
+      <div class="flex-1 min-w-0 flex items-center gap-2">
+        <span class="font-bold text-sm text-foreground-main truncate select-text">
+          {{ currentGroup?.group_name }}
+        </span>
+        <div
+          v-if="myLevel > 1"
+          class="i-ri-edit-line text-sm ui-text-foreground-dim hover:text-primary cursor-pointer shrink-0 ui-trans p-1 rounded-md hover:bg-background-dim/50"
+          @click="openEditDialog('name')"
+        />
+      </div>
+    </header>
+    <!-- 信息面板 -->
+    <section class="shrink-0 px-3 pb-0 z-20">
       <div class="ui-bg-background-main rounded-2xl p-4 border ui-border-background-dim/50 shadow-sm flex flex-col gap-3 relative overflow-hidden">
-        <div class="flex items-center gap-2 w-full">
-          <Button
-            v-tooltip.bottom="'返回'"
-            icon="i-ri-arrow-left-s-line"
-            text rounded
-            class="!w-8 !h-8 !ui-text-foreground-sub hover:!ui-bg-background-dim shrink-0"
-            @click="router.back()"
-          />
-          <!-- 群名称 -->
-          <div class="group/name flex items-center gap-2 min-w-0">
-            <span class="text-sm font-bold ui-text-foreground-main leading-tight truncate select-text">
-              {{ currentGroup?.group_name }}
-            </span>
-            <div
-              v-if="myLevel > 1"
-              class="i-ri-edit-line text-sm ui-text-foreground-dim hover:text-primary cursor-pointer shrink-0 ui-trans opacity-0 group-hover/name:opacity-100 p-1 rounded-md hover:bg-background-dim/50"
-              @click="openEditDialog('name')"
-            />
-          </div>
-        </div>
         <div class="flex items-center gap-3 h-12">
           <!-- 群头像 -->
           <div
@@ -52,7 +46,7 @@
             <div class="group/remark flex items-center gap-2 text-sm ui-text-foreground-dim cursor-pointer" @click="openEditDialog('remark')">
               <span class="opacity-70 shrink-0">备注:</span>
               <span class="truncate ui-trans ui-text-foreground-sub">
-                {{ currentGroup?.group_remark }}
+                {{ currentGroup?.group_remark || '无' }}
               </span>
               <div class="i-ri-edit-2-line text-[10px] opacity-0 group-hover/remark:opacity-100 ui-trans" />
             </div>
@@ -283,6 +277,7 @@ const keyword = ref('')
 const members = ref<GroupMemberInfo[]>([])
 const groupId = computed(() => route.params.id as string)
 const myUserId = computed(() => settingStore.user?.user_id)
+const extendedInfo = ref<any>(null)
 
 // 批量管理状态
 const isBatchMode = ref(false)
@@ -331,18 +326,22 @@ const sortedMembers = computed(() => {
 
 // 初始化
 onMounted(async () => {
-  if (groupId.value) {
-    if (contactStore.groups.length === 0) await contactStore.fetchContacts()
-    const [fetchedMembers, fetchedInfo] = await Promise.allSettled([
-      contactStore.fetchGroupMembers(Number(groupId.value)),
-      bot.getGroupInfo(Number(groupId.value), true)
-    ])
-    if (fetchedMembers.status === 'fulfilled') members.value = fetchedMembers.value
-    if (fetchedInfo.status === 'fulfilled' && fetchedInfo.value) {
-      const group = contactStore.groups.find(g => g.group_id === Number(groupId.value))
-      if (group) Object.assign(group, fetchedInfo.value)
-      else contactStore.groups.push(fetchedInfo.value)
-      groupConfig.wholeBan = !!fetchedInfo.value.group_all_shut_up
+  if (!groupId.value) return
+  const gid = Number(groupId.value)
+  members.value = contactStore.members.get(gid) || []
+  const backend = bot.getBackendType()
+  const info = backend === 'NapCat'
+    ? await bot.getGroupInfoEx(gid)
+    : await bot.getGroupInfo(gid, true)
+  if (info) {
+    const group = contactStore.groups.find(g => g.group_id === gid)
+    if (group) Object.assign(group, info)
+    else contactStore.groups.push(info)
+    groupConfig.wholeBan = !!info.group_all_shut_up
+    if (backend === 'NapCat' && info.extInfo) {
+      extendedInfo.value = info.extInfo
+    } else if (backend === 'LLOneBot' && info.groupAll) {
+      extendedInfo.value = info.groupAll
     }
   }
 })
@@ -377,15 +376,10 @@ const memberActions = computed(() => {
   ]
   if (canManage(target)) {
     items.push({ separator: true })
-    items.push({
-      label: '修改名片',
-      icon: 'i-ri-id-card-line',
-      command: () => openEditDialog('card', target)
-    })
+    items.push({ label: '修改名片', icon: 'i-ri-id-card-line', command: () => openEditDialog('card', target) })
     const isBanned = (target as any).shut_up_timestamp > Date.now() / 1000
     items.push({
-      label: isBanned ? '解禁成员' : '禁言成员',
-      icon: isBanned ? 'i-ri-mic-off-fill text-red-500' : 'i-ri-mic-off-line',
+      label: isBanned ? '解禁成员' : '禁言成员', icon: isBanned ? 'i-ri-mic-off-fill text-red-500' : 'i-ri-mic-off-line',
       command: () => {
         if (isBanned) {
           banDialog.targets = [target]
@@ -395,25 +389,13 @@ const memberActions = computed(() => {
         }
       }
     })
-    items.push({
-      label: '移出本群',
-      icon: 'i-ri-delete-bin-line text-red-500',
-      command: () => handleKick([target])
-    })
+    items.push({ label: '移出本群', icon: 'i-ri-delete-bin-line text-red-500', command: () => handleKick([target]) })
   }
   if (myLevel.value === 3 && target.user_id !== myUserId.value) {
     const isAdmin = target.role === 'admin'
     items.push({ separator: true })
-    items.push({
-      label: isAdmin ? '取消管理' : '设为管理',
-      icon: 'i-ri-shield-user-line',
-      command: () => handleAdminToggle(target)
-    })
-    items.push({
-      label: '设置头衔',
-      icon: 'i-ri-vip-crown-line',
-      command: () => openEditDialog('title', target)
-    })
+    items.push({ label: isAdmin ? '取消管理' : '设为管理', icon: 'i-ri-shield-user-line', command: () => handleAdminToggle(target) })
+    items.push({ label: '设置头衔', icon: 'i-ri-vip-crown-line', command: () => openEditDialog('title', target) })
   }
   return items
 })
@@ -426,7 +408,9 @@ const handleAvatarUpload = async (event: Event) => {
   reader.onload = async (e) => {
     try {
       await bot.setGroupPortrait(Number(groupId.value), e.target?.result as string)
-    } catch (err) { toast.add({ severity: 'error', summary: '上传失败', detail: String(err) }) }
+    } catch (e) {
+      toast.add({ severity: 'error', summary: '上传失败', detail: String(e), life: 3000 })
+    }
   }
   reader.readAsDataURL(file)
 }
@@ -436,8 +420,10 @@ const toggleWholeBan = async () => {
   try {
     await bot.setGroupWholeBan(Number(groupId.value), !groupConfig.wholeBan)
     groupConfig.wholeBan = !groupConfig.wholeBan
-    toast.add({ severity: 'success', summary: groupConfig.wholeBan ? '已开启全体禁言' : '已关闭全体禁言' })
-  } catch(e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+    toast.add({ severity: 'success', summary: groupConfig.wholeBan ? '已开启全体禁言' : '已关闭全体禁言', life: 3000 })
+  } catch(e) {
+    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+  }
 }
 
 // 确认退群 / 解散
@@ -451,8 +437,10 @@ const confirmLeave = () => {
       try {
         await bot.setGroupLeave(Number(groupId.value), myLevel.value === 3)
         router.replace('/')
-        toast.add({ severity: 'success', summary: myLevel.value === 3 ? '已解散该群' : '已退出该群' })
-      } catch (e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+        toast.add({ severity: 'success', summary: myLevel.value === 3 ? '已解散该群' : '已退出该群', life: 3000 })
+      } catch (e) {
+        toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+      }
     }
   })
 }
@@ -463,7 +451,9 @@ const saveJoinOption = async () => {
   try {
     await bot.setGroupAddOption(Number(groupId.value), joinOptionDialog.type, joinOptionDialog.question, joinOptionDialog.answer)
     joinOptionDialog.visible = false
-  } catch(e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+  } catch(e) {
+    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+  }
 }
 
 // 踢出成员
@@ -490,8 +480,10 @@ const handleKick = (targets: GroupMemberInfo[]) => {
           selectedMembers.value.clear()
           isBatchMode.value = false
         }
-        toast.add({ severity: 'success', summary: '已踢出成员' })
-      } catch (e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+        toast.add({ severity: 'success', summary: `已踢出 ${targets.length} 人`, life: 3000 })
+      } catch (e) {
+        toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+      }
     }
   })
 }
@@ -527,7 +519,7 @@ const executeBan = async (duration?: number) => {
     isBatchMode.value = false
   }
   const summary = finalDuration === 0 ? '已解禁' : '已禁言'
-  if (successCount > 0) toast.add({ severity: 'success', summary: `${summary} ${successCount} 人` })
+  if (successCount > 0) toast.add({ severity: 'success', summary: `${summary} ${successCount} 人`, life: 3000 })
 }
 
 // 切换管理员状态
@@ -536,7 +528,9 @@ const handleAdminToggle = async (member: GroupMemberInfo) => {
   try {
     await bot.setGroupAdmin(Number(groupId.value), member.user_id, isSet)
     member.role = isSet ? 'admin' : 'member'
-  } catch (e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+  } catch (e) {
+    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+  }
 }
 
 // 文本编辑弹窗状态
@@ -583,7 +577,9 @@ const handleTextSave = async () => {
       target.card = val
     }
     textDialog.visible = false
-  } catch (e) { toast.add({ severity: 'error', summary: '操作失败', detail: String(e) }) }
+  } catch (e) {
+    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000})
+  }
   finally { textDialog.loading = false }
 }
 </script>

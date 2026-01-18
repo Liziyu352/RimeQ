@@ -277,7 +277,6 @@ onMounted(() => {
   if (groupId.value) {
     loadResources()
     loadSpaceInfo()
-    if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
   }
 })
 
@@ -502,7 +501,5 @@ const menuItems = computed((): MenuItem[] => {
 })
 
 // 清空缓存
-onUnmounted(() => {
-  fileCache.clear()
-})
+onUnmounted(() => fileCache.clear())
 </script>

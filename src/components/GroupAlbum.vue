@@ -605,14 +605,9 @@ const sendComment = async () => {
 // 组件挂载
 onMounted(() => {
   backendType.value = bot.getBackendType?.()
-  if (groupId.value) {
-    if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
-    loadAlbums()
-  }
+  if (groupId.value) loadAlbums()
 })
 
 // 清空缓存
-onUnmounted(() => {
-  photoCache.clear()
-})
+onUnmounted(() => photoCache.clear())
 </script>

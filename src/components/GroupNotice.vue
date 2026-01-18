@@ -251,9 +251,6 @@ const remove = (item: any) => {
 
 // 初始化
 onMounted(() => {
-  if (groupId.value) {
-    loadNotices()
-    if (!contactStore.members.has(groupId.value)) contactStore.fetchGroupMembers(groupId.value).catch(() => {})
-  }
+  if (groupId.value) loadNotices()
 })
 </script>
