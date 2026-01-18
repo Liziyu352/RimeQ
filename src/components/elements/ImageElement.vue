@@ -13,15 +13,20 @@
     v-else
     class="inline-block my-1 rounded-lg overflow-hidden max-w-full relative group/img align-middle"
   >
-    <img
-      v-show="!hasError"
+    <Image
+      v-if="!hasError"
       :src="imageUrl"
-      class="max-w-full max-h-[360px] min-w-[50px] min-h-[50px] object-cover cursor-pointer ui-bg-background-dim/50 block"
+      preview
+      image-class="max-w-full max-h-[360px] min-w-[50px] min-h-[50px] object-cover cursor-pointer ui-bg-background-dim/50 block"
       referrerpolicy="no-referrer"
       loading="lazy"
-      @click.stop="previewImage"
       @error="hasError = true"
-    />
+    >
+      <template>
+        <div class="i-ri-eye-line text-white text-xl" />
+      </template>
+    </Image>
+
     <!-- 加载失败提示 -->
     <div
       v-if="hasError"
@@ -36,12 +41,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { EmojiUtils, superList } from '@/utils/emoji'
 import type { Segment } from '@/types'
 
 const props = defineProps<{ segment: Segment }>()
-const router = useRouter()
 const hasError = ref(false)
 
 // 判断是否为普通小表情 (非超级表情且类型为 face)
@@ -68,7 +71,4 @@ const imageUrl = computed(() => {
   return ''
 })
 
-const previewImage = () => {
-  if (imageUrl.value) router.push({ query: { ...router.currentRoute.value.query, view: imageUrl.value } })
-}
 </script>

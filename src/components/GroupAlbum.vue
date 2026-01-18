@@ -69,6 +69,7 @@
                class="aspect-square relative cursor-pointer bg-background-dim overflow-hidden group rounded-md"
                @click="ui.activeIndex = idx"
              >
+               <!-- 缩略图 -->
                <img
                  :src="getMediaUrl(item, 'thumb')"
                  class="size-full object-cover hover:opacity-90 transition-opacity"
@@ -140,7 +141,7 @@
           >
             <div class="i-ri-arrow-right-s-line text-2xl drop-shadow-md" />
           </div>
-          <!-- 媒体内容 -->
+          <!-- 媒体 -->
           <div class="relative max-w-[90vw] max-h-[70vh]" @click.stop>
             <video
               v-if="activeMedia.type === 1"
@@ -149,6 +150,8 @@
               controls
               autoplay
               loop
+              playsinline
+              webkit-playsinline
               class="max-w-full max-h-full object-contain"
               referrerpolicy="no-referrer"
             />
@@ -306,19 +309,32 @@ useIntersectionObserver(loadTrigger, ([entry]) => {
 
 // 获取相册封面
 const getAlbumCover = (album: GroupAlbum) => {
-  if (typeof album.cover === 'object' && album.cover) return album.cover.image?.default_url?.url || ''
+  const coverObj = album.cover
+  if (coverObj && typeof coverObj === 'object') {
+     const urlVal = coverObj.image?.default_url
+     return (typeof urlVal === 'object' ? (urlVal as any).url : urlVal) || ''
+  }
   return (album as any).cover_url || (album as any).url || ''
 }
 
 // 获取媒体文件
 const getMediaUrl = (media: GroupAlbumMedia, type: 'thumb' | 'full' = 'full') => {
     if (media.type === 1) {
-      if (type === 'thumb') return media.video?.cover?.default_url?.url || media.image?.default_url?.url || (media as any).url || ''
-      return media.video?.url || ''
+      if (type === 'thumb') {
+         const cover = media.video?.cover?.default_url || media.image?.default_url || (media as any).url
+         return (typeof cover === 'object' ? (cover as any).url : cover) || ''
+      }
+      return media.video?.url || (media as any).url || ''
     }
-    if (type === 'thumb') return media.image?.default_url?.url || (media as any).url || ''
+    if (type === 'thumb') {
+      const thumb = media.image?.default_url || (media as any).url
+      return (typeof thumb === 'object' ? (thumb as any).url : thumb) || ''
+    }
     const large = (media.image?.photo_url || []).find(p => p.spec === 6)
-    return (large?.url as any)?.url || media.image?.default_url?.url || (media as any).url || ''
+    const largeUrl = large?.url
+    if (largeUrl) return (typeof largeUrl === 'object' ? (largeUrl as any).url : largeUrl) || ''
+    const defaultUrl = media.image?.default_url
+    return (typeof defaultUrl === 'object' ? (defaultUrl as any).url : defaultUrl) || (media as any).url || ''
 }
 
 // 加载相册列表
@@ -329,7 +345,6 @@ const loadAlbums = async (force = false) => {
     const res = backendType.value === 'NapCat'
       ? await bot.getQunAlbumList(groupId.value)
       : await bot.getGroupAlbumList(groupId.value)
-    console.log(res)
     const list = Array.isArray(res) ? res : (res as any).data || []
     data.albums = list.map((item: any) => ({
       ...item,
@@ -361,7 +376,6 @@ const loadPhotos = async (append = false) => {
   ui.loading = true
   try {
     const res: any = await bot.getGroupAlbumMediaList(groupId.value, currentAlbumId, data.nextAttachInfo)
-    console.log(res)
     const rawList = Array.isArray(res) ? res : (res.media_list || [])
     const nextInfo = !Array.isArray(res) ? (res.next_attach_info || '') : ''
     const hasMore = !Array.isArray(res) ? (!!res.next_has_more) : false

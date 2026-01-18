@@ -128,11 +128,6 @@
               <component :is="Component" :key="route.path" class="size-full" />
             </keep-alive>
           </router-view>
-          <MediaViewer
-            :model-value="!!route.query.view"
-            :src="String(route.query.view || '')"
-            @update:model-value="(v) => !v && router.replace({ query: { ...route.query, view: undefined } })"
-          />
         </div>
       </main>
       <!-- 右侧扩展侧边栏 -->
@@ -167,7 +162,6 @@ import { useRouter, useRoute } from 'vue-router'
 import { Avatar, IconField, InputIcon, InputText, Button } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useSettingStore, useSessionStore, useContactStore } from '@/stores'
-import MediaViewer from '@/components/MediaViewer.vue'
 
 const router = useRouter()
 const route = useRoute()
