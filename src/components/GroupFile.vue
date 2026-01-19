@@ -273,7 +273,7 @@ const getFileIcon = (item: any) => {
 
 // 初始化
 onMounted(() => {
-  backendType.value = bot.getBackendType?.()
+  backendType.value = bot.backend
   if (groupId.value) {
     loadResources()
     loadSpaceInfo()
@@ -360,7 +360,7 @@ const handleUploadFile = async (e: Event) => {
   reader.onload = async (ev) => {
     if (ev.target?.result) {
       try {
-        await bot.uploadGroupFile(groupId.value, `base64://${(ev.target.result as string).split(',')[1]}`, file.name, currentFolderId.value === '/' ? undefined : currentFolderId.value)
+        await bot.uploadFile('group', groupId.value, `base64://${(ev.target.result as string).split(',')[1]}`, file.name, currentFolderId.value === '/' ? undefined : currentFolderId.value)
         toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
         loadResources(currentFolderId.value, items.value, true)
       } catch (err) { toast.add({ severity: 'error', summary: '上传失败', detail: String(err), life: 3000 }) }

@@ -207,9 +207,7 @@ watch(() => list.value, async (newVal, oldVal) => {
 })
 
 // 发送戳一戳
-const onPoke = (uid: number) => {
-  bot.sendPoke({ user_id: uid, group_id: isGroup.value ? Number(id.value) : undefined })
-}
+const onPoke = (uid: number) => bot.sendPoke(uid, isGroup.value ? Number(id.value) : undefined)
 
 // 插入提及
 const onInsertMention = (item: { id: string, name: string }) => {
@@ -249,7 +247,7 @@ const menuItems = computed(() => {
   const myRole = m.message_type === 'group' ? contactStore.members.get(Number(id.value))?.find(u => u.user_id === settingStore.user?.user_id)?.role || 'member' : 'owner'
   // 基础菜单
   const items: any[] = [
-    { label: '+1', icon: 'i-ri-add-circle-line', command: () => bot.sendMsg({ message_type: m.message_type, user_id: m.user_id, group_id: m.group_id, message: m.message }) },
+    { label: '+1', icon: 'i-ri-add-circle-line', command: () => bot.sendMsg(m.message_type, m.message_type === 'group' ? m.group_id! : m.user_id, m.message)},
     { label: '引用', icon: 'i-ri-reply-line', command: () => messageStore.setReplyTarget(m) },
     { label: '转发', icon: 'i-ri-share-forward-line', command: () => messageStore.setMultiSelect(m.message_id) },
   ]
@@ -276,7 +274,7 @@ const menuItems = computed(() => {
       toast.add({ severity: 'success', summary: '已复制', life: 3000 })
     }
   })
-  if (bot.getBackendType() === 'NapCat') {
+  if (bot.backend === 'NapCat') {
     toolMenu.push({
       label: '收藏', icon: 'i-ri-star-line',
       command: () => {

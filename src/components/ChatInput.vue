@@ -231,8 +231,7 @@ async function handleUpload(type: 'img' | 'file', e: Event) {
     try {
       const buffer = await file.arrayBuffer()
       const b64 = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
-      const method = props.isGroup ? bot.uploadGroupFile : bot.uploadPrivateFile
-      await method(Number(props.chatId), 'base64://' + b64, file.name)
+      await bot.uploadFile(props.isGroup ? 'group' : 'private', Number(props.chatId), 'base64://' + b64, file.name);
       emit('send')
       toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
     } catch (err) {
@@ -298,11 +297,9 @@ async function handleSend() {
   messageStore.setReplyTarget(null)
   isExpanded.value = false
   try {
-    await bot.sendMsg({
-      message_type: props.isGroup ? 'group' : 'private',
-      [props.isGroup ? 'group_id' : 'user_id']: Number(props.chatId),
-      message: segments
-    })
+  const messageType = props.isGroup ? 'group' : 'private';
+  const targetId = Number(props.chatId);
+  await bot.sendMsg(messageType, targetId, segments);
     emit('send')
   } catch (e) {
     toast.add({ severity: 'error', summary: '发送失败', detail: String(e) })

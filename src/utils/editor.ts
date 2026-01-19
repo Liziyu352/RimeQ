@@ -31,7 +31,7 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
           items: async ({ query }: { query: string }) => {
             if (!opts.isGroup.value) return []
             try {
-              const list = await contactStore.fetchGroupMembers(Number(opts.currentId.value))
+              const list = contactStore.members.get(Number(opts.currentId.value)) || []
               const q = query.toLowerCase()
               return list
                 .filter(m => String(m.user_id).includes(q) || m.card?.toLowerCase().includes(q) || m.nickname?.toLowerCase().includes(q))

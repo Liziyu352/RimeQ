@@ -127,11 +127,7 @@ export const useMessageStore = defineStore('message', () => {
     const type = getSessionType(id)
     let res: { messages: Message[] }
     try {
-      if (type === 'group') {
-        res = await bot.getGroupMsgHistory(Number(id), startSeq, count, true)
-      } else {
-        res = await bot.getFriendMsgHistory(Number(id), startSeq, count, true)
-      }
+      res = await bot.getMsgHistory(type, Number(id), startSeq, count, true)
     } catch (e) {
       console.error('[Message] 拉取消息失败:', e)
       return []

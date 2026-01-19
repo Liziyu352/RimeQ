@@ -2,34 +2,15 @@ import { socket } from './socket'
 import { BaseClient } from './base'
 import type * as T from '@/types'
 
-/** 后端类型 */
-export type BackendType = 'NapCat' | 'Lagrange' | 'LLOneBot'
-
 /**
  * OneBot v11 扩展客户端
  * @description NapCat、Lagrange、LLOneBot 等后端的扩展 API
+ * 若无特殊说明，所有后端均支持，否则会在方法说明中注明支持情况
  */
 export class ExtendedClient extends BaseClient {
-  private backend: BackendType = 'NapCat'
-
+  // 构造函数
   constructor() {
     super()
-  }
-
-  /**
-   * 设置后端类型
-   * @param type - 后端类型
-   */
-  setBackend(type: BackendType) {
-    this.backend = type
-  }
-
-  /**
-   * 获取后端类型
-   * @returns 后端类型
-   */
-  getBackendType() {
-    return this.backend
   }
 
   // ============================================================================
@@ -67,14 +48,11 @@ export class ExtendedClient extends BaseClient {
    * @param messages - 消息节点列表
    */
   sendForwardMsg(message_type: 'private' | 'group', target_id: number, messages: T.Segment[]) {
-    const params: any = { message_type, messages }
-    if (message_type === 'group') params.group_id = target_id
-    else params.user_id = target_id
-    return this.request<{ message_id: number, forward_id: string }>('send_forward_msg', params)
+    return this.request<{ message_id: number, forward_id: string }>('send_forward_msg', { message_type, messages, ...(message_type === 'group' ? { group_id: target_id } : { user_id: target_id }) });
   }
 
   /**
-   * 发送合并转发 (群聊)
+   * 发送群聊合并转发 (LLOneBot/Lagrange)
    * @param group_id - 群号
    * @param messages - 消息节点列表
    */
@@ -83,7 +61,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 发送合并转发 (好友)
+   * 发送好友合并转发 (LLOneBot/Lagrange)
    * @param user_id - 好友 QQ
    * @param messages - 消息节点列表
    */
@@ -92,23 +70,19 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群历史消息
-   * @param group_id - 群号
-   * @param message_seq - 起始消息序号，0 为最新
+   * 获取历史消息
+   * @param message_type - 消息类型
+   * @param id - 好友 QQ 或群号
+   * @param message_seq - 起始消息标识 (Lagrange:"message_id")
    * @param count - 获取数量
+   * @param reverseOrder - 是否倒序 (LLOneBot)
    */
-  getGroupMsgHistory(group_id: number, message_seq?: number, count = 20, reverseOrder = false) {
-    return this.request<{ messages: T.Message[] }>('get_group_msg_history', { group_id, message_seq, count, reverseOrder })
-  }
-
-  /**
-   * 获取好友历史消息
-   * @param user_id - 好友 QQ
-   * @param message_seq - 起始消息序号
-   * @param count - 获取数量
-   */
-  getFriendMsgHistory(user_id: number, message_seq?: number, count = 20, reverseOrder = false) {
-    return this.request<{ messages: T.Message[] }>('get_friend_msg_history', { user_id, message_seq, count, reverseOrder })
+  getMsgHistory(message_type: 'private' | 'group', id: number, message_seq?: number, count = 20, reverseOrder = false) {
+    return this.request<{ messages: T.Message[] }>(message_type === 'private' ? 'get_friend_msg_history' : 'get_group_msg_history',
+      this.backend === 'Lagrange'
+        ? { [message_type === 'private' ? 'user_id' : 'group_id']: id, message_id: message_seq, count }
+        : { [message_type === 'private' ? 'user_id' : 'group_id']: id, message_seq, count, ...(this.backend === 'LLOneBot' && { reverseOrder }) }
+    );
   }
 
   /**
@@ -120,19 +94,12 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 标记群消息已读
-   * @param group_id - 群号
+   * 标记会话已读 (NapCat)
+   * @param type - 消息类型
+   * @param id - 好友 QQ 或群号
    */
-  markGroupMsgAsRead(group_id: number) {
-    return this.request<void>('mark_group_msg_as_read', { group_id })
-  }
-
-  /**
-   * 标记私聊消息已读
-   * @param user_id - 对方 QQ
-   */
-  markPrivateMsgAsRead(user_id: number) {
-    return this.request<void>('mark_private_msg_as_read', { user_id })
+  markChatAsRead(type: 'private' | 'group', id: number) {
+    return this.request<void>(type === 'private' ? 'mark_private_msg_as_read' : 'mark_group_msg_as_read', { [type === 'private' ? 'user_id' : 'group_id']: id });
   }
 
   /**
@@ -143,39 +110,22 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 设置表情回应
-   * @param group_id - 群号
+   * 设置消息表情回应
    * @param message_id - 消息 ID
-   * @param code - 表情代码/ID
-   * @param is_add - 是否添加 (Lagrange/LLOneBot:is_add, NapCat:set)
+   * @param emoji_id - 表情 ID
+   * @param is_add - 添加或取消回应
+   * @param group_id - 群号 (Lagrange)
    */
-  setGroupReaction(group_id: number, message_id: number, code: string, is_add = true) {
-    const params: Record<string, any> = { group_id, message_id, code }
-    if (this.backend === 'NapCat') {
-      params.set = is_add
-    } else {
-      params.is_add = is_add
+  setMsgEmojiLike(message_id: number, emoji_id: string, is_add = true, group_id?: number) {
+    if (this.backend === 'Lagrange') return this.request<void>('send_group_message_reaction', { group_id, message_id, reaction: emoji_id, is_add });
+    if (this.backend === 'NapCat') return this.request<void>('set_msg_emoji_like', { message_id, emoji_id, set: is_add });
+    if (this.backend === 'LLOneBot') {
+      if (is_add) {
+        return this.request<void>('set_msg_emoji_like', { message_id, emoji_id: parseInt(emoji_id, 10) });
+      } else {
+        return this.request<void>('unset_msg_emoji_like', { message_id, emoji_id: parseInt(emoji_id, 10) });
+      }
     }
-    return this.request<void>('set_group_reaction', params)
-  }
-
-  /**
-   * 设置消息表情回应 (NapCat)
-   * @param message_id - 消息 ID
-   * @param emoji_id - 表情 ID
-   * @param set - 是否添加
-   */
-  setMsgEmojiLike(message_id: number, emoji_id: string, set = true) {
-    return this.request<void>('set_msg_emoji_like', { message_id, emoji_id, set })
-  }
-
-  /**
-   * 取消表情回应 (LLOneBot)
-   * @param message_id - 消息 ID
-   * @param emoji_id - 表情 ID
-   */
-  unsetMsgEmojiLike(message_id: number, emoji_id: number) {
-    return this.request<void>('unset_msg_emoji_like', { message_id, emoji_id })
   }
 
   /**
@@ -190,41 +140,24 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 加入群表情接龙 (Lagrange/LLOneBot)
-   * @param group_id - 群号
-   * @param message_id - 消息 ID
+   * 加入表情接龙 (Lagrange)
+   * @param type - 消息类型
+   * @param target_id - 群号或好友 QQ 号
+   * @param message_id - 加入的消息 ID
    * @param emoji_id - 表情 ID
    */
-  joinGroupEmojiChain(group_id: number, message_id: number, emoji_id: number) {
-    return this.request<void>('.join_group_emoji_chain', { group_id, message_id, emoji_id })
+  joinEmojiChain(type: 'group' | 'private', target_id: number, message_id: number, emoji_id: number) {
+    return this.request<void>(type === 'group' ? '.join_group_emoji_chain' : '.join_friend_emoji_chain', { [type === 'group' ? 'group_id' : 'user_id']: target_id, message_id, emoji_id });
   }
 
   /**
-   * 加入好友表情接龙 (Lagrange/LLOneBot)
-   * @param user_id - 好友 QQ
-   * @param message_id - 消息 ID
-   * @param emoji_id - 表情 ID
-   */
-  joinFriendEmojiChain(user_id: number, message_id: number, emoji_id: number) {
-    return this.request<void>('.join_friend_emoji_chain', { user_id, message_id, emoji_id })
-  }
-
-  /**
-   * 转发单条好友消息
-   * @param user_id - 目标 QQ
+   * 转发单条消息 (NapCat/LLOneBot)
+   * @param type - 消息类型
+   * @param target_id - 好友 QQ 或群号
    * @param message_id - 消息 ID
    */
-  forwardFriendSingleMsg(user_id: number, message_id: number) {
-    return this.request<void>('forward_friend_single_msg', { user_id, message_id })
-  }
-
-  /**
-   * 转发单条群消息
-   * @param group_id - 目标群号
-   * @param message_id - 消息 ID
-   */
-  forwardGroupSingleMsg(group_id: number, message_id: number) {
-    return this.request<void>('forward_group_single_msg', { group_id, message_id })
+  forwardSingleMsg(type: 'private' | 'group', target_id: number, message_id: number) {
+    return this.request<void>(type === 'private' ? 'forward_friend_single_msg' : 'forward_group_single_msg', { [type === 'private' ? 'user_id' : 'group_id']: target_id, message_id });
   }
 
   /**
@@ -249,23 +182,15 @@ export class ExtendedClient extends BaseClient {
   /**
    * 删除好友
    * @param user_id - 好友 QQ
-   * @param block - 是否拉黑 (Lagrange/NapCat)
+   * @param block - 是否拉黑 (NapCat:"temp_block")
+   * @param temp_both_del - 是否双向删除 (NapCat)
    */
   deleteFriend(user_id: number, block = false, temp_both_del?: boolean) {
-    const params: Record<string, any> = { user_id }
-    if (this.backend === 'NapCat') {
-      // NapCat (支持双向删除)
-      params.temp_block = block
-      params.temp_both_del = temp_both_del
-    } else {
-      // Lagrange
-      params.block = block
-    }
-    return this.request<void>('delete_friend', params)
+    return this.request<void>('delete_friend', this.backend === 'NapCat' ? { user_id, temp_block: block, temp_both_del } : { user_id, block } );
   }
 
   /**
-   * 设置好友备注
+   * 设置好友备注 (NapCat/LLOneBot)
    * @param user_id - 好友 QQ
    * @param remark - 备注名
    */
@@ -306,19 +231,18 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 发送戳一戳
-   * @param params - 参数对象
-   * @param params.user_id - 目标 QQ 号
-   * @param params.group_id - [可选] 群号。
+   * 发送戳一戳 (NapCat/LLOneBot)
+   * @param user_id - 目标 QQ 号
+   * @param group_id - [可选] 群号
    */
-  async sendPoke(params: { user_id: number; group_id?: number }): Promise<void> {
+  async sendPoke(user_id: number, group_id?: number): Promise<void> {
     try {
-      await this.request<void>('send_poke', params)
+      await this.request<void>('send_poke', { user_id, group_id })
     } catch {
-      if (params.group_id) {
-        await this.request<void>('group_poke', { group_id: params.group_id, user_id: params.user_id })
+      if (group_id) {
+        await this.request<void>('group_poke', { group_id: group_id, user_id: user_id })
       } else {
-        await this.request<void>('friend_poke', { user_id: params.user_id })
+        await this.request<void>('friend_poke', { user_id: user_id })
       }
     }
   }
@@ -328,7 +252,7 @@ export class ExtendedClient extends BaseClient {
   // ============================================================================
 
   /**
-   * 设置群头像
+   * 设置群头像 (NapCat/Lagrange)
    * @param group_id - 群号
    * @param file - 图片路径/链接
    */
@@ -361,10 +285,10 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 群打卡
+   * 群打卡 (NapCat/LLOneBot)
    * @param group_id - 群号
    */
-  sendGroupSign(group_id: number) {
+  sendGroupSign(group_id: string | number) {
     return this.request<void>('send_group_sign', { group_id })
   }
 
@@ -373,13 +297,7 @@ export class ExtendedClient extends BaseClient {
    * @param group_id - 群号
    */
   async getGroupNotice(group_id: number) {
-    try {
-      const res = await this.request<any[]>('_get_group_notice', { group_id })
-      return Array.isArray(res) ? res : []
-    } catch {
-      const res = await this.request<any[]>('get_group_notice', { group_id })
-      return Array.isArray(res) ? res : []
-    }
+    return this.request<any[]>('_get_group_notice', { group_id })
   }
 
   /**
@@ -393,7 +311,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 删除群公告
+   * 删除群公告 (NapCat/LLOneBot)
    * @param group_id - 群号
    * @param notice_id - 公告 ID
    */
@@ -402,14 +320,14 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群系统消息 (进群申请等)
+   * 获取群系统消息 (NapCat/LLOneBot)
    */
   getGroupSystemMsg() {
     return this.request<T.GroupSystemMsg>('get_group_system_msg')
   }
 
   /**
-   * 获取群 @全体成员 剩余次数
+   * 获取群 @全体成员 剩余次数 (NapCat/LLOneBot)
    * @param group_id - 群号
    */
   getGroupAtAllRemain(group_id: number) {
@@ -427,17 +345,21 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 批量踢出群成员
+   * 批量踢出群成员 (NapCat/LLOneBot)
    * @param group_id - 群号
    * @param user_ids - 成员 QQ 列表
-   * @param reject_add_request - 是否拒绝再次申请
+   * @param reject_add_request - 是否拒绝再次申请 (NapCat)
    */
   setGroupKickMembers(group_id: number, user_ids: number[], reject_add_request = false) {
-    return this.request<void>('set_group_kick_members', { group_id, user_ids, reject_add_request })
+    if (this.backend === 'NapCat') {
+      return this.request<void>('set_group_kick_members', { group_id, user_id: user_ids, reject_add_request });
+    } else if (this.backend === 'LLOneBot') {
+      return this.request<void>('batch_delete_group_member', { group_id, user_ids });
+    }
   }
 
   /**
-   * 设置群机器人添加选项
+   * 设置群机器人添加选项 (NapCat)
    * @param group_id - 群号
    * @param robot_member_switch - 机器人添加开关
    * @param robot_member_examine - 机器人添加审核
@@ -447,7 +369,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 设置群添加选项
+   * 设置群添加选项 (NapCat)
    * @param group_id - 群号
    * @param add_type - 添加类型
    * @param group_question - 问题
@@ -458,17 +380,17 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 设置群搜索
+   * 设置群搜索 (NapCat)
    * @param group_id - 群号
-   * @param no_code_finger_open - 选项
-   * @param no_code_finger_close - 选项
+   * @param no_code_finger_open - 允许群号搜索
+   * @param no_finger_open - 允许关键词搜索
    */
-  setGroupSearch(group_id: number, no_code_finger_open = 0, no_code_finger_close = 0) {
-    return this.request<void>('set_group_search', { group_id, no_code_finger_open, no_code_finger_close })
+  setGroupSearch(group_id: number, no_code_finger_open = 0, no_finger_open = 0) {
+    return this.request<void>('set_group_search', { group_id, no_code_finger_open, no_finger_open })
   }
 
   /**
-   * 设置群备注
+   * 设置群备注 (NapCat/LLOneBot)
    * @param group_id - 群号
    * @param remark - 备注内容
    */
@@ -486,14 +408,18 @@ export class ExtendedClient extends BaseClient {
 
   /**
    * 获取被过滤的加群请求
-   * @param group_id - 群号 (可选)
+   * @param group_id - 群号 (LLOneBot)
    */
   getGroupIgnoreAddRequest(group_id?: number) {
-    return this.request<any[]>('get_group_ignore_add_request', { group_id })
+    if (this.backend === 'NapCat') {
+      return this.request<any[]>('get_group_ignored_notifies', {});
+    } else if (this.backend === 'LLOneBot') {
+      return this.request<any[]>('get_group_ignore_add_request', { group_id });
+    }
   }
 
   /**
-   * 获取群禁言列表
+   * 获取群禁言列表 (NapCat/LLOneBot)
    * @param group_id - 群号
    */
   getGroupShutList(group_id: number) {
@@ -501,7 +427,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群过滤系统消息
+   * 获取群过滤系统消息 (NapCat)
    * @param group_id - 群号 (可选)
    */
   getGroupIgnoredNotifies(group_id?: number) {
@@ -518,7 +444,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群相册列表
+   * 获取群相册列表 (LLOneBot)
    * @param group_id - 群号
    */
   getGroupAlbumList(group_id: number) {
@@ -555,7 +481,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取群相册媒体列表
+   * 获取群相册媒体列表 (NapCat)
    * @param group_id - 群号
    * @param album_id - 相册 ID
    * @param attach_info - [可选] 分页定位
@@ -566,45 +492,33 @@ export class ExtendedClient extends BaseClient {
 
   /**
    * 删除群相册照片 (NapCat)
-   * @param params - 删除参数对象
-   * @param params.group_id - 群号
-   * @param params.album_id - 相册 ID
-   * @param params.lloc - 照片 LLOC 标识
+   * @param group_id - 群号
+   * @param album_id - 相册 ID
+   * @param lloc - 照片标识
    */
-  delGroupAlbumMedia(params: {
-    group_id: number | string
-    album_id: string
-    lloc: string
-  }) {
-    return this.request<void>('del_group_album_media', params)
+  delGroupAlbumMedia(group_id: number | string, album_id: string, lloc: string) {
+    return this.request<void>('del_group_album_media', { group_id, album_id, lloc })
   }
 
   /**
    * 设置群相册照片点赞 (NapCat)
-   * @param params - 点赞参数对象
-   * @param params.group_id - 群号
-   * @param params.album_id - 相册 ID
-   * @param params.lloc - 照片 LLOC 标识
-   * @param params.id - 照片 ID
-   * @param params.set - 是否点赞
+   * @param group_id - 群号
+   * @param album_id - 相册 ID
+   * @param lloc - 照片 LLOC 标识
+   * @param id - 照片 ID
+   * @param set - 是否点赞
    */
-  setGroupAlbumLike(params: {
-    group_id: number | string
-    album_id: string
-    lloc: string
-    id: string
-    set: boolean
-  }) {
-    return this.request<void>('set_group_album_media_like', params)
+  setGroupAlbumLike( group_id: number | string, album_id: string, blloc: string, id: string, set: boolean) {
+    return this.request<void>('set_group_album_media_like', { group_id, album_id, blloc, id, set })
   }
 
   /**
    * 设置群待办 (NapCat)
    * @param group_id - 群号
-   * @param content - 待办内容
+   * @param message_id - 消息 ID
    */
-  setGroupTodo(group_id: number, content: string) {
-    return this.request<void>('set_group_todo', { group_id, content })
+  setGroupTodo(group_id: number, message_id: number) {
+    return this.request<void>('set_group_todo', { group_id, message_id })
   }
 
   /**
@@ -653,27 +567,32 @@ export class ExtendedClient extends BaseClient {
 
   /**
    * 获取私聊文件资源链接
-   * @param user_id - 用户 ID
+   * @param user_id - 用户 ID (Lagrange)
    * @param file_id - 文件 ID
-   * @param file_hash - 文件哈希 (可选)
+   * @param file_hash - 文件哈希（可选） (Lagrange)
    */
   getPrivateFileUrl(user_id: number, file_id: string, file_hash?: string) {
-    return this.request<{ url: string }>('get_private_file_url', { user_id, file_id, file_hash })
+    if (this.backend === 'Lagrange') return this.request<{ url: string }>('get_private_file_url', { user_id, file_id, ...(file_hash && { file_hash }) });
+    return this.request<{ url: string }>('get_private_file_url', { file_id });
   }
 
   /**
-   * 上传群文件
-   * @param group_id - 群号
-   * @param file - 文件路径
+   * 上传文件
+   * @param type - 消息类型
+   * @param id - 对方 QQ 或群号
+   * @param file - 文件路径 (http/file/base64)
    * @param name - 文件名
-   * @param folder - 文件夹路径 (NapCat/LLOneBot)
+   * @param folder - 文件夹 ID （群文件/可选）
    */
-  uploadGroupFile(group_id: number, file: string, name: string, folder?: string) {
-    return this.request<void>('upload_group_file', { group_id, file, name, folder })
+  uploadFile(type: 'private' | 'group', id: number, file: string, name: string, folder?: string) {
+    if (type === 'private') return this.request<void>('upload_private_file', { user_id: id, file, name });
+    if (this.backend === 'LLOneBot') return this.request<void>('upload_group_file', { group_id: id, file, name, ...(folder && { folder_id: folder }) });
+    if (this.backend === 'Lagrange') return this.request<void>('upload_group_file', { group_id: id, file, name, folder: folder || '/' });
+    return this.request<void>('upload_group_file', { group_id: id, file, name, ...(folder && { folder }) });
   }
 
   /**
-   * 获取群文件系统信息
+   * 获取群文件系统信息 (NapCat/LLOneBot)
    * @param group_id - 群号
    */
   getGroupFileSystemInfo(group_id: number) {
@@ -729,16 +648,6 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 上传私聊文件
-   * @param user_id - 用户 ID
-   * @param file - 文件路径
-   * @param name - 文件名
-   */
-  uploadPrivateFile(user_id: number, file: string, name: string) {
-    return this.request<void>('upload_private_file', { user_id, file, name })
-  }
-
-  /**
    * 上传图片 (Lagrange)
    * @param file - 文件路径
    */
@@ -777,26 +686,26 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 重命名群文件
+   * 重命名群文件 (NapCat)
    * @param group_id - 群号
    * @param file_id - 文件 ID
    * @param new_name - 新名称
-   * @param parent_directory - 父目录
+   * @param current_parent_directory - 文件目录 ID
    */
-  renameGroupFile(group_id: number, file_id: string, new_name: string, parent_directory = '/') {
-    return this.request<void>('rename_group_file', { group_id, file_id, new_name, current_parent_directory: parent_directory })
+  renameGroupFile(group_id: number, file_id: string, new_name: string, current_parent_directory = '/') {
+    return this.request<void>('rename_group_file', { group_id, file_id, new_name, current_parent_directory });
   }
 
   /**
-   * 获取文件详情
-   * @param file_id - 文件 ID
+   * 获取文件详情 (NapCat/LLOneBot)
+   * @param file_id - 文件 ID 或文件名
    */
   getFile(file_id: string) {
-    return this.request<{ file: string, url: string, file_size: string, file_name: string }>('get_file', { file_id })
+    return this.request<{ file: string, url: string, file_size: string, file_name: string }>('get_file', { [this.backend === 'LLOneBot' ? 'file' : 'file_id']: file_id });
   }
 
   /**
-   * 群文件转永久 (LLOneBot)
+   * 转存永久文件 (LLOneBot)
    * @param group_id - 群号
    * @param file_id - 文件 ID
    */
@@ -841,18 +750,9 @@ export class ExtendedClient extends BaseClient {
   /**
    * 流式上传文件 (NapCat)
    * @description 用于分片上传大文件
-   * @param params - 上传参数
    */
-  uploadFileStream(params: {
-    stream_id?: string
-    chunk_data?: string
-    chunk_index?: number
-    total_chunks?: number
-    file_size?: number
-    file_name?: string
-    is_complete?: boolean
-  }) {
-    return this.request<{ stream_id: string, file_path?: string }>('upload_file_stream', params)
+  uploadFileStream(stream_id?: string, chunk_data?: string, chunk_index?: number, total_chunks?: number, file_size?: number, file_name?: string, is_complete?: boolean) {
+    return this.request<{ stream_id: string, file_path?: string }>('upload_file_stream', { stream_id, chunk_data, chunk_index, total_chunks, file_size, file_name, is_complete })
   }
 
   /**
@@ -888,7 +788,7 @@ export class ExtendedClient extends BaseClient {
   // ============================================================================
 
   /**
-   * 获取当前账号在线客户端列表
+   * 获取在线客户端列表 (NapCat)
    * @param no_cache - 是否无视缓存
    */
   getOnlineClients(no_cache = false) {
@@ -913,18 +813,13 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 设置登录号资料
-   * @param profile - 资料参数对象
-   * @param profile.nickname - 昵称
-   * @param profile.personal_note - 个性签名
-   * @param profile.sex - 性别 (1:男, 2:女, 0:未知)
+   * 设置登录号资料 (NapCat/LLOneBot)
+   * @param nickname - 昵称
+   * @param personal_note - 个性签名
+   * @param sex - 性别 (1:男 2:女 0:未知) (NapCat)
    */
-  setQqProfile(profile: {
-    nickname?: string
-    personal_note?: string
-    sex?: number
-  }) {
-    return this.request<void>('set_qq_profile', profile)
+  setQqProfile(nickname?: string, personal_note?: string, sex?: number) {
+    return this.request<void>('set_qq_profile', { nickname, personal_note, sex })
   }
 
   /**
@@ -937,7 +832,7 @@ export class ExtendedClient extends BaseClient {
 
   /**
    * 获取已收藏的QQ表情列表
-   * @param count - 数量
+   * @param count - 数量 (NapCat/LLOneBot)
    */
   fetchCustomFace(count = 48) {
     return this.request<string[]>('fetch_custom_face', { count })
@@ -969,13 +864,14 @@ export class ExtendedClient extends BaseClient {
    * 设置自定义在线状态 (NapCat)
    * @param wording - 状态文本
    * @param face_id - 表情 ID
+   * @param face_type - 表情类型
    */
-  setDiyOnlineStatus(wording: string, face_id?: number | string) {
-    return this.request<void>('set_diy_online_status', { wording, face_id })
+  setDiyOnlineStatus(wording: string, face_id?: number | string, face_type = 1) {
+    return this.request<void>('set_diy_online_status', { wording, face_id, face_type });
   }
 
   /**
-   * 设置在线状态
+   * 设置在线状态 (NapCat/LLOneBot)
    * @param status - 主状态
    * @param ext_status - 扩展状态
    * @param battery_status - 电量状态
@@ -994,8 +890,8 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取个人资料点赞列表
-   * @param user_id - 用户 ID
+   * 获取个人资料点赞列表 (NapCat/LLOneBot)
+   * @param user_id - 用户 ID (NapCat)
    * @param start - 起始索引
    * @param count - 数量
    */
@@ -1004,14 +900,14 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取官方机器人账号范围
+   * 获取官方机器人账号范围 (NapCat/LLOneBot)
    */
   getRobotUinRange() {
     return this.request<T.RobotUinRange[]>('get_robot_uin_range')
   }
 
   /**
-   * 设置个性签名
+   * 设置个性签名 (NapCat)
    * @param longNick - 签名内容
    */
   setSelfLongnick(longNick: string) {
@@ -1019,7 +915,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取最近会话列表
+   * 获取最近会话列表 (NapCat)
    * @param count - 数量
    */
   getRecentContact(count = 20) {
@@ -1054,19 +950,18 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 下载文件
+   * 下载文件 (NapCat/LLOneBot)
    * @param url - 下载 URL
-   * @param thread_count - 线程数
    * @param headers - 请求头
    * @param base64 - Base64 内容
    * @param name - 文件名
    */
-  downloadFile(url: string, thread_count = 1, headers?: string | string[], base64?: string, name?: string) {
-    return this.request<{ file: string }>('download_file', { url, thread_count, headers, base64, name })
+  downloadFile(url: string, headers?: string | string[], base64?: string, name?: string) {
+    return this.request<{ file: string }>('download_file', { url, headers, base64, name })
   }
 
   /**
-   * 检查链接安全性
+   * 检查链接安全性 (Lagrange)
    * @param url - 链接 URL
    */
   checkUrlSafely(url: string) {
@@ -1103,20 +998,14 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取推荐好友卡片 (NapCat)
+   * 获取推荐卡片 (NapCat)
    * @param user_id - 用户 ID
+   * @param target_id - 目标好友 QQ 号或群号
    * @param phoneNumber - 手机号
    */
-  arkSharePeer(user_id: number, phoneNumber?: string) {
-    return this.request<any>('ArkSharePeer', { user_id, phoneNumber })
-  }
-
-  /**
-   * 获取推荐群聊卡片 (NapCat)
-   * @param group_id - 群号
-   */
-  arkShareGroup(group_id: number) {
-    return this.request<any>('ArkShareGroup', { group_id })
+  arkShare(type: 'private' | 'group', target_id: number, phoneNumber?: string) {
+    if (type === 'private') return this.request<any>('ArkSharePeer', { user_id: target_id, phoneNumber })
+    return this.request<any>('ArkShareGroup', { group_id: target_id })
   }
 
   /**
@@ -1145,11 +1034,12 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 发送自定义组包 (NapCat)
-   * @param params - 组包参数
+   * 发送原始数据包 (NapCat/LLOneBot)
+   * @param params - 组包参数（cmd & hex/body)
    */
   sendPacket(params: any) {
-    return this.request<void>('send_packet', params)
+    if (this.backend === 'NapCat') return this.request<void>('send_packet', params);
+    if (this.backend === 'LLOneBot') return this.request<void>('send_pb', params);
   }
 
   /**
@@ -1161,21 +1051,14 @@ export class ExtendedClient extends BaseClient {
 
   /**
    * 获取小程序卡片 (NapCat)
-   * @param params - 卡片生成参数对象
-   * @param params.type - 小程序类型
-   * @param params.title - 标题
-   * @param params.desc - 描述
-   * @param params.picUrl - 封面图片链接
-   * @param params.jumpUrl - 跳转链接
+   * @param type - 小程序类型
+   * @param title - 标题
+   * @param desc - 描述
+   * @param picUrl - 封面图片链接
+   * @param jumpUrl - 跳转链接
    */
-  getMiniAppArk(params: {
-    type: string
-    title: string
-    desc: string
-    picUrl: string
-    jumpUrl: string
-  }) {
-    return this.request<T.ArkInfo>('get_mini_app_ark', params)
+  getMiniAppArk(type: string, title: string, desc: string, picUrl: string, jumpUrl: string) {
+    return this.request<T.ArkInfo>('get_mini_app_ark', { type, title, desc, picUrl, jumpUrl })
   }
 
   /**
@@ -1187,7 +1070,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取 AI 语音
+   * 获取 AI 语音 (NapCat/Lagrange)
    * @param character - 角色 ID
    * @param group_id - 群号
    * @param text - 文本内容
@@ -1198,7 +1081,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 获取 AI 声色列表 (Lagrange/LLOneBot)
+   * 获取 AI 声色列表
    * @param group_id - 群号
    * @param chat_type - 聊天类型
    */
@@ -1207,7 +1090,7 @@ export class ExtendedClient extends BaseClient {
   }
 
   /**
-   * 发送群 AI 语音 (NapCat)
+   * 发送群 AI 语音 (NapCat/LLOneBot)
    * @param group_id - 群号
    * @param character - 角色 ID
    * @param text - 文本内容

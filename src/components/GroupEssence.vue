@@ -10,54 +10,52 @@
     </header>
     <!-- 列表区域 -->
     <div class="flex-1 min-h-0 bg-background-sub relative w-full overflow-hidden">
-      <VirtualScroller v-if="items.length > 0" :items="items" auto-size class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
-        <template #item="{ item }">
-          <div class="w-full px-3 py-2">
-            <div class="relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm group hover:shadow-md ui-trans">
-              <div class="flex items-center gap-3 mb-2">
-                <!-- 头像 -->
-                <Avatar
-                  :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
-                  shape="circle"
-                  class="!w-8 !h-8 bg-background-dim shrink-0 cursor-pointer border border-background-dim"
-                  @click.stop="router.push(`/${item.sender_id}`)"
-                />
-                <!-- 昵称 -->
-                <div class="flex-1 min-w-0 font-bold text-sm text-foreground-main truncate">
-                  {{ item.sender_nick }}
-                </div>
-                <!-- 删除按钮 -->
-                <Button
-                  v-if="canManage"
-                  v-tooltip.left="'删除'"
-                  icon="i-ri-delete-bin-line"
-                  text rounded severity="danger"
-                  class="!w-7 !h-7 !p-0 opacity-0 group-hover:opacity-100 ui-trans shrink-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  @click.stop="handleDelete(item)"
-                />
-                <!-- 操作信息 -->
-                <div class="flex flex-col items-end shrink-0 text-[10px] text-foreground-dim font-mono leading-tight">
-                  <span>{{ formatTime(item.operator_time * 1000) }}</span>
-                  <div class="flex items-center gap-0.5 mt-0.5">
-                    <div class="i-ri-star-fill text-yellow-500 text-[9px]" />
-                    <span class="max-w-[80px] truncate">{{ item.operator_nick }}</span>
-                  </div>
-                </div>
+      <div v-if="items.length > 0" class="size-full overflow-y-auto ui-scrollbar">
+        <div v-for="item in items" :key="item.message_id" class="w-full px-3 py-2">
+          <div class="relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm group hover:shadow-md ui-trans">
+            <div class="flex items-center gap-3 mb-2">
+              <!-- 头像 -->
+              <Avatar
+                :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
+                shape="circle"
+                class="!w-8 !h-8 bg-background-dim shrink-0 cursor-pointer border border-background-dim"
+                @click.stop="router.push(`/${item.sender_id}`)"
+              />
+              <!-- 昵称 -->
+              <div class="flex-1 min-w-0 font-bold text-sm text-foreground-main truncate">
+                {{ item.sender_nick }}
               </div>
-              <!-- 消息内容 -->
-              <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text pl-1">
-                <template v-for="(seg, idx) in (item.content || [])" :key="idx">
-                  <component
-                    :is="getElement(seg.type)"
-                    :segment="seg"
-                    :group-id="groupId"
-                  />
-                </template>
+              <!-- 删除按钮 -->
+              <Button
+                v-if="canManage"
+                v-tooltip.left="'删除'"
+                icon="i-ri-delete-bin-line"
+                text rounded severity="danger"
+                class="!w-7 !h-7 !p-0 opacity-0 group-hover:opacity-100 ui-trans shrink-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                @click.stop="handleDelete(item)"
+              />
+              <!-- 操作信息 -->
+              <div class="flex flex-col items-end shrink-0 text-[10px] text-foreground-dim font-mono leading-tight">
+                <span>{{ formatTime(item.operator_time * 1000) }}</span>
+                <div class="flex items-center gap-0.5 mt-0.5">
+                  <div class="i-ri-star-fill text-yellow-500 text-[9px]" />
+                  <span class="max-w-[80px] truncate">{{ item.operator_nick }}</span>
+                </div>
               </div>
             </div>
+            <!-- 消息内容 -->
+            <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text pl-1">
+              <template v-for="(seg, idx) in (item.content || [])" :key="idx">
+                <component
+                  :is="getElement(seg.type)"
+                  :segment="seg"
+                  :group-id="groupId"
+                />
+              </template>
+            </div>
           </div>
-        </template>
-      </VirtualScroller>
+        </div>
+      </div>
       <!-- 空状态 -->
       <div v-else class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
         <div class="i-ri-star-line text-4xl" />
@@ -70,7 +68,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Button, Avatar, useToast, useConfirm, VirtualScroller } from 'primevue'
+import { Button, Avatar, useToast, useConfirm } from 'primevue'
 import { bot } from '@/api'
 import { formatTime } from '@/utils/format'
 import { getElement } from '@/components/elements'

@@ -45,12 +45,10 @@ export enum SegType {
   Dice = 'dice',
   /** 窗口抖动 */
   Shake = 'shake',
-  /** 链接分享 */
-  Share = 'share',
+  /** 戳一戳 */
+  Poke = 'poke',
   /** 推荐联系人 */
   Contact = 'contact',
-  /** 位置 */
-  Location = 'location',
   /** 音乐分享 */
   Music = 'music',
   /** 回复 */
@@ -65,16 +63,14 @@ export enum SegType {
   Json = 'json',
   /** QQ 表情 */
   Face = 'face',
-  /** 商城表情 (NapCat/Lagrange) */
+  /** 商城表情 */
   MFace = 'mface',
-  /** Markdown (Lagrange) */
+  /** Markdown */
   Markdown = 'markdown',
-  /** 按钮 (Lagrange) */
+  /** 按钮 (LLOneBot) */
   Keyboard = 'keyboard',
   /** 闪照/闪传 (LLOneBot) */
-  Flash = 'flash_file',
-  /** 小程序 (NapCat) */
-  Miniapp = 'miniapp'
+  Flash = 'flash_file'
 }
 
 /**

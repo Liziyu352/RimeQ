@@ -314,7 +314,7 @@ const handleImageUpload = (event: Event) => {
 const saveProfile = async () => {
   isSaving.value = true
   try {
-    await bot.setQqProfile({ nickname: profile.nickname })
+    await bot.setQqProfile(profile.nickname)
     if (settingStore.user) settingStore.user.nickname = profile.nickname
     toast.add({ severity: 'success', summary: '保存成功', life: 3000 })
   } catch (e) {

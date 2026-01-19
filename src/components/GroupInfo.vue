@@ -329,8 +329,7 @@ onMounted(async () => {
   if (!groupId.value) return
   const gid = Number(groupId.value)
   members.value = contactStore.members.get(gid) || []
-  const backend = bot.getBackendType()
-  const info = backend === 'NapCat'
+  const info = bot.backend === 'NapCat'
     ? await bot.getGroupInfoEx(gid)
     : await bot.getGroupInfo(gid, true)
   if (info) {
@@ -338,9 +337,9 @@ onMounted(async () => {
     if (group) Object.assign(group, info)
     else contactStore.groups.push(info)
     groupConfig.wholeBan = !!info.group_all_shut_up
-    if (backend === 'NapCat' && info.extInfo) {
+    if (bot.backend === 'NapCat' && info.extInfo) {
       extendedInfo.value = info.extInfo
-    } else if (backend === 'LLOneBot' && info.groupAll) {
+    } else if (bot.backend === 'LLOneBot' && info.groupAll) {
       extendedInfo.value = info.groupAll
     }
   }

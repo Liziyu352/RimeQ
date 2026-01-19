@@ -349,7 +349,7 @@ const loadAlbums = async (force = false) => {
   if (data.albums.length > 0 && !force) return
   ui.loading = true
   try {
-    const res = backendType.value === 'NapCat'
+    const res = bot.backend === 'NapCat'
       ? await bot.getQunAlbumList(groupId.value)
       : await bot.getGroupAlbumList(groupId.value)
     const list = Array.isArray(res) ? res : (res as any).data || []
@@ -500,7 +500,7 @@ const handleDelete = (type: 'album' | 'photo', item: GroupAlbum | GroupAlbumMedi
           const photo = item as GroupAlbumMedia;
           const currentAlbumId = data.current?.album_id
           if (!photo.lloc || !currentAlbumId) return;
-          await bot.delGroupAlbumMedia({ group_id: groupId.value, album_id: currentAlbumId, lloc: photo.lloc });
+          await bot.delGroupAlbumMedia(groupId.value, currentAlbumId, photo.lloc);
           const index = data.photos.findIndex(p => p.lloc === photo.lloc);
           if (index > -1) data.photos.splice(index, 1);
           const cached = photoCache.get(currentAlbumId)
@@ -524,7 +524,7 @@ const handleUpload = async (e: Event) => {
   if (!files?.length || !currentAlbumId) return
   toast.add({ severity: 'info', summary: '开始上传...', detail: `正在上传 ${files.length} 个文件`, life: 3000 })
   try {
-    if (backendType.value === 'NapCat') {
+    if (bot.backend === 'NapCat') {
       const uploadPromises = Array.from(files).map(file =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -550,7 +550,7 @@ const handleUpload = async (e: Event) => {
     }
     toast.add({ severity: 'success', summary: '上传成功', detail: `成功上传 ${files.length} 个文件`, life: 3000 });
     setTimeout(() => {
-      if (backendType.value === 'NapCat') {
+      if (bot.backend === 'NapCat') {
         photoCache.delete(currentAlbumId)
         loadPhotos(false)
       } else {
@@ -563,7 +563,7 @@ const handleUpload = async (e: Event) => {
 // 点赞
 const handleLike = async () => {
   const mediaIndex = ui.activeIndex
-  if (mediaIndex < 0 || backendType.value !== 'NapCat' || !data.current) return
+  if (mediaIndex < 0 || bot.backend !== 'NapCat' || !data.current) return
   const media = data.photos[mediaIndex]
   if (!media || !media.lloc) return
   const set = !media.like?.liked
@@ -571,13 +571,7 @@ const handleLike = async () => {
   media.like.liked = set
   media.like.count = (media.like.count || 0) + (set ? 1 : -1)
   try {
-    await bot.setGroupAlbumLike({
-      group_id: groupId.value,
-      album_id: data.current.album_id,
-      lloc: media.lloc,
-      id: (media as any).id || media.lloc,
-      set
-    });
+    await bot.setGroupAlbumLike(groupId.value, data.current.album_id, media.lloc, (media as any).id || media.lloc, set);
   } catch (e) {
     if (media.like) {
       media.like.liked = !set
@@ -590,7 +584,7 @@ const handleLike = async () => {
 // 发送评论
 const sendComment = async () => {
   const mediaIndex = ui.activeIndex
-  if (mediaIndex < 0 || !form.comment.trim() || backendType.value !== 'NapCat' || !data.current) return
+  if (mediaIndex < 0 || !form.comment.trim() || bot.backend !== 'NapCat' || !data.current) return
   const media = data.photos[mediaIndex]
   if (!media || !media.lloc) return
   try {
@@ -604,7 +598,7 @@ const sendComment = async () => {
 
 // 组件挂载
 onMounted(() => {
-  backendType.value = bot.getBackendType?.()
+  backendType.value = bot.backend
   if (groupId.value) loadAlbums()
 })
 
