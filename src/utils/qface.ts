@@ -22,7 +22,7 @@ export interface QFaceItem {
   assets: QFaceAsset
 }
 
-// 表情映射:ID -> [Name, EmojiType, AniStickerPackId]
+// 表情映射
 const FACE_DB: Record<string, [string, number, number]> = {
   // 普通表情 (Type 0)
   '0': ['惊讶', 0, 0], '1': ['撇嘴', 0, 0], '2': ['色', 0, 0], '3': ['发呆', 0, 0], '4': ['得意', 0, 0],
@@ -81,7 +81,7 @@ const FACE_DB: Record<string, [string, number, number]> = {
   '394': ['新年大龙', 3, 1], '415': ['划龙舟', 3, 1], '416': ['中龙舟', 3, 1], '417': ['大龙舟', 3, 1],
 }
 
-// Emoji 映射:ID -> [Name, Description]
+// Emoji 映射
 const EMOJI_DB: Record<string, string> = {
   '☀': '晴天', '☁': '云朵', '☎': '电话', '☔': '雨天', '☕': '咖啡', '☝': '向上', '☺': '可爱', '♣': '扑克',
   '♨': '热', '⚡': '闪电', '⛄': '雪人', '⛪': '教堂', '⛵': '船', '✈': '飞机', '✌': '胜利', '✨': '闪光',
@@ -117,7 +117,7 @@ export class QFace {
     // 处理普通表情
     const data = FACE_DB[id]
     if (!data) return null
-    const [name, emojiType, packId] = data
+    const [name, emojiType, rawPackId] = data
     let type: QFaceType = 'face'
     if (emojiType === 1 || emojiType === 3) type = 'super'
     else if (emojiType === 2) type = 'other'
@@ -127,6 +127,7 @@ export class QFace {
     assets.dynamic = `https://koishi.js.org/QFace/assets/qq_emoji/${id}/apng/${id}.png`
     // 获取 Lottie
     if (type === 'super' || type === 'other') assets.lottie = `https://koishi.js.org/QFace/assets/qq_emoji/${id}/lottie/${id}.json`
+    const packId = (emojiType === 2 || emojiType === 3) ? 0 : rawPackId
     return { id, name, type, packId, assets }
   }
 
@@ -146,12 +147,20 @@ export class QFace {
    */
   static getList(type: 'face' | 'super' | 'emoji' = 'face'): QFaceItem[] {
     if (type === 'emoji') return Object.keys(EMOJI_DB).map(id => this.get(id)!)
-    const faces = Object.keys(FACE_DB).map(id => this.get(id)!).filter(Boolean)
+    const faces = Object.keys(FACE_DB).map(id => this.get(id)!).filter(Boolean) as QFaceItem[]
     if (type === 'face') return faces.filter(item => item.type === 'face')
     if (type === 'super') {
-      const specials = faces.filter(item => item.id === '358' || item.id === '359')
-      const others = faces.filter(item => (item.type === 'super' || item.type === 'other') && item.id !== '358' && item.id !== '359')
-      return [...specials, ...others]
+      const allSupers = faces.filter(item => item.type === 'super' || item.type === 'other')
+      return allSupers.sort((a, b) => {
+        if (a.packId === 0 && b.packId !== 0) return -1
+        if (a.packId !== 0 && b.packId === 0) return 1
+        if (a.packId === 0 && b.packId === 0) {
+          if (a.type === 'super' && b.type === 'other') return -1
+          if (a.type === 'other' && b.type === 'super') return 1
+          return 0
+        }
+        return a.packId - b.packId
+      })
     }
     return []
   }

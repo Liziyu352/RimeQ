@@ -11,52 +11,78 @@
         <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur ui-bg-background-sub/95 ui-border-background-dim">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
             <!-- 普通表情列表 -->
-            <div v-if="activeTab === 'face'" class="grid grid-cols-8 gap-1">
-              <div
-                v-for="item in QFace.getList('face')"
-                :key="item.id"
-                class="aspect-square p-1 rounded cursor-pointer ui-trans hover:ui-bg-background-dim"
-                :title="item.name"
-                @click="insertImage(item.assets.static); focus()"
-              >
-                <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+            <div v-if="activeTab === 'face'" class="flex flex-col gap-1">
+              <!-- 普通表情 -->
+              <div class="grid grid-cols-8 gap-1">
+                <div
+                  v-for="item in QFace.getList('face')"
+                  :key="item.id"
+                  class="aspect-square p-1 rounded cursor-pointer ui-trans hover:ui-bg-background-dim"
+                  :title="item.name"
+                  @click="insertImage(item.assets.static); focus()"
+                >
+                  <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+                </div>
+              </div>
+              <!-- 分隔线 -->
+              <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                <div class="h-px bg-background-dim flex-1" />
+                <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">QFace / Emoji</span>
+                <div class="h-px bg-background-dim flex-1" />
+              </div>
+              <!-- Emoji -->
+              <div class="grid grid-cols-8 gap-1">
+                <div
+                  v-for="item in QFace.getList('emoji')"
+                  :key="item.id"
+                  class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
+                  :title="item.name"
+                  @click="insertText(item.id); focus()"
+                >
+                  {{ item.id }}
+                </div>
               </div>
             </div>
             <!-- 超级表情列表 -->
-            <div v-else-if="activeTab === 'super'" class="grid grid-cols-5 gap-2">
-              <div
-                v-for="item in QFace.getList('super')"
-                :key="item.id"
-                class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
-                :title="item.name"
-                @mouseenter="loadLottie(item.id, item.assets.lottie)"
-                @mouseleave="unloadLottie(item.id)"
-                @click="insertImage(item.assets.dynamic || item.assets.static); activeTab = null; focus()"
+            <div v-else-if="activeTab === 'super'" class="flex flex-col gap-1">
+              <template
+                v-for="group in [{ id: 0, name: '特殊' }, { id: 1, name: '黄脸' }, { id: 2, name: '旺旺' },
+                  { id: 3, name: '喜花妮' }, { id: 4, name: '黄脸' }, { id: 5, name: '企鹅' }, { id: 6, name: '噗噗星人' }]"
+                :key="group.id"
               >
-                <img
-                  v-show="hoveringId !== item.id"
-                  :src="item.assets.static"
-                  class="size-full object-contain pointer-events-none"
-                  loading="lazy"
-                />
-                <div
-                  v-show="hoveringId === item.id"
-                  :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
-                  class="size-full pointer-events-none"
-                />
-              </div>
-            </div>
-            <!-- Emoji 列表 -->
-            <div v-else-if="activeTab === 'emoji'" class="grid grid-cols-8 gap-1">
-              <div
-                v-for="item in QFace.getList('emoji')"
-                :key="item.id"
-                class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
-                :title="item.name"
-                @click="insertText(item.id); focus()"
-              >
-                {{ item.id }}
-              </div>
+                <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
+                  <!-- 分隔线 -->
+                  <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                    <div class="h-px bg-background-dim flex-1" />
+                    <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
+                    <div class="h-px bg-background-dim flex-1" />
+                  </div>
+                  <!-- 列表 -->
+                  <div class="grid grid-cols-5 gap-1">
+                    <div
+                      v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
+                      :key="item.id"
+                      class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
+                      :title="item.name"
+                      @mouseenter="loadLottie(item.id, item.assets.lottie)"
+                      @mouseleave="unloadLottie(item.id)"
+                      @click="handleFace(item)"
+                    >
+                      <img
+                        v-show="hoveringId !== item.id"
+                        :src="item.assets.static"
+                        class="size-full object-contain pointer-events-none"
+                        loading="lazy"
+                      />
+                      <div
+                        v-show="hoveringId === item.id"
+                        :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
+                        class="size-full pointer-events-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
             <!-- 收藏表情列表 -->
             <div v-else class="size-full ui-flex-y gap-2 text-foreground-dim opacity-60">
@@ -76,7 +102,6 @@
           v-for="btn in [
             { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: ' 普通表情' },
             { id: 'super', icon: 'i-ri-user-smile-line text-lg', tip: '超级表情' },
-            { id: 'emoji', icon: 'i-ri-emoji-sticker-line text-lg', tip: 'Emoji' },
             { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' }
           ]"
           :key="btn.id"
@@ -169,20 +194,53 @@
         </div>
       </div>
     </div>
-    <!-- 原生文件输入(隐藏) -->
+    <!-- 文件输入（隐藏） -->
     <input ref="imgInput" type="file" accept="image/*" class="hidden" @change="e => handleUpload('img', e)">
     <input ref="fileInput" type="file" class="hidden" @change="e => handleUpload('file', e)">
+    <!-- 表情结果选择弹窗 -->
+    <Dialog
+      v-model:visible="gameDialog.visible"
+      modal dismissable-mask
+      :header="'选择结果'"
+      :style="{ width: 'auto' }"
+    >
+      <div class="flex gap-2 justify-center">
+        <!-- 骰子 -->
+        <template v-if="gameDialog.type === 'dice'">
+          <Button
+            v-for="i in 6" :key="i"
+            :label="String(i)"
+            severity="secondary" outlined
+            class="!w-9 !h-9 !p-0 !rounded-xl !border-surface-200 dark:!border-surface-700 hover:!border-primary hover:!bg-primary/5 transition-all font-bold"
+            @click="postSegment([{ type: 'dice', data: { result: String(i) } }])"
+          />
+        </template>
+        <!-- 猜拳 -->
+        <template v-else>
+           <Button
+            v-for="opt in [{v:1, l:'布', i:'🖐'}, {v:2, l:'剪刀', i:'✌'}, {v:3, l:'石头', i:'✊'}]"
+            :key="opt.v"
+            severity="secondary" outlined
+            class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-surface-200 dark:!border-surface-700 hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]"
+            @click="postSegment([{ type: 'rps', data: { result: String(opt.v) } }])"
+          >
+            <div class="text-lg leading-none filter drop-shadow-sm">{{ opt.i }}</div>
+            <span class="text-[10px] font-bold opacity-80">{{ opt.l }}</span>
+          </Button>
+        </template>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { Button, useToast } from 'primevue'
+import { Button, useToast, Dialog } from 'primevue'
 import { EditorContent } from '@tiptap/vue-3'
 import type { AnimationItem } from 'lottie-web'
 import { bot } from '@/api'
-import { useMessageStore } from '@/stores'
+import { useMessageStore, useSettingStore } from '@/stores'
 import { useChatEditor } from '@/utils/editor'
 import { QFace } from '@/utils/qface'
 import { getTextPreview } from '@/utils/format'
@@ -196,6 +254,7 @@ const emit = defineEmits<{ (e: 'send'): void }>()
 const router = useRouter()
 const toast = useToast()
 const messageStore = useMessageStore()
+const settingStore = useSettingStore()
 
 // UI 界面状态
 const activeTab = ref<string | null>(null)
@@ -203,6 +262,9 @@ const isExpanded = ref(false)
 const hoveringId = ref<string | null>(null)
 const imgInput = ref<HTMLInputElement>()
 const fileInput = ref<HTMLInputElement>()
+
+// 表情逻辑状态
+const gameDialog = reactive({ visible: false, type: 'dice' as 'dice' | 'rps' })
 
 // Lottie 资源管理
 const lottieMap = new Map<string, AnimationItem>()
@@ -229,6 +291,31 @@ const { editor, focus, insertText, insertImage, insertMention, clear, getSegment
 
 // 暴露方法
 defineExpose({ insertText, insertMention, focus })
+
+// 发送消息
+async function postSegment(segments: any[]) {
+  gameDialog.visible = false
+  try {
+    await bot.sendMsg(props.isGroup ? 'group' : 'private', Number(props.chatId), segments)
+    emit('send')
+  } catch (e) {
+    toast.add({ severity: 'error', summary: '发送失败', detail: String(e), life: 3000 })
+  }
+}
+
+// 处理表情点击
+function handleFace(item: any) {
+  activeTab.value = null
+  if ((item.id === '358' || item.id === '359') && settingStore.config.enableCustomFace) {
+    gameDialog.type = item.id === '358' ? 'dice' : 'rps'
+    gameDialog.visible = true
+    return
+  }
+  const type = item.id === '358' ? 'dice' : item.id === '359' ? 'rps' : 'face'
+  const data = (item.id === '358' || item.id === '359')
+    ? { result: String(Math.floor(Math.random() * (item.id === '358' ? 6 : 3)) + 1) } : { id: item.id }
+  postSegment([{ type, data }])
+}
 
 // 文件上传
 async function handleUpload(type: 'img' | 'file', e: Event) {
@@ -312,14 +399,8 @@ async function handleSend() {
   clear()
   messageStore.setReplyTarget(null)
   isExpanded.value = false
-  try {
-  const messageType = props.isGroup ? 'group' : 'private';
-  const targetId = Number(props.chatId);
-  await bot.sendMsg(messageType, targetId, segments);
-    emit('send')
-  } catch (e) {
-    toast.add({ severity: 'error', summary: '发送失败', detail: String(e) })
-  }
+  // 发送消息
+  await postSegment(segments)
   nextTick(focus)
 }
 

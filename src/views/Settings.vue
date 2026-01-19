@@ -189,6 +189,17 @@
           <div>
             <h2 class="text-sm font-semibold text-foreground-sub mb-2 px-1">功能</h2>
             <div class="bg-background-sub rounded-2xl shadow-sm border border-background-dim overflow-hidden divide-y divide-background-dim">
+              <!-- 自定义猜拳/骰子 -->
+              <div class="ui-flex-between p-4 min-h-[72px]">
+                <div class="ui-flex-x gap-4">
+                  <div class="i-ri-gamepad-line text-xl text-foreground-sub" />
+                  <div class="flex flex-col gap-0.5">
+                    <label class="text-sm font-medium text-foreground-main">自定义猜拳/骰子</label>
+                    <span class="text-xs text-foreground-dim">发送前手动选择结果</span>
+                  </div>
+                </div>
+                <ToggleSwitch v-model="settingStore.config.enableCustomFace" />
+              </div>
               <!-- 防撤回 -->
               <div class="ui-flex-between p-4 min-h-[72px]">
                 <div class="ui-flex-x gap-4">

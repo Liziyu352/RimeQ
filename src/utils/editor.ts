@@ -179,14 +179,7 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
               if (child.type === 'text') {
                 segments.push({ type: 'text', data: { text: child.text } })
               } else if (child.type === 'face') {
-                const id = child.attrs.id
-                if (id === '358') {
-                  segments.push({ type: 'dice', data: {} })
-                } else if (id === '359') {
-                  segments.push({ type: 'rps', data: {} })
-                } else {
-                  segments.push({ type: 'face', data: { id } })
-                }
+                segments.push({ type: 'face', data: { id: child.attrs.id } })
               } else if (child.type === 'image' && child.attrs.src) {
                 segments.push({ type: 'image', data: { file: child.attrs.src } })
               } else if (child.type === 'mention' && child.attrs.id) {

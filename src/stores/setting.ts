@@ -41,6 +41,8 @@ export const useSettingStore = defineStore('setting', () => {
     backgroundImg: '',
     /** 背景图片的模糊半径 (px) */
     backgroundBlur: 0,
+    /** 是否启用自定义表情功能 */
+    enableCustomFace: false,
     /** 是否启用防撤回功能 */
     enableAntiRecall: false,
     /** 自定义的 CSS 样式 */
