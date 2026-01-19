@@ -1,16 +1,6 @@
 <template>
-  <!-- 普通小表情 (内联显示) -->
-  <img
-    v-if="isNormalFace"
-    :src="imageUrl"
-    class="w-6 h-6 inline-block align-bottom mx-0.5 select-none"
-    draggable="false"
-    alt="[表情]"
-  />
-
   <!-- 图片/超级表情 (块级显示) -->
   <div
-    v-else
     class="inline-block my-1 rounded-lg overflow-hidden max-w-full relative group/img align-middle"
   >
     <Image
@@ -41,24 +31,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { EmojiUtils, superList } from '@/utils/emoji'
+import { Image } from 'primevue'
 import type { Segment } from '@/types'
 
 const props = defineProps<{ segment: Segment }>()
 const hasError = ref(false)
 
-// 判断是否为普通小表情 (非超级表情且类型为 face)
-const isNormalFace = computed(() => {
-  return props.segment.type === 'face' && !superList.includes(Number(props.segment.data.id))
-})
-
 const imageUrl = computed(() => {
-  const { type, data } = props.segment
-
-  // 处理表情类型
-  if (type === 'face') {
-    return EmojiUtils.getNormalUrl(Number(data.id))
-  }
+  const { data } = props.segment
 
   // 处理图片类型
   if (!data) return ''

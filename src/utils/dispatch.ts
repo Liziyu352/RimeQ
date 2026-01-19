@@ -97,6 +97,8 @@ function noticeEvent(data: Notice) {
     case 'group_card':
       contactStore.updateGroupMember(data)
       break
+    case 'group_upload':
+      break
     // 其它通知
     default:
       console.log('[Dispatch] 未知 Notice 事件:', data)

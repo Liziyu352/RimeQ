@@ -5,6 +5,16 @@
     class="ui-text-primary cursor-pointer hover:underline align-baseline"
     @click.stop="handleMention"
   >@{{ atName }}</span>
+  <!-- Face 元素 -->
+  <img
+    v-else-if="segment.type === 'face'"
+    :src="faceUrl"
+    class="inline-block align-text-bottom mx-0.5 select-none"
+    :class="isSuperFace ? 'w-10 h-10' : 'w-6 h-6'"
+    draggable="false"
+    :alt="`[${faceName}]`"
+    :title="faceName"
+  />
   <!-- 普通文本 -->
   <span
     v-else
@@ -16,6 +26,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useContactStore } from '@/stores'
+import { QFace } from '@/utils/qface'
 import type { Segment } from '@/types'
 
 const props = defineProps<{ segment: Segment; groupId?: number }>()
@@ -31,6 +42,15 @@ const atName = computed(() => {
   if (name) return name
   if (qq === 'all') return '全体成员'
   return contactStore.getUserName(qq || '', props.groupId)
+})
+
+// Face 逻辑
+const faceItem = computed(() => QFace.get(String(props.segment.data.id)))
+const faceUrl = computed(() => faceItem.value?.assets.dynamic || faceItem.value?.assets.static || '')
+const faceName = computed(() => faceItem.value?.name || '表情')
+const isSuperFace = computed(() => {
+  const t = faceItem.value?.type
+  return t === 'super' || t === 'other'
 })
 
 // 点击事件

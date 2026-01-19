@@ -11,37 +11,51 @@
         <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur ui-bg-background-sub/95 ui-border-background-dim">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
             <!-- 普通表情列表 -->
-            <div v-if="activeTab === 'emoji'" class="grid grid-cols-8 gap-1">
+            <div v-if="activeTab === 'face'" class="grid grid-cols-8 gap-1">
               <div
-                v-for="code in emojiList"
-                :key="code"
-                class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
-                @click="insertText(String.fromCodePoint(code)); focus()"
+                v-for="item in QFace.getList('face')"
+                :key="item.id"
+                class="aspect-square p-1 rounded cursor-pointer ui-trans hover:ui-bg-background-dim"
+                :title="item.name"
+                @click="insertImage(item.assets.static); focus()"
               >
-                {{ String.fromCodePoint(code) }}
+                <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
               </div>
             </div>
             <!-- 超级表情列表 -->
             <div v-else-if="activeTab === 'super'" class="grid grid-cols-5 gap-2">
               <div
-                v-for="id in superList"
-                :key="id"
+                v-for="item in QFace.getList('super')"
+                :key="item.id"
                 class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
-                @mouseenter="loadLottie(id)"
-                @mouseleave="unloadLottie(id)"
-                @click="insertImage(EmojiUtils.getNormalUrl(id)); activeTab = null; focus()"
+                :title="item.name"
+                @mouseenter="loadLottie(item.id, item.assets.lottie)"
+                @mouseleave="unloadLottie(item.id)"
+                @click="insertImage(item.assets.dynamic || item.assets.static); activeTab = null; focus()"
               >
                 <img
-                  v-show="hoveringId !== id"
-                  :src="EmojiUtils.getNormalUrl(id)"
+                  v-show="hoveringId !== item.id"
+                  :src="item.assets.static"
                   class="size-full object-contain pointer-events-none"
                   loading="lazy"
                 />
                 <div
-                  v-show="hoveringId === id"
-                  :ref="el => lottieRefs.set(id, el as HTMLElement)"
+                  v-show="hoveringId === item.id"
+                  :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
                   class="size-full pointer-events-none"
                 />
+              </div>
+            </div>
+            <!-- Emoji 列表 -->
+            <div v-else-if="activeTab === 'emoji'" class="grid grid-cols-8 gap-1">
+              <div
+                v-for="item in QFace.getList('emoji')"
+                :key="item.id"
+                class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
+                :title="item.name"
+                @click="insertText(item.id); focus()"
+              >
+                {{ item.id }}
               </div>
             </div>
             <!-- 收藏表情列表 -->
@@ -60,11 +74,13 @@
         <!-- 表情面板 -->
         <Button
           v-for="btn in [
-            { id: 'emoji', icon: 'i-ri-emotion-line text-lg' },
-            { id: 'super', icon: 'i-ri-user-smile-line text-lg' },
-            { id: 'collection', icon: 'i-ri-star-smile-line text-lg' }
+            { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: ' 普通表情' },
+            { id: 'super', icon: 'i-ri-user-smile-line text-lg', tip: '超级表情' },
+            { id: 'emoji', icon: 'i-ri-emoji-sticker-line text-lg', tip: 'Emoji' },
+            { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' }
           ]"
           :key="btn.id"
+          v-tooltip.top="btn.tip"
           :icon="btn.icon"
           rounded text
           class="!w-7 !h-7 !border-none ui-trans ui-ia-press"
@@ -168,7 +184,7 @@ import type { AnimationItem } from 'lottie-web'
 import { bot } from '@/api'
 import { useMessageStore } from '@/stores'
 import { useChatEditor } from '@/utils/editor'
-import { EmojiUtils, emojiList, superList } from '@/utils/emoji'
+import { QFace } from '@/utils/qface'
 import { getTextPreview } from '@/utils/format'
 
 defineOptions({ name: 'ChatInput' })
@@ -184,14 +200,15 @@ const messageStore = useMessageStore()
 // UI 界面状态
 const activeTab = ref<string | null>(null)
 const isExpanded = ref(false)
-const hoveringId = ref<number | null>(null)
+const hoveringId = ref<string | null>(null)
 const imgInput = ref<HTMLInputElement>()
 const fileInput = ref<HTMLInputElement>()
 
 // Lottie 资源管理
-const lottieMap = new Map<number, AnimationItem>()
-const lottieRefs = new Map<number, HTMLElement>()
-const lottieCache = new Map<number, any>()
+const lottieMap = new Map<string, AnimationItem>()
+const lottieRefs = new Map<string, HTMLElement>()
+const lottieCache = new Map<string, any>()
+const loadingSet = new Set<string>()
 
 // 计算属性
 const isMultiSelect = computed(() => messageStore.isMultiSelect)
@@ -241,32 +258,31 @@ async function handleUpload(type: 'img' | 'file', e: Event) {
 }
 
 // Lottie 动画加载
-async function loadLottie(id: number) {
+async function loadLottie(id: string, url?: string) {
+  if (!url) return
   hoveringId.value = id
-  if (lottieMap.has(id)) return
+  if (lottieMap.has(id) || loadingSet.has(id)) return
+  loadingSet.add(id)
   try {
-    if (!lottieCache.has(id)) {
-      const res = await fetch(EmojiUtils.getSuperUrl(id))
-      const json = await res.json()
-      lottieCache.set(id, json)
-    }
+    const [lottie, animationData] = await Promise.all([
+      import('lottie-web').then(m => m.default),
+      lottieCache.get(id) || fetch(url).then(r => r.json()).then(data => lottieCache.set(id, data).get(id))
+    ])
+    if (hoveringId.value !== id) return
     const container = lottieRefs.get(id)
     if (container) {
-      const lottie = (await import('lottie-web')).default
-      const anim = lottie.loadAnimation({
-        container,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        animationData: lottieCache.get(id)
-      })
+      container.innerHTML = ''
+      const anim = lottie.loadAnimation({ container, renderer: 'svg', loop: true, autoplay: true, animationData })
       lottieMap.set(id, anim)
     }
-  } catch { /* 忽略加载错误 */ }
+  } catch { /* 忽略错误 */ }
+  finally {
+    loadingSet.delete(id)
+  }
 }
 
 // Lottie 动画卸载
-function unloadLottie(id: number) {
+function unloadLottie(id: string) {
   hoveringId.value = null
   const anim = lottieMap.get(id)
   if (anim) {

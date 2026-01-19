@@ -1,5 +1,5 @@
 import { type Ref } from 'vue'
-import { useEditor, VueRenderer } from '@tiptap/vue-3'
+import { useEditor, VueRenderer, Node, mergeAttributes } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Mention from '@tiptap/extension-mention'
@@ -7,6 +7,19 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { useContactStore } from '@/stores'
 import MentionList from '@/components/MentionList.vue'
 import type { Segment } from '@/types'
+
+// 自定义 Face 节点
+const Face = Node.create({
+  name: 'face',
+  group: 'inline',
+  inline: true,
+  draggable: false,
+  atom: true,
+  addAttributes: () => ({ id: { default: null }, src: { default: null } }),
+  parseHTML: () => [{ tag: 'img[data-type="face"]' }],
+  renderHTML: ({ HTMLAttributes }) => ['img', mergeAttributes(HTMLAttributes, { 'data-type': 'face',
+    style: 'display:inline-block;width:auto;height:1.6em;vertical-align:sub;margin:0 1px' })]
+})
 
 /**
  * 初始化聊天编辑器
@@ -20,6 +33,8 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
     extensions: [
       // 基础套件
       StarterKit,
+      // 表情节点
+      Face,
       // 图片扩展
       Image.configure({ allowBase64: true, inline: true }),
       // 占位符扩展
@@ -163,6 +178,15 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
             node.content.forEach((child: any) => {
               if (child.type === 'text') {
                 segments.push({ type: 'text', data: { text: child.text } })
+              } else if (child.type === 'face') {
+                const id = child.attrs.id
+                if (id === '358') {
+                  segments.push({ type: 'dice', data: {} })
+                } else if (id === '359') {
+                  segments.push({ type: 'rps', data: {} })
+                } else {
+                  segments.push({ type: 'face', data: { id } })
+                }
               } else if (child.type === 'image' && child.attrs.src) {
                 segments.push({ type: 'image', data: { file: child.attrs.src } })
               } else if (child.type === 'mention' && child.attrs.id) {
@@ -190,10 +214,19 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
     editor.value?.commands.focus()
   }
 
+  // 插入图片或表情
+  const insertImage = (src: string) => {
+    const faceMatch = src.match(/\/qq_emoji\/(\d+)\//)
+    if (faceMatch) {
+      editor.value?.commands.insertContent({ type: 'face', attrs: { id: faceMatch[1], src } })
+    } else {
+      editor.value?.commands.setImage({ src })
+    }
+  }
+
   // 方法封装
   const focus = () => editor.value?.commands.focus()
   const insertText = (text: string) => editor.value?.commands.insertContent(text)
-  const insertImage = (src: string) => editor.value?.commands.setImage({ src })
   const clear = () => editor.value?.commands.clearContent()
 
   return { editor, focus, insertText, insertImage, insertMention, clear, getSegments }
