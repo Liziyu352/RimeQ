@@ -1,5 +1,5 @@
 import type { PostType } from './base'
-import type { AppStatus, FileInfo, SenderInfo } from './data'
+import type { FileInfo, SenderInfo } from './data'
 import type { Segment } from './segment'
 
 /**
@@ -61,7 +61,16 @@ export interface Meta extends Event {
   /** 子类型 (connect/enable/disable) */
   sub_type?: string
   /** 状态信息 (心跳) */
-  status?: AppStatus
+  status?: {
+    /** 是否在线 */
+    online: boolean;
+    /** 状态良好 */
+    good: boolean;
+    /** 统计信息 */
+    stat?: any;
+    /** 插件状态 (Lagrange) */
+    plugins_good?: boolean;
+  }
   /** 心跳间隔 (毫秒) (心跳) */
   interval?: number
 }

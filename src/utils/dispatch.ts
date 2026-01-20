@@ -91,6 +91,8 @@ function noticeEvent(data: Notice) {
     case 'group_card':
       contactStore.updateGroupMember(data)
       break
+    // 忽略通知
+    case 'flash_file':
     case 'group_upload':
       break
     // 其它通知

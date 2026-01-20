@@ -7,7 +7,6 @@ import a11yPlugin from 'colord/plugins/a11y'
 import { bot, socket } from '@/api'
 import { useContactStore } from './contact'
 import { dispatchEvent } from '@/utils/dispatch'
-import type { LoginInfo } from '@/types'
 
 extend([mixPlugin, a11yPlugin])
 
@@ -19,7 +18,7 @@ export const useSettingStore = defineStore('setting', () => {
   /** WebSocket 连接状态 */
   const isConnected = ref(false)
   /** 当前已登录用户信息 */
-  const user = ref<LoginInfo | null>(null)
+  const user = ref<{ user_id: number; nickname: string } | null>(null)
 
   /** 持久化存储的应用配置 */
   const config = useStorage('rimeq-config', {

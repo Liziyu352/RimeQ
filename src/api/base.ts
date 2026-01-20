@@ -258,7 +258,7 @@ export class BaseClient {
    * 获取登录号信息
    */
   getLoginInfo() {
-    return this.request<T.LoginInfo>('get_login_info')
+    return this.request<{ user_id: number; nickname: string }>('get_login_info')
   }
 
   /**
@@ -266,7 +266,7 @@ export class BaseClient {
    * @param domain - 需要获取 cookies 的域名
    */
   getCookies(domain = '') {
-    return this.request<T.Credentials>('get_cookies', { domain })
+    return this.request<{ cookies: string; csrf_token: number | string; token?: number; bkn?: string | number }>('get_cookies', { domain })
   }
 
   /**
@@ -281,7 +281,7 @@ export class BaseClient {
    * @param domain - 需要获取 cookies 的域名
    */
   getCredentials(domain = '') {
-    return this.request<T.Credentials>('get_credentials', { domain })
+    return this.request<{ cookies: string; csrf_token: number | string; token?: number; bkn?: string | number }>('get_credentials', { domain })
   }
 
   /**
@@ -319,14 +319,14 @@ export class BaseClient {
    * 获取运行状态
    */
   getStatus() {
-    return this.request<T.AppStatus>('get_status')
+    return this.request<{ online: boolean; good: boolean; stat?: any; plugins_good?: boolean }>('get_status')
   }
 
   /**
    * 获取版本信息
    */
   getVersionInfo() {
-    return this.request<T.VersionInfo>('get_version_info')
+    return this.request<{ app_name: string; app_version: string; protocol_version: string; nt_protocol?: string }>('get_version_info')
   }
 
   /**

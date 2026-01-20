@@ -1,19 +1,15 @@
 <template>
-  <div class="w-full my-1 rounded-lg ui-bg-background-sub border ui-border-background-dim overflow-hidden group/code text-left">
-    <!-- 头部信息 -->
-    <div class="ui-flex-between px-2 py-1 ui-bg-background-dim/50 border-b ui-border-background-dim text-[10px] ui-text-foreground-dim">
-      <span class="font-mono">{{ segment.type }}</span>
-      <span
-        class="opacity-0 group-hover/code:opacity-100 ui-trans cursor-pointer hover:ui-text-primary"
+  <div class="my-1 rounded-lg border border-yellow-500/30 bg-yellow-500/5 overflow-hidden text-xs max-w-md">
+    <div class="flex items-center justify-between px-2 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+      <span class="font-bold font-mono">UNKNOWN: {{ segment.type }}</span>
+      <button
+        class="opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
         @click="copy"
       >
-        复制
-      </span>
+        COPY JSON
+      </button>
     </div>
-    <!-- JSON 内容 -->
-    <div class="p-2 overflow-x-auto ui-scrollbar">
-      <pre class="text-[10px] font-mono leading-normal whitespace-pre-wrap break-all ui-text-foreground-sub select-text">{{ jsonContent }}</pre>
-    </div>
+    <pre class="p-2 overflow-x-auto text-foreground-sub font-mono whitespace-pre-wrap break-all select-text">{{ json }}</pre>
   </div>
 </template>
 
@@ -25,10 +21,10 @@ import type { Segment } from '@/types'
 const props = defineProps<{ segment: Segment }>()
 const toast = useToast()
 
-const jsonContent = computed(() => JSON.stringify(props.segment.data, null, 2))
+const json = computed(() => JSON.stringify(props.segment.data, null, 2))
 
 const copy = () => {
   navigator.clipboard.writeText(JSON.stringify(props.segment, null, 2))
-  toast.add({ severity: 'info', summary: '已复制 JSON', life: 2000 })
+  toast.add({ severity: 'info', summary: '已复制调试数据', life: 2000 })
 }
 </script>

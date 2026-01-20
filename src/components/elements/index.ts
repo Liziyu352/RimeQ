@@ -1,27 +1,37 @@
 import { defineAsyncComponent, type Component } from 'vue'
 
-const map: Record<string, Component> = {
+const components: Record<string, Component> = {
+  // 文本类
   text: defineAsyncComponent(() => import('./TextElement.vue')),
-  at: defineAsyncComponent(() => import('./TextElement.vue')),
+  at: defineAsyncComponent(() => import('./AtElement.vue')),
+  // 表情类
+  face: defineAsyncComponent(() => import('./FaceElement.vue')),
+  dice: defineAsyncComponent(() => import('./GameElement.vue')),
+  rps: defineAsyncComponent(() => import('./GameElement.vue')),
+  // 媒体类
   image: defineAsyncComponent(() => import('./ImageElement.vue')),
-  face: defineAsyncComponent(() => import('./ImageElement.vue')),
   mface: defineAsyncComponent(() => import('./ImageElement.vue')),
-  file: defineAsyncComponent(() => import('./FileElement.vue')),
   video: defineAsyncComponent(() => import('./VideoElement.vue')),
   record: defineAsyncComponent(() => import('./RecordElement.vue')),
-  markdown: defineAsyncComponent(() => import('./MarkdownElement.vue')),
+  flash: defineAsyncComponent(() => import('./FileElement.vue')),
+  file: defineAsyncComponent(() => import('./FileElement.vue')),
+  // 结构类
   forward: defineAsyncComponent(() => import('./ForwardElement.vue')),
+  node: defineAsyncComponent(() => import('./ForwardElement.vue')),
+  markdown: defineAsyncComponent(() => import('./MarkdownElement.vue')),
+  // 卡片类
   card: defineAsyncComponent(() => import('./CardElement.vue')),
   json: defineAsyncComponent(() => import('./CardElement.vue')),
   xml: defineAsyncComponent(() => import('./CardElement.vue')),
-  default: defineAsyncComponent(() => import('./DefaultElement.vue'))
+  // 杂项
+  default: defineAsyncComponent(() => import('./DefaultElement.vue')),
+  unknown: defineAsyncComponent(() => import('./UnknownElement.vue'))
 }
 
 /**
- * 获取消息段对应组件
- * @param type - 消息段类型
- * @returns 对应的 Vue 组件
+ * 获取消息段对应的渲染组件
+ * @param type 消息段类型
  */
 export const getElement = (type: string): Component => {
-  return (map[type] ?? map['default']) as Component
+  return components[type] || components['default']
 }

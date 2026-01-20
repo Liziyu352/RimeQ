@@ -323,7 +323,7 @@ export class ExtendedClient extends BaseClient {
    * 获取群系统消息 (NapCat/LLOneBot)
    */
   getGroupSystemMsg() {
-    return this.request<T.GroupSystemMsg>('get_group_system_msg')
+    return this.request<{ invited_requests: T.GroupSystemRequest[]; join_requests: T.GroupSystemRequest[] }>('get_group_system_msg')
   }
 
   /**
@@ -596,7 +596,7 @@ export class ExtendedClient extends BaseClient {
    * @param group_id - 群号
    */
   getGroupFileSystemInfo(group_id: number) {
-    return this.request<T.FileSystemInfo>('get_group_file_system_info', { group_id })
+    return this.request<{ file_count: number; limit_count: number; used_space: number; total_space: number }>('get_group_file_system_info', { group_id })
   }
 
   /**
@@ -605,7 +605,7 @@ export class ExtendedClient extends BaseClient {
    * @param file_count - 获取数量
    */
   getGroupRootFiles(group_id: number, file_count = 50) {
-    return this.request<T.GroupFileList>('get_group_root_files', { group_id, file_count })
+    return this.request<{ files: T.FileInfo[], folders: T.FolderInfo[] }>('get_group_root_files', { group_id, file_count })
   }
 
   /**
@@ -615,7 +615,7 @@ export class ExtendedClient extends BaseClient {
    * @param file_count - 获取数量
    */
   getGroupFilesByFolder(group_id: number, folder_id: string, file_count = 50) {
-    return this.request<T.GroupFileList>('get_group_files_by_folder', { group_id, folder_id, file_count })
+    return this.request<{ files: T.FileInfo[], folders: T.FolderInfo[] }>('get_group_files_by_folder', { group_id, folder_id, file_count })
   }
 
   /**
@@ -792,15 +792,15 @@ export class ExtendedClient extends BaseClient {
    * @param no_cache - 是否无视缓存
    */
   getOnlineClients(no_cache = false) {
-    return this.request<T.OnlineClient[]>('get_online_clients', { no_cache })
+    return this.request<{ app_id: number; device_name: string; device_kind: string }[]>('get_online_clients', { no_cache })
   }
 
   /**
-   * 获取在线机型 (NapCat)
+   * 获取在线机型 (LLOneBot)
    * @param model - 机型标识
    */
   getModelShow(model: string) {
-    return this.request<T.DeviceModel[]>('_get_model_show', { model })
+    return this.request<{ variants: { model_show: string; need_pay: boolean }[] }[]>('_get_model_show', { model })
   }
 
   /**
@@ -850,7 +850,7 @@ export class ExtendedClient extends BaseClient {
    * 获取 RKey
    */
   getRkey() {
-    return this.request<T.RKeyInfo | { private_key: string, group_key: string }>('get_rkey')
+    return this.request<{ type?: string; rkey: string; created_at?: number; ttl?: number | string; time?: number } | { private_key: string, group_key: string }>('get_rkey')
   }
 
   /**
@@ -896,14 +896,14 @@ export class ExtendedClient extends BaseClient {
    * @param count - 数量
    */
   getProfileLike(user_id?: number, start = 0, count = 10) {
-    return this.request<any>('get_profile_like', { user_id, start, count })
+    return this.request<{ users: { uid: string; count: number; nick: string; src: number; latestTime: number }[]; nextStart: number }>('get_profile_like', { user_id, start, count })
   }
 
   /**
    * 获取官方机器人账号范围 (NapCat/LLOneBot)
    */
   getRobotUinRange() {
-    return this.request<T.RobotUinRange[]>('get_robot_uin_range')
+    return this.request<{ minUin: string; maxUin: string }[]>('get_robot_uin_range')
   }
 
   /**
@@ -1046,7 +1046,7 @@ export class ExtendedClient extends BaseClient {
    * 获取 packet 状态 (NapCat)
    */
   ncGetPacketStatus() {
-    return this.request<T.PacketStatus>('nc_get_packet_status')
+    return this.request<{ rkey: string; ttl: string; time: number }>('nc_get_packet_status')
   }
 
   /**
@@ -1058,7 +1058,7 @@ export class ExtendedClient extends BaseClient {
    * @param jumpUrl - 跳转链接
    */
   getMiniAppArk(type: string, title: string, desc: string, picUrl: string, jumpUrl: string) {
-    return this.request<T.ArkInfo>('get_mini_app_ark', { type, title, desc, picUrl, jumpUrl })
+    return this.request<{ appName: string; appView: string; ver: string; desc: string; prompt: string; metaData: Record<string, any>; config: Record<string, any> }>('get_mini_app_ark', { type, title, desc, picUrl, jumpUrl })
   }
 
   /**
@@ -1086,7 +1086,7 @@ export class ExtendedClient extends BaseClient {
    * @param chat_type - 聊天类型
    */
   getAiCharacters(group_id?: number, chat_type = 1) {
-    return this.request<any>('get_ai_characters', { group_id, chat_type })
+    return this.request<{ character_id: string; character_name: string; preview_url: string }[]>('get_ai_characters', { group_id, chat_type })
   }
 
   /**

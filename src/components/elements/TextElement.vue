@@ -1,67 +1,19 @@
 <template>
-  <!-- At 元素 -->
-  <span
-    v-if="segment.type === 'at'"
-    class="ui-text-primary cursor-pointer hover:underline align-baseline"
-    @click.stop="handleMention"
-  >@{{ atName }}</span>
-  <!-- Face 元素 -->
-  <img
-    v-else-if="segment.type === 'face'"
-    :src="faceUrl"
-    class="inline-block align-text-bottom mx-0.5 select-none"
-    :class="isSuperFace ? 'w-10 h-10' : 'w-6 h-6'"
-    draggable="false"
-    :alt="`[${faceName}]`"
-    :title="faceName"
-  />
-  <!-- 普通文本 -->
-  <span
-    v-else
-    class="whitespace-pre-wrap break-words align-baseline"
-    v-html="renderedText"
-  />
+  <!-- 使用 v-html 渲染包含链接的文本，已做转义处理 -->
+  <span class="break-words select-text" v-html="parsedText" />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useContactStore } from '@/stores'
-import { QFace } from '@/utils/qface'
-import type { Segment } from '@/types'
+import type { TextSegment } from '@/types'
 
-const props = defineProps<{ segment: Segment; groupId?: number }>()
-const emit = defineEmits<{ (e: 'mention', item: { id: string; name: string }): void }>()
-const contactStore = useContactStore()
+const props = defineProps<{ segment: TextSegment }>()
 
-// URL 正则表达式
-const urlRegex = /((?:https?:\/\/|www\.|(?:\d{1,3}\.){3}\d{1,3}|[\w-]+\.[a-z]{2,10})(?:[^\s<]*[^<.,:;"')\]\s])?)/gi
+// 更完善的 URL 匹配正则
+const URL_REGEX = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:[a-zA-Z0-9]+\.)+[a-zA-Z0-9]{2,}(?:\/[^\s]*)?)/g
 
-// At 逻辑
-const atName = computed(() => {
-  const { qq, name } = props.segment.data
-  if (name) return name
-  if (qq === 'all') return '全体成员'
-  return contactStore.getUserName(qq || '', props.groupId)
-})
-
-// Face 逻辑
-const faceItem = computed(() => QFace.get(String(props.segment.data.id)))
-const faceUrl = computed(() => faceItem.value?.assets.dynamic || faceItem.value?.assets.static || '')
-const faceName = computed(() => faceItem.value?.name || '表情')
-const isSuperFace = computed(() => {
-  const t = faceItem.value?.type
-  return t === 'super' || t === 'other'
-})
-
-// 点击事件
-const handleMention = () => {
-  const id = String(props.segment.data.qq || '')
-  if (id && id !== 'all') emit('mention', { id, name: atName.value })
-}
-
-// 文本转义
-function escapeHtml(text: string) {
-  return text
+const escapeHtml = (str: string) => {
+  return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -69,23 +21,16 @@ function escapeHtml(text: string) {
     .replace(/'/g, '&#039;')
 }
 
-// 文本渲染
-const renderedText = computed(() => {
-  const content = props.segment.data.text || ''
-  const matches = [...content.matchAll(urlRegex)]
-  if (matches.length === 0) return escapeHtml(content)
-  let result = ''
-  let lastIndex = 0
-  for (const match of matches) {
-    const url = match[0]
-    const index = match.index!
-    result += escapeHtml(content.substring(lastIndex, index))
-    let href = url
-    if (!href.match(/^https?:\/\//i)) href = 'http://' + href
-    result += `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="ui-text-primary hover:underline break-all">${escapeHtml(url)}</a>`
-    lastIndex = index + url.length
-  }
-  result += escapeHtml(content.substring(lastIndex))
-  return result
+const parsedText = computed(() => {
+  const raw = props.segment.data?.text || ''
+  if (!raw) return ''
+
+  // 先转义 HTML 防止 XSS
+  // 然后将 URL 替换为 a 标签
+  return raw.replace(URL_REGEX, (url) => {
+    const href = url.match(/^https?:\/\//i) ? url : `http://${url}`
+    // 在转义后的文本中插入未转义的 HTML 标签是安全的，因为 href 是我们构造的
+    return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline hover:text-primary-hover transition-colors break-all cursor-pointer">${escapeHtml(url)}</a>`
+  }).split('\n').map(line => escapeHtml(line)).join('<br>') // 处理换行，如果使用 v-html
 })
 </script>

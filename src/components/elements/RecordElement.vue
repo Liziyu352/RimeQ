@@ -1,14 +1,20 @@
 <template>
   <div
-    class="ui-flex-x gap-2 px-2 py-1 my-1 rounded-full ui-bg-background-dim/20 ui-ia hover:ui-bg-background-dim/40 w-fit"
-    title="播放语音"
+    class="flex items-center gap-2 px-3 py-2 rounded-xl bg-background-sub hover:bg-background-dim/50 border border-background-dim cursor-pointer transition-all select-none w-fit group shadow-sm"
+    title="语音消息 (功能未实现)"
   >
-    <div class="i-ri-voiceprint-line text-lg ui-text-primary" />
-    <span class="text-xs ui-text-foreground-main">语音消息</span>
+    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+      <div class="i-ri-voiceprint-line text-lg text-primary" />
+    </div>
+    <div class="flex flex-col">
+      <span class="text-xs font-medium text-foreground-main">语音消息</span>
+      <span class="text-[10px] text-foreground-dim">点击播放</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Segment } from '@/types'
-defineProps<{ segment: Segment }>()
+import type { RecordSegment } from '@/types'
+defineProps<{ segment: RecordSegment }>()
+// TODO: 实现音频播放逻辑
 </script>

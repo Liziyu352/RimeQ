@@ -202,16 +202,6 @@ export interface GroupSystemRequest {
 }
 
 /**
- * 群系统消息 (NapCat)
- */
-export interface GroupSystemMsg {
-  /** 邀请入群请求 */
-  invited_requests: GroupSystemRequest[]
-  /** 申请入群请求 */
-  join_requests: GroupSystemRequest[]
-}
-
-/**
  * 群文件
  */
 export interface FileInfo {
@@ -260,33 +250,9 @@ export interface FolderInfo {
 }
 
 /**
- * 群文件列表
- */
-export interface GroupFileList {
-  /** 文件列表 */
-  files: FileInfo[]
-  /** 文件夹列表 */
-  folders: FolderInfo[]
-}
-
-/**
- * 群文件系统信息 (LLOneBot/NapCat)
- */
-export interface FileSystemInfo {
-  /** 文件数量 */
-  file_count: number
-  /** 数量限制 */
-  limit_count: number
-  /** 已用空间 */
-  used_space: number
-  /** 总空间 */
-  total_space: number
-}
-
-/**
  * 媒体信息结构
  */
-export interface AlbumUrlInfo {
+interface AlbumUrlInfo {
   url: string;
   width?: number;
   height?: number;
@@ -389,58 +355,6 @@ export interface GroupAlbumMedia {
 }
 
 /**
- * 登录号信息
- */
-export interface LoginInfo {
-  /** QQ 号 */
-  user_id: number
-  /** 昵称 */
-  nickname: string
-}
-
-/**
- * 版本信息
- */
-export interface VersionInfo {
-  /** 应用名称 */
-  app_name: string
-  /** 应用版本 */
-  app_version: string
-  /** 协议版本 */
-  protocol_version: string
-  /** NT 协议版本 (Lagrange) */
-  nt_protocol?: string
-}
-
-/**
- * 运行状态
- */
-export interface AppStatus {
-  /** 是否在线 */
-  online: boolean
-  /** 状态良好 */
-  good: boolean
-  /** 统计信息 */
-  stat?: any
-  /** 插件状态 (Lagrange) */
-  plugins_good?: boolean
-}
-
-/**
- * 凭证信息
- */
-export interface Credentials {
-  /** Cookies */
-  cookies: string
-  /** CSRF Token */
-  csrf_token: number | string
-  /** Token */
-  token?: number
-  /** BKN (LLOneBot) */
-  bkn?: string | number;
-}
-
-/**
  * OCR 结果 (LLOneBot/NapCat)
  */
 export interface OcrResult {
@@ -528,18 +442,6 @@ export interface CollectionList {
 }
 
 /**
- * AI 声色 (LLOneBot/NapCat)
- */
-export interface AiCharacter {
-  /** 声色 ID */
-  character_id: string
-  /** 声色名称 */
-  character_name: string
-  /** 预览 URL */
-  preview_url: string
-}
-
-/**
  * 闪传文件信息 (LLOneBot)
  */
 export interface FlashFileInfo {
@@ -553,103 +455,4 @@ export interface FlashFileInfo {
   files?: { name: string, size: number }[]
   /** 文件集总大小 (字节) */
   total_file_size?: number;
-}
-
-/**
- * Packet 状态 (NapCat)
- */
-export interface PacketStatus {
-  /** RKey */
-  rkey: string
-  /** TTL */
-  ttl: string
-  /** 时间 */
-  time: number
-}
-
-/**
- * 在线机型 (LLOneBot)
- */
-export interface DeviceModel {
-  /** 变体 */
-  variants: {
-    /** 显示名称 */
-    model_show: string
-    /** 是否需付费 */
-    need_pay: boolean
-  }[]
-}
-
-/**
- * 机器人范围 (LLOneBot/NapCat)
- */
-export interface RobotUinRange {
-  /** 最小 UIN */
-  minUin: string
-  /** 最大 UIN */
-  maxUin: string
-}
-
-/**
- * 点赞用户信息 (LLOneBot/NapCat)
- */
-export interface LikeUserInfo {
-  /** 用户 UID */
-  uid: string
-  /** 点赞次数 */
-  count: number
-  /** 昵称 */
-  nick: string
-  /** 来源 */
-  src: number
-  /** 最新时间 */
-  latestTime: number
-}
-
-/**
- * 在线客户端信息 (NapCat)
- */
-export interface OnlineClient {
-  /** 客户端 App ID */
-  app_id: number
-  /** 设备名称 */
-  device_name: string
-  /** 设备类型 */
-  device_kind: string
-}
-
-/**
- * RKey 信息 (Lagrange/NapCat)
- */
-export interface RKeyInfo {
-  /** 类型: group/private */
-  type?: string
-  /** RKey 值 */
-  rkey: string
-  /** 创建时间戳 */
-  created_at?: number
-  /** 有效期 (秒) */
-  ttl?: number | string
-  /** 兼容字段 (NapCat) */
-  time?: number
-}
-
-/**
- * 小程序卡片数据 (NapCat)
- */
-export interface ArkInfo {
-  /** 应用名称 */
-  appName: string
-  /** 应用视图类型 */
-  appView: string
-  /** 版本号 */
-  ver: string
-  /** 描述信息 */
-  desc: string
-  /** 提示语 */
-  prompt: string
-  /** 元数据配置 */
-  metaData: Record<string, any>
-  /** 渲染配置 */
-  config: Record<string, any>
 }

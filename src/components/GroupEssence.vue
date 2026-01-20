@@ -44,14 +44,11 @@
               </div>
             </div>
             <!-- 消息内容 -->
-            <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text pl-1">
-              <template v-for="(seg, idx) in (item.content || [])" :key="idx">
-                <component
-                  :is="getElement(seg.type)"
-                  :segment="seg"
-                  :group-id="groupId"
-                />
-              </template>
+            <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text">
+              <ElementRenderer
+                :segments="item.content || []"
+                :group-id="groupId"
+              />
             </div>
           </div>
         </div>
@@ -71,7 +68,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { Button, Avatar, useToast, useConfirm } from 'primevue'
 import { bot } from '@/api'
 import { formatTime } from '@/utils/format'
-import { getElement } from '@/components/elements'
+import ElementRenderer from '@/components/ElementRenderer.vue'
 import { useContactStore, useSettingStore } from '@/stores'
 
 // 全局 Hooks

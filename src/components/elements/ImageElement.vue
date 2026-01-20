@@ -1,30 +1,37 @@
 <template>
-  <!-- 图片/超级表情 (块级显示) -->
-  <div
-    class="inline-block my-1 rounded-lg overflow-hidden max-w-full relative group/img align-middle"
-  >
-    <Image
-      v-if="!hasError"
-      :src="imageUrl"
-      preview
-      image-class="max-w-full max-h-[360px] min-w-[50px] min-h-[50px] object-cover cursor-pointer ui-bg-background-dim/50 block"
-      referrerpolicy="no-referrer"
-      loading="lazy"
-      @error="hasError = true"
-    >
-      <template>
-        <div class="i-ri-eye-line text-white text-xl" />
-      </template>
-    </Image>
-
-    <!-- 加载失败提示 -->
+  <div class="block my-1 max-w-full w-fit">
+    <!-- 容器：限制最大宽高，圆角，加载背景 -->
     <div
-      v-if="hasError"
-      class="ui-abs-full ui-bg-background-dim/30 text-xs ui-text-foreground-sub ui-flex-y gap-1 p-2 text-center min-h-[80px] min-w-[80px]"
+      class="relative rounded-xl overflow-hidden bg-background-dim/30 border border-background-dim/50 transition-all min-w-[48px] min-h-[48px]"
+      :class="[hasError ? 'w-32 h-32 flex items-center justify-center' : '']"
     >
-      <div class="i-ri-image-off-line text-xl" />
-      <span>图片加载失败</span>
-      <a :href="imageUrl" target="_blank" class="ui-text-primary hover:underline text-[10px]" @click.stop>尝试打开</a>
+      <Image
+        v-if="!hasError"
+        :src="imageUrl"
+        preview
+        image-class="block max-w-full max-h-[400px] object-contain cursor-zoom-in hover:opacity-95 transition-opacity"
+        referrerpolicy="no-referrer"
+        loading="lazy"
+        @error="hasError = true"
+      >
+        <template #indicator>
+          <div class="i-ri-loader-4-line animate-spin text-white text-2xl" />
+        </template>
+      </Image>
+
+      <!-- 错误状态 -->
+      <div v-else class="flex flex-col items-center justify-center gap-2 text-foreground-dim p-4">
+        <div class="i-ri-image-off-line text-2xl" />
+        <span class="text-xs">图片加载失败</span>
+      </div>
+
+      <!-- 摘要（针对 mface） -->
+      <div
+        v-if="summary"
+        class="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-2 py-1 backdrop-blur-sm truncate"
+      >
+        {{ summary }}
+      </div>
     </div>
   </div>
 </template>
@@ -32,23 +39,27 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Image } from 'primevue'
-import type { Segment } from '@/types'
+import type { ImageSegment, MFaceSegment } from '@/types'
 
-const props = defineProps<{ segment: Segment }>()
+const props = defineProps<{ segment: ImageSegment | MFaceSegment }>()
 const hasError = ref(false)
 
 const imageUrl = computed(() => {
-  const { data } = props.segment
-
-  // 处理图片类型
-  if (!data) return ''
-  if (data.url && data.url.startsWith('http')) return data.url
-  if (data.file) {
-    if (data.file.startsWith('base64://')) return 'data:image/png;base64,' + data.file.substring(9)
-    else if (data.file.startsWith('http')) return data.file
-    else if (data.file.length > 500 && !data.file.includes('/')) return 'data:image/png;base64,' + data.file
+  const d = props.segment.data
+  // 处理 mface
+  if ('url' in d && d.url) return d.url
+  // 处理 image
+  if ('file' in d) {
+    if (d.file.startsWith('http')) return d.file
+    if (d.file.startsWith('base64://')) return `data:image/png;base64,${d.file.slice(9)}`
+    // 处理 base64 不带前缀的情况 (视后端实现而定)
+    if (d.file.length > 200 && !d.file.includes('/') && !d.file.includes('.')) {
+      return `data:image/png;base64,${d.file}`
+    }
+    return d.file
   }
   return ''
 })
 
+const summary = computed(() => (props.segment.data as any).summary || '')
 </script>
