@@ -53,30 +53,24 @@ function noticeEvent(data: Notice) {
   const contactStore = useContactStore()
 
   switch (data.notice_type) {
+    // 撤回消息
     case 'group_recall':
     case 'friend_recall':
       messageStore.recallMessage(data.message_id!)
       break
-    // 系统消息
+    // 转为系统消息
     case 'friend_add':
-    case 'group_name':
     case 'group_ban':
-    case 'group_title':
-    case 'group_notice':
       messageStore.convertToMessage(data)
-      if (data.notice_type === 'group_name') {
-        contactStore.updateGroupInfo(data)
-      } else if (['group_ban', 'group_title'].includes(data.notice_type)) {
-        contactStore.updateGroupMember(data)
-      }
+      if (data.notice_type === 'group_ban') contactStore.updateGroupMember(data)
       break
     case 'notify':
-      const notifyTypes = ['poke', 'lucky_king', 'honor']
+      const notifyTypes = ['poke', 'lucky_king', 'honor', 'title']
       if (data.sub_type === 'emoji_like') {
-        // 更新消息状态
         messageStore.updateMessage(data)
       } else if (data.sub_type && notifyTypes.includes(data.sub_type)) {
         messageStore.convertToMessage(data)
+        if (data.sub_type === 'title') contactStore.updateGroupMember(data)
       } else {
         console.log('[Dispatch] 未知 Notify 事件:', data)
       }

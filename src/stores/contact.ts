@@ -3,7 +3,10 @@ import { reactive, shallowRef } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { bot } from '@/api'
 import { database } from './database'
-import type { GroupInfo, Request, FriendCategory, GroupMemberInfo, Notice } from '@/types'
+import type { GroupInfo, Request, Notice, FriendCategory, GroupMemberInfo,
+  GroupIncreaseNotice, GroupDecreaseNotice, GroupAdminNotice } from '@/types'
+
+type UserNotice = GroupIncreaseNotice | GroupDecreaseNotice | GroupAdminNotice
 
 /**
  * 联系人与通知状态管理 Store
@@ -17,7 +20,7 @@ export const useContactStore = defineStore('contact', () => {
   /** 持久化的系统请求 */
   const requests = useStorage<Request[]>('rimeq-requests', [])
   /** 持久化的系统通知 */
-  const notices = useStorage<{ user: Notice[], msg: Notice[] }>('rimeq-notices', { user: [], msg: [] })
+  const notices = useStorage<{ user: UserNotice[], msg: Notice[] }>('rimeq-notices', { user: [], msg: [] })
   /** 群成员内存缓存 */
   const members = reactive(new Map<number, GroupMemberInfo[]>())
   /** 已加载成员列表的群组 ID */
@@ -103,59 +106,50 @@ export const useContactStore = defineStore('contact', () => {
     }
   }
 
-  /**
-   * 更新群信息
-   * @param notice - 包含更新信息的通知对象
-   */
-  function updateGroupInfo(notice: Notice) {
-    if (notice.notice_type === 'group_name' && notice.group_id) {
-        const group = groups.value.find(g => g.group_id === notice.group_id)
-        if (group) group.group_name = (notice as any).group_name
-    }
-  }
-
-  /**
+/**
    * 更新群成员信息
    * @param notice - 包含更新信息的通知对象
    */
   async function updateGroupMember(notice: Notice) {
-    const groupId = notice.group_id!
-    const userId = notice.user_id!
+    const payload = notice as { group_id?: number; user_id?: number }
+    if (!payload.group_id || !payload.user_id) return
+    const groupId = payload.group_id
+    const userId = payload.user_id
     // 获取群成员列表
     const memberList = members.get(groupId) || await fetchGroupMembers(groupId)
     const memberIndex = memberList.findIndex(m => m.user_id === userId)
     const member = memberList[memberIndex]
     // 分不同类型处理
     switch (notice.notice_type) {
-        case 'group_increase':
-            if (memberIndex === -1) {
-                const newMemberInfo = await bot.getGroupMemberInfo(groupId, userId)
-                memberList.push(newMemberInfo)
-                await database.members.put({ ...newMemberInfo, group_id: groupId })
-            }
-            break;
-        case 'group_decrease':
-            if (memberIndex !== -1) {
-                memberList.splice(memberIndex, 1)
-                await database.members.where({group_id: groupId, user_id: userId}).delete()
-            }
-            break;
-        case 'group_admin':
-            if (member) member.role = notice.sub_type === 'set' ? 'admin' : 'member'
-            break;
-        case 'group_card':
-            if (member) member.card = (notice as any).card_new
-            break;
-        case 'group_ban':
-            if (member) (member as any).shut_up_timestamp = notice.duration! > 0 ? Date.now() / 1000 + notice.duration! : 0
-            break;
-        case 'group_title':
-            if (member) (member as any).title = (notice as any).title
-            break;
+      case 'group_increase':
+        if (memberIndex === -1) {
+          const newMemberInfo = await bot.getGroupMemberInfo(groupId, userId)
+          memberList.push(newMemberInfo)
+          await database.members.put({ ...newMemberInfo, group_id: groupId })
+        }
+        break
+      case 'group_decrease':
+        if (memberIndex !== -1) {
+          memberList.splice(memberIndex, 1)
+          await database.members.where({ group_id: groupId, user_id: userId }).delete()
+        }
+        break
+      case 'group_admin':
+        if (member) member.role = notice.sub_type === 'set' ? 'admin' : 'member'
+        break
+      case 'group_card':
+        if (member) member.card = notice.card_new
+        break
+      case 'group_ban':
+        if (member) (member as any).shut_up_timestamp = notice.duration > 0 ? Date.now() / 1000 + notice.duration : 0
+        break
+      case 'notify':
+        if (member && notice.sub_type === 'title') (member).title = notice.title
+        break
     }
-    if (member && memberIndex !== -1) {
-        members.set(groupId, memberList)
-        await database.members.put({ ...member, group_id: groupId } as any)
+    if (member && memberIndex !== -1 && notice.notice_type !== 'group_decrease') {
+      members.set(groupId, memberList)
+      await database.members.put({ ...member, group_id: groupId })
     }
   }
 
@@ -172,7 +166,7 @@ export const useContactStore = defineStore('contact', () => {
    * 添加一条需要用户处理的通知
    * @param notice - 新的通知对象
    */
-  function addNotice(notice: Notice) {
+  function addNotice(notice: UserNotice) {
     const targetArray = notices.value.user
     const exists = targetArray.some(n =>
       n.time === notice.time && n.user_id === notice.user_id && n.notice_type === notice.notice_type
@@ -200,7 +194,7 @@ export const useContactStore = defineStore('contact', () => {
    * @param notice - 要移除的通知对象
    * @param clear - 是否清空所有通知
    */
-  function removeNotice(notice: Notice, clear = false) {
+  function removeNotice(notice: UserNotice, clear = false) {
     if (clear) {
       notices.value = { user: [], msg: [] }
       return
@@ -267,7 +261,7 @@ export const useContactStore = defineStore('contact', () => {
 
   return { friends, groups, requests, notices, members,
     removeRequest, removeNotice, addRequest, addNotice,
-    fetchGroupMembers, updateGroupInfo, updateGroupMember,
-    getUserName, getGroupName, checkIsGroup, fetchContacts,
+    fetchGroupMembers, fetchContacts, updateGroupMember,
+    getUserName, getGroupName, checkIsGroup,
   }
 })

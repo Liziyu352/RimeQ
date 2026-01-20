@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Message, GroupMemberInfo, Notice } from '@/types'
+import type { Message, GroupMemberInfo, GroupMsgEmojiLikeNotice } from '@/types'
 
 /**
  * 本地数据库消息接口
@@ -15,7 +15,7 @@ export interface DBMessage extends Message {
   /** 是否为精华 */
   essence?: boolean
   /** 表情回应列表 */
-  reactions?: Notice['likes']
+  reactions?: GroupMsgEmojiLikeNotice['likes']
 }
 
 /**

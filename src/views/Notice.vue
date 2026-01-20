@@ -185,16 +185,6 @@ const processing = ref<Record<string, boolean>>({})
 const requests = computed(() => [...contactStore.requests].sort((a, b) => b.time - a.time))
 const notices = computed(() => [...contactStore.notices.user].sort((a, b) => b.time - a.time))
 
-// 获取头像
-const getAvatar = (item: Request | Notice) => {
-  const isInvite = 'request_type' in item && item.request_type === 'group' && item.sub_type === 'invite'
-  if (isInvite) return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
-  const targetId = item.user_id || ('operator_id' in item ? item.operator_id : 0)
-  if (targetId) return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${targetId}`
-  if (item.group_id) return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
-  return ''
-}
-
 // 生成请求
 const getRequest = (item: Request): string => {
   const userName = contactStore.getUserName(item.user_id, item.group_id, String(item.user_id))
@@ -205,17 +195,46 @@ const getRequest = (item: Request): string => {
     : `${userName} 申请加入 ${groupName}`
 }
 
+// 获取头像
+const getAvatar = (item: Request | Notice) => {
+  if (item.post_type === 'request') {
+    if (item.request_type === 'group' && item.sub_type === 'invite')
+      return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
+    return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}` }
+  if ('user_id' in item && item.user_id) return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`
+  if ('operator_id' in item && item.operator_id) return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.operator_id}`
+  if ('group_id' in item && item.group_id) return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
+}
+
 // 生成通知
 const getNotice = (n: Notice): string => {
-  const op = contactStore.getUserName(Number(n.operator_id), n.group_id, String(n.operator_id))
-  const user = contactStore.getUserName(Number(n.user_id), n.group_id, String(n.user_id))
-  const group = contactStore.getGroupName(String(n.group_id), String(n.group_id))
-  const templates: Record<string, string> = {
-    group_increase: n.sub_type === 'invite' ? `${op} 邀请 ${user} 加入了 ${group}` : `${user} 加入了 ${group}`,
-    group_decrease: n.sub_type === 'kick' ? `${user} 被 ${op} 移出了 ${group}` : `${user} 退出了 ${group}`,
-    group_admin: `${user} 被${n.sub_type === 'set' ? '设为' : '取消'}了 ${group} 的管理员`
+  switch (n.notice_type) {
+    case 'group_increase': {
+      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
+      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
+      if (n.sub_type === 'invite') {
+        const opName = contactStore.getUserName(n.operator_id, n.group_id, String(n.operator_id))
+        return `${opName} 邀请 ${userName} 加入了 ${groupName}`
+      }
+      return `${userName} 加入了 ${groupName}`
+    }
+    case 'group_decrease': {
+      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
+      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
+      if (n.sub_type === 'kick') {
+        const opName = contactStore.getUserName(n.operator_id, n.group_id, String(n.operator_id))
+        return `${userName} 被 ${opName} 移出了 ${groupName}`
+      }
+      return `${userName} 退出了 ${groupName}`
+    }
+    case 'group_admin': {
+      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
+      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
+      return `${userName} 被${n.sub_type === 'set' ? '设为' : '取消'}了 ${groupName} 的管理员`
+    }
+    default:
+      return ''
   }
-  return templates[n.notice_type]!
 }
 
 // 处理请求

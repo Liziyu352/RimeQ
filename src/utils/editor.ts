@@ -6,7 +6,7 @@ import Mention from '@tiptap/extension-mention'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useContactStore } from '@/stores'
 import MentionList from '@/components/MentionList.vue'
-import type { Segment } from '@/types'
+import { type Segment, SegType } from '@/types'
 
 // 自定义 Face 节点
 const Face = Node.create({
@@ -71,7 +71,7 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
               el.style.top = 'auto'
             }
             return {
-              onStart: (props: any) => {
+              onStart: (props) => {
                 component = new VueRenderer(MentionList, { props, editor: props.editor })
                 document.body.appendChild(component.element as HTMLElement)
                 if (props.clientRect) {
@@ -79,14 +79,14 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
                   if (rect) updatePos(rect)
                 }
               },
-              onUpdate(props: any) {
+              onUpdate(props) {
                 component.updateProps(props)
                 if (props.clientRect) {
                   const rect = props.clientRect()
                   if (rect) updatePos(rect)
                 }
               },
-              onKeyDown(props: any) {
+              onKeyDown(props) {
                 if (props.event.key === 'Escape') return false
                 return component.ref?.onKeyDown(props)
               },
@@ -171,25 +171,25 @@ export function useChatEditor(opts: {currentId: Ref<string>; isGroup: Ref<boolea
     const segments: Segment[] = []
     const json = editor.value.getJSON()
     if (json.content && Array.isArray(json.content)) {
-      json.content.forEach((node: any, index: number) => {
+      json.content.forEach((node, index: number) => {
         if (node.type === 'paragraph') {
-          if (index > 0) segments.push({ type: 'text', data: { text: '\n' } })
+          if (index > 0) segments.push({ type: SegType.Text, data: { text: '\n' } })
           if (node.content) {
             node.content.forEach((child: any) => {
               if (child.type === 'text') {
-                segments.push({ type: 'text', data: { text: child.text } })
+                segments.push({ type: SegType.Text, data: { text: child.text } })
               } else if (child.type === 'face') {
-                segments.push({ type: 'face', data: { id: child.attrs.id } })
+                segments.push({ type: SegType.Face, data: { id: child.attrs.id } })
               } else if (child.type === 'image' && child.attrs.src) {
-                segments.push({ type: 'image', data: { file: child.attrs.src } })
+                segments.push({ type: SegType.Image, data: { file: child.attrs.src } })
               } else if (child.type === 'mention' && child.attrs.id) {
-                segments.push({ type: 'at', data: { qq: child.attrs.id } })
+                segments.push({ type: SegType.At, data: { qq: child.attrs.id } })
               } else if (child.type === 'hardBreak') {
                 const last = segments[segments.length - 1]
-                if (last && last.type === 'text') {
+                if (last && last.type === SegType.Text) {
                   last.data.text += '\n'
                 } else {
-                  segments.push({ type: 'text', data: { text: '\n' } })
+                  segments.push({ type: SegType.Text, data: { text: '\n' } })
                 }
               }
             })

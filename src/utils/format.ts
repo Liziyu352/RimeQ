@@ -105,16 +105,19 @@ export function getTextPreview(message: Segment[], groupId?: number | string): s
         let card = ''
         if (seg.type === 'json') {
           try {
-            const o = JSON.parse(seg.data.data || '{}')
+            const rawData = seg.data.data
+            const o = typeof rawData === 'string' ? JSON.parse(rawData || '{}') : rawData
             const loc = o?.meta?.location
             if (loc?.lat && loc?.lng) {
               text += `[位置|${loc.desc || o.prompt}|${loc.lat},${loc.lng}]`
               break
             }
-            card = o.prompt || o.desc || (Object.values(o.meta || {})[0] as any)?.title
+            const meta = o.meta || {}
+            card = o.prompt || o.desc || (Object.values(meta)[0] as any)?.title
           } catch { /* ignore */ }
         } else {
-          const match = seg.data.data?.match(/title="([^"]*)"|<title>([^<]*)<\/title>/)
+          const xmlData = seg.data.data
+          const match = xmlData?.match(/title="([^"]*)"|<title>([^<]*)<\/title>/)
           card = (match?.[1] || match?.[2]) || ''
         }
         text += card ? `[卡片|${card}]` : '[卡片]'

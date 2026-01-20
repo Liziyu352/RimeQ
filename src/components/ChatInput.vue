@@ -244,6 +244,7 @@ import { useMessageStore, useSettingStore } from '@/stores'
 import { useChatEditor } from '@/utils/editor'
 import { QFace } from '@/utils/qface'
 import { getTextPreview } from '@/utils/format'
+import { SegType } from '@/types'
 
 defineOptions({ name: 'ChatInput' })
 
@@ -390,7 +391,7 @@ async function handleSend() {
   // 添加回复节点
   if (messageStore.replyTarget) {
     segments.unshift({
-      type: 'reply',
+      type: SegType.Reply,
       data: { id: String(messageStore.replyTarget.message_id) }
     })
   }

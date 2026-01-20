@@ -101,7 +101,7 @@
             v-for="(seg, i) in msg.message"
             v-show="seg.type === 'text'"
             :key="`md-${i}`"
-            :segment="{ type: 'markdown', data: { content: seg.data.text } }"
+            :segment="{ type: 'markdown', data: { content: seg.type === 'text' ? seg.data.text : '' } }"
           />
         </div>
         <!-- Raw JSON -->
