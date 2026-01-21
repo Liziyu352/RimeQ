@@ -8,22 +8,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, inject } from 'vue'
 import { useContactStore } from '@/stores'
-import type { AtSegment } from '@/types'
+import { ChatCtxKey, MsgCtxKey, type AtSegment } from '@/types'
 
 const props = defineProps<{
   segment: AtSegment
-  groupId?: number
 }>()
 
-const emit = defineEmits<{
-  (e: 'mention', item: { id: string; name: string }): void
-}>()
-
-const router = useRouter()
 const contactStore = useContactStore()
+const msgCtx = inject(MsgCtxKey)!
+const chatCtx = inject(ChatCtxKey)!
 
 const isAll = computed(() => props.segment.data.qq === 'all')
 
@@ -32,14 +27,12 @@ const displayName = computed(() => {
   const id = String(props.segment.data.qq)
   const name = props.segment.data.name
   if (name) return name
-  return contactStore.getUserName(id, props.groupId)
+  return contactStore.getUserName(id, msgCtx.value.groupId)
 })
 
 const handleClick = () => {
   if (isAll.value) return
   const id = String(props.segment.data.qq)
-  // 如果在群聊中点击，可以触发“拍一拍”或跳转资料，这里演示发射事件让父组件处理（例如插入输入框）
-  emit('mention', { id, name: displayName.value })
-  // 或者跳转路由: router.push(`/${id}`)
+  chatCtx.onInsertMention(id, displayName.value)
 }
 </script>

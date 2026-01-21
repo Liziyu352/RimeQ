@@ -29,10 +29,6 @@
               :is-selected="messageStore.selectedIds.includes(msg.message_id)"
               :force-markdown="markdownId.has(msg.message_id)"
               :show-raw="rawJsonId.has(msg.message_id)"
-              @contextmenu="(e) => onContextMenu(e, msg)"
-              @poke="onPoke"
-              @select="(mid) => messageStore.setMultiSelect(mid)"
-              @mention="onInsertMention"
             />
             <!-- 底部按钮检测 -->
             <div
@@ -103,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, reactive } from 'vue'
+import { ref, computed, watch, nextTick, reactive, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import { ContextMenu, useToast, Dialog, InputNumber, Button } from 'primevue'
 import { useIntersectionObserver } from '@vueuse/core'
@@ -111,7 +107,7 @@ import { useIntersectionObserver } from '@vueuse/core'
 import { bot } from '@/api'
 import { useMessageStore, useSessionStore, useContactStore, useSettingStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
-import type { Message } from '@/types'
+import { ChatCtxKey, type Message } from '@/types'
 import MsgBubble from '@/components/MsgBubble.vue'
 import ChatInput from '@/components/ChatInput.vue'
 
@@ -210,8 +206,8 @@ watch(() => list.value, async (newVal, oldVal) => {
 const onPoke = (uid: number) => bot.sendPoke(uid, isGroup.value ? Number(id.value) : undefined)
 
 // 插入提及
-const onInsertMention = (item: { id: string, name: string }) => {
-  if (chatInputRef.value) chatInputRef.value.insertMention(item.id, item.name)
+const onInsertMention = (mid: string, name: string) => {
+  if (chatInputRef.value) chatInputRef.value.insertMention(mid, name)
 }
 
 // 点击右键菜单
@@ -220,6 +216,23 @@ const onContextMenu = (e: MouseEvent, msg: Message) => {
   contextMsg.value = msg
   contextMenu.value.show(e)
 }
+
+// 定义交互方法
+const chatCtx = {
+  onInsertMention,
+  onPoke,
+  onContextMenu,
+  onToggleSelect: (messageId: number) => {
+    messageStore.setMultiSelect(messageId)
+  },
+  onReply: (msg: Message) => {
+    messageStore.setReplyTarget(msg)
+    chatInputRef.value?.focus()
+  }
+}
+
+// 注入交互方法
+provide(ChatCtxKey, chatCtx)
 
 // 打开禁言弹窗
 const openBanDialog = (msg: Message) => {
@@ -248,8 +261,8 @@ const menuItems = computed(() => {
   // 基础菜单
   const items: any[] = [
     { label: '+1', icon: 'i-ri-add-circle-line', command: () => bot.sendMsg(m.message_type, m.message_type === 'group' ? m.group_id! : m.user_id, m.message)},
-    { label: '引用', icon: 'i-ri-reply-line', command: () => messageStore.setReplyTarget(m) },
-    { label: '转发', icon: 'i-ri-share-forward-line', command: () => messageStore.setMultiSelect(m.message_id) },
+    { label: '引用', icon: 'i-ri-reply-line', command: () => chatCtx.onReply(m) },
+    { label: '转发', icon: 'i-ri-share-forward-line', command: () => chatCtx.onToggleSelect(m.message_id) },
   ]
   // 工具子菜单
   const toolMenu: any[] = []

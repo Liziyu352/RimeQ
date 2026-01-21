@@ -5,7 +5,6 @@
       <component
         :is="getElement(group.segment.type)"
         :segment="group.segment"
-        :group-id="groupId"
       />
     </div>
 
@@ -16,8 +15,6 @@
         :key="j"
         :is="getElement(seg.type)"
         :segment="seg"
-        :group-id="groupId"
-        @mention="(item) => emit('mention', item)"
       />
     </span>
   </template>
@@ -30,11 +27,6 @@ import type { Segment } from '@/types'
 
 const props = defineProps<{
   segments: Segment[]
-  groupId?: number
-}>()
-
-const emit = defineEmits<{
-  (e: 'mention', item: { id: string; name: string }): void
 }>()
 
 // 定义哪些类型应视为行内元素

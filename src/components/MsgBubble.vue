@@ -14,7 +14,7 @@
       isMe ? 'flex-row-reverse' : 'flex-row',
       selectionMode && !isSelected ? 'opacity-50' : 'opacity-100'
     ]"
-    @contextmenu.prevent="emit('contextmenu', $event, msg)"
+    @contextmenu.prevent="chatCtx.onContextMenu($event, msg)"
     @click="onBubbleClick"
   >
     <!-- 多选框 -->
@@ -31,7 +31,7 @@
       shape="circle"
       :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${msg.sender.user_id}`"
       class="size-10 shadow-sm border ui-border-background-dim shrink-0 ui-ia bg-background-sub"
-      @dblclick="emit('poke', msg.sender.user_id)"
+      @dblclick="chatCtx.onPoke(msg.sender.user_id)"
     />
     <!-- 内容 -->
     <div class="flex flex-col max-w-[75%] md:max-w-[65%] min-w-[60px]" :class="isMe ? 'items-end' : 'items-start'">
@@ -75,8 +75,6 @@
         <div class="w-full px-3 py-2 text-[15px] leading-relaxed ui-text-foreground-main">
           <ElementRenderer
             :segments="msg.message"
-            :group-id="msg.group_id"
-            @mention="(item: any) => emit('mention', item)"
           />
         </div>
         <!-- 多选遮罩 -->
@@ -120,13 +118,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject, provide } from 'vue'
 import { Avatar } from 'primevue'
 import { useSettingStore, useMessageStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
 import ElementRenderer from '@/components/ElementRenderer.vue'
 import { getElement } from '@/components/elements'
-import type { Message } from '@/types'
+import { ChatCtxKey, MsgCtxKey, type Message } from '@/types'
 
 const settingStore = useSettingStore()
 const messageStore = useMessageStore()
@@ -139,18 +137,20 @@ const props = defineProps<{
   showRaw?: boolean
 }>()
 
-const emit = defineEmits<{
-  (e: 'contextmenu', ev: MouseEvent, msg: Message): void
-  (e: 'poke', uid: number): void
-  (e: 'select', msgId: number): void
-  (e: 'mention', item: { id: string; name: string }): void
-}>()
+// 注入交互方法
+const chatCtx = inject(ChatCtxKey)!
 
 // UI 状态
 const isMe = computed(() => props.msg.sender.user_id === settingStore.user?.user_id) // 是否当前用户
 const isSystem = computed(() => props.msg.sender.user_id === 10000) // 是否系统通知
 const isRecalled = computed(() => !!(props.msg as any).recalled) // 是否已被撤回
 const systemPreview = computed(() => isSystem.value ? getTextPreview(props.msg.message, props.msg.group_id) : '') // 系统消息预览
+
+provide(MsgCtxKey, computed(() => ({
+  groupId: props.msg.group_id,
+  messageId: props.msg.message_id,
+  isMe: isMe.value
+})))
 
 // 引用消息详情
 const replyDetail = computed(() => {
@@ -175,6 +175,6 @@ const scrollToMsg = (id: string | null) => {
 
 // 气泡点击事件
 const onBubbleClick = () => {
-  if (props.selectionMode) emit('select', props.msg.message_id)
+  if (props.selectionMode) chatCtx.onToggleSelect(props.msg.message_id)
 }
 </script>
