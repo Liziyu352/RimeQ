@@ -72,7 +72,7 @@
           <span class="truncate max-w-[180px] ui-text-foreground-sub">{{ replyDetail.text }}</span>
         </div>
         <!-- 消息内容 -->
-        <div class="w-full px-3 py-2 text-[15px] leading-relaxed ui-text-foreground-main">
+        <div class="text-[15px] ui-text-foreground-main">
           <ElementRenderer
             :segments="msg.message"
           />

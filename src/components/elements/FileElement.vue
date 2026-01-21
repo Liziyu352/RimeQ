@@ -1,24 +1,24 @@
 <template>
   <div
-    class="flex items-center gap-3 p-3 my-1 rounded-xl bg-background-sub border border-background-dim hover:border-primary/50 hover:bg-background-dim/30 transition-all cursor-pointer shadow-sm group w-full max-w-sm"
+    class="ui-flex-x gap-3 p-3 my-1 w-full max-w-sm rounded-xl border ui-border-background-dim ui-bg-background-sub hover:ui-bg-background-dim/30 hover:border-primary/50 ui-trans cursor-pointer shadow-sm group"
     @click="download"
   >
     <!-- 图标 -->
-    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+    <div class="size-12 rounded-lg bg-primary/10 ui-flex-center shrink-0 group-hover:scale-105 ui-trans">
       <div class="i-ri-file-line text-2xl text-primary" />
     </div>
 
     <!-- 信息 -->
     <div class="flex-1 min-w-0 flex flex-col gap-0.5">
-      <span class="text-sm font-bold text-foreground-main truncate">{{ fileName }}</span>
-      <div class="flex items-center gap-2 text-[10px] text-foreground-dim">
+      <span class="text-sm font-bold ui-text-foreground-main truncate">{{ fileName }}</span>
+      <div class="ui-flex-x gap-2 text-[10px] ui-text-foreground-dim">
         <span>{{ fileSize }}</span>
         <span v-if="isFlash" class="px-1.5 rounded bg-red-500/10 text-red-500">闪照</span>
       </div>
     </div>
 
     <!-- 下载按钮 -->
-    <div class="w-8 h-8 rounded-full flex items-center justify-center text-foreground-sub hover:bg-background-dim hover:text-primary transition-colors">
+    <div class="size-8 rounded-full ui-flex-center ui-text-foreground-sub hover:bg-background-dim hover:text-primary ui-trans">
       <div class="i-ri-download-2-line text-lg" />
     </div>
   </div>
@@ -45,7 +45,6 @@ const fileSize = computed(() => {
 
 const download = () => {
   const data = props.segment.data as any
-  const url = data.url
-  if (url) window.open(url, '_blank')
+  if (data.url) window.open(data.url, '_blank')
 }
 </script>

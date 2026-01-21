@@ -1,13 +1,17 @@
 <template>
-  <div class="my-1 rounded-xl overflow-hidden bg-black max-w-xs md:max-w-sm shadow-md border border-background-dim/50">
+  <div class="relative w-full bg-black ui-flex-center group overflow-hidden rounded-lg">
     <video
       :src="videoUrl"
       :poster="poster"
       controls
       preload="metadata"
-      class="w-full max-h-[360px] object-contain"
+      class="block w-full max-h-[400px] object-contain"
       referrerpolicy="no-referrer"
     />
+    <!-- 播放遮罩 -->
+    <div class="absolute inset-0 ui-flex-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-black/10">
+      <div class="i-ri-play-circle-line text-4xl text-white/80 drop-shadow-md" />
+    </div>
   </div>
 </template>
 
@@ -26,7 +30,6 @@ const videoUrl = computed(() => {
 
 const poster = computed(() => {
   const d = props.segment.data
-  // 如果有缩略图，且是 base64
   if (d.thumb) return `data:image/jpeg;base64,${d.thumb}`
   return ''
 })

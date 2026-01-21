@@ -1,19 +1,13 @@
 <template>
-  <div
-    class="inline-block align-middle select-none relative group"
-    :class="isSuper ? 'w-12 h-12 mx-1' : 'w-6 h-6 mx-0.5'"
-    :title="faceInfo?.name"
-  >
-    <img
-      v-if="src"
-      :src="src"
-      class="w-full h-full object-contain pointer-events-none"
-      draggable="false"
-      loading="lazy"
-      :alt="`[${faceInfo?.name || '表情'}]`"
-    />
-    <span v-else class="text-xs text-foreground-dim">[表情:{{ segment.data.id }}]</span>
-  </div>
+  <img
+    v-if="src"
+    :src="src"
+    :alt="name"
+    class="inline-block align-sub size-6 mx-0.5 pointer-events-none select-none"
+    loading="lazy"
+    draggable="false"
+  />
+  <span v-else class="text-xs text-foreground-dim select-none">[表情]</span>
 </template>
 
 <script setup lang="ts">
@@ -23,16 +17,12 @@ import type { FaceSegment } from '@/types'
 
 const props = defineProps<{ segment: FaceSegment }>()
 
-const faceInfo = computed(() => QFace.get(String(props.segment.data.id)))
-
-const src = computed(() => {
-  if (!faceInfo.value) return ''
-  // 优先使用动态图，其次静态
-  return faceInfo.value.assets.dynamic || faceInfo.value.assets.static
+const info = computed(() => {
+  const id = String(props.segment.data.id)
+  return QFace.get(id)
 })
 
-const isSuper = computed(() => {
-  const t = faceInfo.value?.type
-  return t === 'super' || t === 'other'
-})
+// 优先使用动态图 (APNG)，没有则使用静态图
+const src = computed(() => info.value?.assets?.dynamic || info.value?.assets?.static)
+const name = computed(() => info.value ? `[${info.value.name}]` : '')
 </script>

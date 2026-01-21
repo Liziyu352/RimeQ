@@ -12,8 +12,8 @@
     <div class="flex-1 min-h-0 bg-background-sub relative w-full overflow-hidden">
       <div v-if="items.length > 0" class="size-full overflow-y-auto ui-scrollbar">
         <div v-for="item in items" :key="item.message_id" class="w-full px-3 py-2">
-          <div class="relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm group hover:shadow-md ui-trans">
-            <div class="flex items-center gap-3 mb-2">
+          <div class="relative bg-background-main border border-background-dim/50 rounded-xl shadow-sm group hover:shadow-md ui-trans flex flex-col overflow-hidden">
+            <div class="flex items-center gap-3 p-3 pb-2">
               <!-- 头像 -->
               <Avatar
                 :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
@@ -26,14 +26,15 @@
                 {{ item.sender_nick }}
               </div>
               <!-- 删除按钮 -->
-              <Button
-                v-if="canManage"
-                v-tooltip.left="'删除'"
-                icon="i-ri-delete-bin-line"
-                text rounded severity="danger"
-                class="!w-7 !h-7 !p-0 opacity-0 group-hover:opacity-100 ui-trans shrink-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                @click.stop="handleDelete(item)"
-              />
+              <div v-if="canManage" class="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                <Button
+                  v-tooltip.left="'删除'"
+                  icon="i-ri-delete-bin-line"
+                  text rounded severity="danger"
+                  class="!w-8 !h-8 !bg-background-main shadow-sm border border-red-100 dark:border-red-900/30 hover:!bg-red-50 dark:hover:!bg-red-900/50"
+                  @click.stop="handleDelete(item)"
+                />
+              </div>
               <!-- 操作信息 -->
               <div class="flex flex-col items-end shrink-0 text-[10px] text-foreground-dim font-mono leading-tight">
                 <span>{{ formatTime(item.operator_time * 1000) }}</span>
@@ -44,9 +45,9 @@
               </div>
             </div>
             <!-- 消息内容 -->
-            <div class="text-sm text-foreground-main/90 break-words whitespace-pre-wrap leading-relaxed select-text">
+            <div class="text-sm text-foreground-main/90">
               <ElementRenderer
-                :segments="item.content || []"
+                :segments="item.content"
                 :group-id="groupId"
               />
             </div>

@@ -1,20 +1,21 @@
 import { defineAsyncComponent, type Component } from 'vue'
 
+// 注册渲染组件
 const components: Record<string, Component> = {
   // 文本类
   text: defineAsyncComponent(() => import('./TextElement.vue')),
   at: defineAsyncComponent(() => import('./AtElement.vue')),
   // 表情类
   face: defineAsyncComponent(() => import('./FaceElement.vue')),
-  dice: defineAsyncComponent(() => import('./GameElement.vue')),
-  rps: defineAsyncComponent(() => import('./GameElement.vue')),
+  dice: defineAsyncComponent(() => import('./SuperFaceElement.vue')),
+  rps: defineAsyncComponent(() => import('./SuperFaceElement.vue')),
   // 媒体类
   image: defineAsyncComponent(() => import('./ImageElement.vue')),
   mface: defineAsyncComponent(() => import('./ImageElement.vue')),
   video: defineAsyncComponent(() => import('./VideoElement.vue')),
   record: defineAsyncComponent(() => import('./RecordElement.vue')),
-  flash: defineAsyncComponent(() => import('./FileElement.vue')),
   file: defineAsyncComponent(() => import('./FileElement.vue')),
+  flash: defineAsyncComponent(() => import('./FileElement.vue')),
   // 结构类
   forward: defineAsyncComponent(() => import('./ForwardElement.vue')),
   node: defineAsyncComponent(() => import('./ForwardElement.vue')),
@@ -33,5 +34,5 @@ const components: Record<string, Component> = {
  * @param type 消息段类型
  */
 export const getElement = (type: string): Component => {
-  return components[type] || components['default']
+  return components[type] || components['default']!
 }

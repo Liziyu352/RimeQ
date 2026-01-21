@@ -51,6 +51,7 @@
                     :src="item.image.url"
                     preview
                     image-class="max-h-56 max-w-full object-contain cursor-pointer hover:opacity-90 block transition-opacity"
+                    class="!flex"
                     referrerpolicy="no-referrer"
                     @error="item.image.url = ''"
                  />

@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center mx-0.5 px-1 rounded text-primary bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors select-none font-medium text-sm align-baseline"
+    class="inline-flex items-center mx-0.5 px-1 rounded text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 ui-trans select-none align-baseline cursor-pointer"
     @click.stop="handleClick"
   >
     @{{ displayName }}
@@ -12,9 +12,7 @@ import { computed, inject } from 'vue'
 import { useContactStore } from '@/stores'
 import { ChatCtxKey, MsgCtxKey, type AtSegment } from '@/types'
 
-const props = defineProps<{
-  segment: AtSegment
-}>()
+const props = defineProps<{ segment: AtSegment }>()
 
 const contactStore = useContactStore()
 const msgCtx = inject(MsgCtxKey)!
