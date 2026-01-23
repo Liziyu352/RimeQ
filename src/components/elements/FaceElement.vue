@@ -1,13 +1,11 @@
 <template>
   <img
-    v-if="src"
-    :src="src"
-    :alt="name"
+    :src="face.src"
+    :alt="face.name"
     class="inline-block align-sub size-6 mx-0.5 pointer-events-none select-none"
     loading="lazy"
     draggable="false"
   />
-  <span v-else class="text-xs text-foreground-dim select-none">[表情]</span>
 </template>
 
 <script setup lang="ts">
@@ -15,14 +13,14 @@ import { computed } from 'vue'
 import { QFace } from '@/utils/qface'
 import type { FaceSegment } from '@/types'
 
+// 组件属性定义
 const props = defineProps<{ segment: FaceSegment }>()
 
-const info = computed(() => {
+// 计算元数据
+const face = computed(() => {
   const id = String(props.segment.data.id)
-  return QFace.get(id)
+  const info = QFace.get(id)
+  if (!info) return { src: '', name: '[表情]' }
+  return { src: info.assets?.dynamic || info.assets?.static, name: `[${info.name}]` }
 })
-
-// 优先使用动态图 (APNG)，没有则使用静态图
-const src = computed(() => info.value?.assets?.dynamic || info.value?.assets?.static)
-const name = computed(() => info.value ? `[${info.value.name}]` : '')
 </script>

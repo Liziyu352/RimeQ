@@ -16,45 +16,39 @@ const props = defineProps<{ segment: Segment }>()
 const container = ref<HTMLElement>()
 let anim: AnimationItem | null = null
 
-// 计算资源 URL 和名称
+// 计算元数据
 const meta = computed(() => {
   const { type, data } = props.segment
-
-  // 1. 处理骰子
-  if (type === 'dice') {
-    const res = (data as DiceSegment['data']).result
-    return { name: `[骰子:${res}]`, url: QFace.resolveAsset('358', Number(res)) }
-  }
-
-  // 2. 处理猜拳
-  if (type === 'rps') {
-    const res = (data as RpsSegment['data']).result
-    return { name: '[猜拳]', url: QFace.resolveAsset('359', Number(res)) }
-  }
-
-  // 3. 处理普通 Face 里的超级表情
-  if (type === 'face') {
-    const id = String((data as FaceSegment['data']).id)
-    const face = QFace.get(id)
-    return {
-      name: face ? `[${face.name}]` : '[表情]',
-      url: face?.assets?.lottie || ''
+  switch (type) {
+    case 'dice': {
+      const res = (data as DiceSegment['data']).result
+      return { name: `[骰子:${res}]`, url: QFace.resolveAsset('358', Number(res)) }
     }
+    case 'rps': {
+      const rpsMap: Record<string, string> = { '1': '布', '2': '剪刀', '3': '石头' }
+      const res = (data as RpsSegment['data']).result
+      return { name: `[猜拳|${rpsMap[String(res)]}]`, url: QFace.resolveAsset('359', Number(res)) }
+    }
+    case 'face': {
+      const id = String((data as FaceSegment['data']).id)
+      const face = QFace.get(id)
+      return { name: face ? `[${face.name}]` : '[表情]', url: face?.assets?.lottie || '' }
+    }
+    default:
+      return { name: '', url: '' }
   }
-
-  return { name: '', url: '' }
 })
 
-// 加载动画
-const init = async () => {
+// 初始化 Lottie 动画
+const initAnimation = async () => {
+  if (anim) {
+    anim.destroy()
+    anim = null
+  }
   if (!container.value || !meta.value.url) return
   try {
     const animationData = await fetch(meta.value.url).then(r => r.json())
-
-    // 防止组件已卸载后回调执行
     if (!container.value) return
-
-    if (anim) anim.destroy()
     anim = lottie.loadAnimation({
       container: container.value,
       renderer: 'svg',
@@ -63,12 +57,18 @@ const init = async () => {
       animationData
     })
   } catch (e) {
-    console.warn('[SuperFace] Load failed', e)
+    console.warn('[SuperFace] 动画加载失败:', e)
   }
 }
 
-onMounted(init)
-onUnmounted(() => anim?.destroy())
-// 监听 URL 变化（针对组件复用场景）
-watch(() => meta.value.url, init)
+onMounted(initAnimation)
+
+onUnmounted(() => {
+  if (anim) {
+    anim.destroy()
+    anim = null
+  }
+})
+
+watch(() => meta.value.url, initAnimation)
 </script>

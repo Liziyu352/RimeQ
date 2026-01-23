@@ -183,6 +183,22 @@
               </div>
              </div>
           </div>
+          <div>
+            <h2 class="text-sm font-semibold text-foreground-sub mb-2 px-1">消息</h2>
+            <div class="bg-background-sub rounded-2xl shadow-sm border border-background-dim overflow-hidden">
+              <!-- 超级表情开关 -->
+              <div class="ui-flex-between p-4 min-h-[72px]">
+                <div class="ui-flex-x gap-4">
+                  <div class="i-ri-emotion-happy-line text-xl text-foreground-sub" />
+                  <div class="flex flex-col gap-0.5">
+                    <label class="text-sm font-medium text-foreground-main">渲染超级表情</label>
+                    <span class="text-xs text-foreground-dim">发送超级表情时显示动画</span>
+                  </div>
+                </div>
+                <ToggleSwitch v-model="settingStore.config.renderSuperFace" />
+              </div>
+            </div>
+          </div>
         </section>
         <!-- 高级设置面板 -->
         <section v-show="activeTab === 'advanced'" class="flex flex-col gap-6">

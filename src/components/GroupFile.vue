@@ -72,8 +72,8 @@
           @contextmenu.prevent="!isBatchMode && ((menuTarget = item), menu.show($event))"
         >
           <!-- 图标 -->
-          <div class="shrink-0 text-xl flex items-center justify-center w-7 h-7" :class="getFileIcon(item)?.color">
-            <div :class="getFileIcon(item)?.icon" />
+          <div class="shrink-0 text-xl flex items-center justify-center w-7 h-7" :class="getFileIcon(item.name, item.type)?.color">
+            <div :class="getFileIcon(item.name, item.type)?.icon" />
           </div>
           <!-- 信息 -->
           <div class="ui-flex-truncate flex flex-col gap-0.5 min-w-0 ui-trans relative z-0">
@@ -187,7 +187,7 @@ import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, 
 import type { MenuItem } from 'primevue/menuitem'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, getFileIcon } from '@/utils/format'
 
 const router = useRouter()
 const route = useRoute()
@@ -239,37 +239,6 @@ const canBatchMove = computed(() => {
   if (!selectedFiles.value.size) return false
   return items.value.some(i => selectedFiles.value.has(i.id) && i.type === 'file')
 })
-
-const getFileIcon = (item: any) => {
-  const ext = item.name.split('.').pop()?.toLowerCase() || ''
-  const icons: Record<string, { icon: string; color: string }> = {
-    folder: { icon: 'i-ri-folder-3-fill', color: 'text-yellow-500' },
-    default: { icon: 'i-ri-file-line', color: 'text-foreground-dim' },
-    jpg: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
-    png: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
-    gif: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
-    svg: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
-    mp4: { icon: 'i-ri-movie-line', color: 'text-indigo-500' },
-    mp3: { icon: 'i-ri-music-2-line', color: 'text-pink-500' },
-    zip: { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
-    rar: { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
-    '7z': { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
-    doc: { icon: 'i-ri-file-text-line', color: 'text-blue-500' },
-    docx: { icon: 'i-ri-file-text-line', color: 'text-blue-500' },
-    pdf: { icon: 'i-ri-file-pdf-line', color: 'text-red-600' },
-    xls: { icon: 'i-ri-file-excel-2-line', color: 'text-green-500' },
-    xlsx: { icon: 'i-ri-file-excel-2-line', color: 'text-green-500' },
-    ppt: { icon: 'i-ri-file-ppt-2-line', color: 'text-orange-500' },
-    pptx: { icon: 'i-ri-file-ppt-2-line', color: 'text-orange-500' },
-    js: { icon: 'i-ri-javascript-line', color: 'text-yellow-400' },
-    json: { icon: 'i-ri-braces-line', color: 'text-gray-500' },
-    html: { icon: 'i-ri-html5-line', color: 'text-orange-600' },
-    css: { icon: 'i-ri-css3-line', color: 'text-blue-600' },
-    apk: { icon: 'i-ri-android-line', color: 'text-green-600' },
-    exe: { icon: 'i-ri-windows-line', color: 'text-blue-600' },
-  }
-  return item.type === 'folder' ? icons.folder : (icons[ext] || icons.default)
-}
 
 // 初始化
 onMounted(() => {

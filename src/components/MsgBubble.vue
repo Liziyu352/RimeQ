@@ -79,37 +79,34 @@
         </div>
         <!-- 多选遮罩 -->
         <div v-if="selectionMode" class="absolute inset-0 z-10 bg-transparent cursor-pointer" />
-      </div>
-      <!-- 扩展面板容器 -->
-      <div
-        v-if="forceMarkdown || showRaw"
-        class="w-full bg-background-dim/40 border-t border-background-dim/50 p-3 rounded-b-2xl backdrop-blur-sm relative animate-fade-in flex flex-col gap-3"
-      >
-        <!-- Markdown -->
-        <div v-if="forceMarkdown" class="flex flex-col gap-2">
-          <div class="text-[10px] text-primary font-bold uppercase tracking-widest ui-flex-x gap-1 opacity-80 select-none">
-            <div class="i-ri-markdown-fill" /> Markdown
-          </div>
-          <component
-            :is="getElement('markdown')"
-            v-for="(seg, i) in msg.message"
-            v-show="seg.type === 'text'"
-            :key="`md-${i}`"
-            :segment="{ type: 'markdown', data: { content: seg.type === 'text' ? seg.data.text : '' } }"
-          />
-        </div>
-        <!-- Raw JSON -->
-        <div v-if="showRaw" class="flex flex-col gap-2">
-          <div class="text-[10px] text-primary font-bold uppercase tracking-widest ui-flex-x gap-1 opacity-80 select-none">
-            <div class="i-ri-code-s-slash-line" /> Raw JSON
-          </div>
-          <div class="flex flex-col gap-2">
+        <!-- 扩展面板容器 -->
+        <div
+          v-if="forceMarkdown || showRaw"
+          class="w-full bg-background-dim/40 p-3 rounded-xl backdrop-blur-sm relative flex flex-col gap-3"
+        >
+          <!-- Markdown -->
+          <div v-if="forceMarkdown" class="flex flex-col gap-2">
+            <div class="text-[10px] text-primary font-bold uppercase tracking-widest ui-flex-x gap-1 opacity-80">
+              <div class="i-ri-markdown-fill" /> Markdown
+            </div>
             <component
-              :is="getElement('default')"
-              v-for="(seg, i) in msg.message"
-              :key="`raw-${i}`"
-              :segment="seg"
+              :is="getElement('markdown')"
+              :segment="{ type: 'markdown', data: { content: textContent } }"
             />
+          </div>
+          <!-- Raw DATA -->
+          <div v-if="showRaw" class="flex flex-col gap-2">
+            <div class="text-[10px] text-primary font-bold uppercase tracking-widest ui-flex-x gap-1 opacity-80">
+              <div class="i-ri-code-s-slash-line" /> Raw DATA
+            </div>
+            <div class="flex flex-col">
+              <component
+                :is="getElement('default')"
+                v-for="(seg, i) in msg.message"
+                :key="`raw-${i}`"
+                :segment="seg"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -151,6 +148,14 @@ provide(MsgCtxKey, computed(() => ({
   messageId: props.msg.message_id,
   isMe: isMe.value
 })))
+
+// 计算属性：合并文本内容
+const textContent = computed(() => {
+  return props.msg.message
+    .filter(seg => seg.type === 'text')
+    .map(seg => seg.data.text)
+    .join('')
+})
 
 // 引用消息详情
 const replyDetail = computed(() => {

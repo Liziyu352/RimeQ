@@ -155,19 +155,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Avatar } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useContactStore } from '@/stores'
-import type { GroupInfo } from '@/types'
+import { type GroupInfo, SearchKey } from '@/types'
 
 defineOptions({ name: 'ContactView' })
 
 const router = useRouter()
 const route = useRoute()
 const contactStore = useContactStore()
-const props = defineProps<{ keyword?: string }>()
+const keyword = inject(SearchKey, ref(''))
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isTablet = breakpoints.between('md', 'xl')
 
@@ -204,15 +204,15 @@ function filterList<T extends Record<string, any>>(list: T[], keyword: string | 
 
 // 过滤分组列表
 const filteredCategories = computed(() => {
-  if (!(props.keyword || '').trim()) return contactStore.friends
+  if (!(keyword.value || '').trim()) return contactStore.friends
   return contactStore.friends
-    .map(cat => ({ ...cat, buddyList: filterList(cat.buddyList, props.keyword, ['remark', 'nickname', 'user_id']) }))
+    .map(cat => ({ ...cat, buddyList: filterList(cat.buddyList, keyword.value, ['remark', 'nickname', 'user_id']) }))
     .filter(cat => cat.buddyList.length > 0)
 })
 
 // 过滤群组列表
 const filteredGroups = computed(() => {
-  return filterList<GroupInfo>(contactStore.groups, props.keyword, ['group_name', 'group_id'])
+  return filterList<GroupInfo>(contactStore.groups, keyword.value, ['group_name', 'group_id'])
 })
 
 // 切换分组展开/折叠

@@ -290,7 +290,7 @@ export class BaseClient {
    * @param out_format - 要转换到的格式 (mp3/amr/wma/m4a/spx/ogg/wav/flac)
    */
   getRecord(file: string, out_format = 'mp3') {
-    return this.request<{ file: string }>('get_record', { file, out_format })
+    return this.request<{ file: string; url: string; file_size: string; file_name: string; base64: string }>('get_record', { file, out_format });
   }
 
   /**

@@ -323,7 +323,7 @@ const menuItems = computed(() => {
     manageMenu.push({ label: '设为精华', icon: 'i-ri-star-line', command: () => bot.setEssenceMsg(m.message_id) })
   }
   manageMenu.push({
-    label: 'Raw Json', icon: rawJsonId.value.has(m.message_id) ? 'i-ri-code-s-slash-fill' : 'i-ri-code-s-slash-line',
+    label: 'Raw Data', icon: rawJsonId.value.has(m.message_id) ? 'i-ri-code-s-slash-fill' : 'i-ri-code-s-slash-line',
     command: () => rawJsonId.value.has(m.message_id) ? rawJsonId.value.delete(m.message_id) : rawJsonId.value.add(m.message_id)
   })
   // 整合菜单

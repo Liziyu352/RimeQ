@@ -1,5 +1,6 @@
 import { useContactStore } from '@/stores/contact'
 import type { Segment } from '@/types'
+import { QFace } from '@/utils/qface'
 
 /**
  * 字节大小转换为文件大小
@@ -60,7 +61,7 @@ export function formatDuration(seconds: number | string): string {
 
 /**
  * 生成纯文本预览
- * @param message - 消息内容 (字符串或消息段数组)
+ * @param message - 消息内容
  * @param groupId - (可选) 所属群号，用于显示昵称
  * @returns 预览文本
  */
@@ -86,42 +87,31 @@ export function getTextPreview(message: Segment[], groupId?: number | string): s
         text += '[视频]'
         break
       case 'file':
-        text += `[文件|${seg.data.file}]`
+        text += `[文件]${seg.data.file}`
         break
       case 'dice':
-        text += `[骰子|${seg.data.result}]`
+        text += `[骰子|${seg.data.result} 点]`
         break
       case 'rps':
-        text += `[猜拳|${seg.data.result}]`
+        const rps: Record<string, string> = { '1': '布', '2': '剪刀', '3': '石头' };
+        text += `[猜拳|${rps[String(seg.data.result)]}]`;
         break
       case 'face':
-        text += `[表情|${seg.data.id}]`
+        const face = QFace.get(String(seg.data.id))
+        text += face ? `[${face.name}]` : `[表情]`
         break
       case 'forward':
         text += '[聊天记录]'
         break
       case 'xml':
+        const match = seg.data.data?.match(/title="([^"]*)"|<title>([^<]*)<\/title>/);
+        text += match?.[1] || match?.[2] || '[卡片]';
+        break;
       case 'json':
-        let card = ''
-        if (seg.type === 'json') {
-          try {
-            const rawData = seg.data.data
-            const o = typeof rawData === 'string' ? JSON.parse(rawData || '{}') : rawData
-            const loc = o?.meta?.location
-            if (loc?.lat && loc?.lng) {
-              text += `[位置|${loc.desc || o.prompt}|${loc.lat},${loc.lng}]`
-              break
-            }
-            const meta = o.meta || {}
-            card = o.prompt || o.desc || (Object.values(meta)[0] as any)?.title
-          } catch { /* ignore */ }
-        } else {
-          const xmlData = seg.data.data
-          const match = xmlData?.match(/title="([^"]*)"|<title>([^<]*)<\/title>/)
-          card = (match?.[1] || match?.[2]) || ''
-        }
-        text += card ? `[卡片|${card}]` : '[卡片]'
-        break
+        const raw = seg.data.data;
+        const json = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        text += json.prompt || '[卡片]';
+        break;
       case 'reply':
         break
       default:
@@ -130,4 +120,42 @@ export function getTextPreview(message: Segment[], groupId?: number | string): s
     }
   }
   return text
+}
+
+/**
+ * 获取文件图标样式
+ * @param name 文件名
+ * @param type 类型
+ */
+export function getFileIcon(name: string, type: string = 'file'): { icon: string; color: string } {
+  if (type === 'folder') return { icon: 'i-ri-folder-3-fill', color: 'text-yellow-500' }
+  const ext = name.split('.').pop()?.toLowerCase() || ''
+  const defaultIcon = { icon: 'i-ri-file-line', color: 'text-foreground-dim' }
+  const icons: Record<string, { icon: string; color: string }> = {
+    jpg: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
+    png: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
+    gif: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
+    svg: { icon: 'i-ri-image-2-line', color: 'text-purple-500' },
+    mp4: { icon: 'i-ri-movie-line', color: 'text-indigo-500' },
+    mp3: { icon: 'i-ri-music-2-line', color: 'text-pink-500' },
+    zip: { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
+    rar: { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
+    '7z': { icon: 'i-ri-folder-zip-line', color: 'text-red-500' },
+    doc: { icon: 'i-ri-file-text-line', color: 'text-blue-500' },
+    docx: { icon: 'i-ri-file-text-line', color: 'text-blue-500' },
+    pdf: { icon: 'i-ri-file-pdf-line', color: 'text-red-600' },
+    xls: { icon: 'i-ri-file-excel-2-line', color: 'text-green-500' },
+    xlsx: { icon: 'i-ri-file-excel-2-line', color: 'text-green-500' },
+    ppt: { icon: 'i-ri-file-ppt-2-line', color: 'text-orange-500' },
+    pptx: { icon: 'i-ri-file-ppt-2-line', color: 'text-orange-500' },
+    js: { icon: 'i-ri-javascript-line', color: 'text-yellow-400' },
+    json: { icon: 'i-ri-braces-line', color: 'text-gray-500' },
+    html: { icon: 'i-ri-html5-line', color: 'text-orange-600' },
+    css: { icon: 'i-ri-css3-line', color: 'text-blue-600' },
+    apk: { icon: 'i-ri-android-line', color: 'text-green-600' },
+    exe: { icon: 'i-ri-windows-line', color: 'text-blue-600' },
+    txt: { icon: 'i-ri-file-text-line', color: 'text-gray-500' },
+    md: { icon: 'i-ri-markdown-line', color: 'text-blue-400' },
+  }
+  return icons[ext] || defaultIcon
 }

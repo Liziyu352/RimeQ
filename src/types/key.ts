@@ -1,4 +1,4 @@
-import type { InjectionKey, ComputedRef } from 'vue'
+import type { InjectionKey, ComputedRef, Ref } from 'vue'
 import type { Message } from './event'
 
 /** 交互上下文 */
@@ -16,3 +16,6 @@ export const MsgCtxKey: InjectionKey<ComputedRef<{
   messageId: number
   isMe: boolean
 }>> = Symbol('MsgCtx')
+
+/** 搜索上下文 */
+export const SearchKey: InjectionKey<Ref<string>> = Symbol('SearchKey')

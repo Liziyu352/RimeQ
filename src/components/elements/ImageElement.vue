@@ -1,51 +1,37 @@
 <template>
-  <div class="relative w-full group select-none">
-    <!-- 图片容器 -->
-    <div
-      class="relative w-full min-h-[100px] bg-background-dim/5 transition-colors flex flex-col"
-      :class="{ 'h-32 ui-flex-center': hasError }"
-    >
-      <Image
-        v-if="!hasError"
-        :src="imageUrl"
-        preview
-        image-class="block w-full h-auto max-h-[500px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
-        class="size-full ui-flex-center"
-        referrerpolicy="no-referrer"
-        loading="lazy"
-        @error="hasError = true"
-      >
-        <template #indicator>
-          <div class="i-ri-loader-4-line animate-spin text-primary text-2xl" />
-        </template>
-      </Image>
-
-      <!-- 错误状态 -->
-      <div v-else class="flex flex-col items-center gap-1 text-foreground-dim">
-        <div class="i-ri-image-off-line text-xl" />
-        <span class="text-[10px]">图片裂开了</span>
-      </div>
-
-      <!-- 摘要 (MFace) -->
-      <div
-        v-if="summary"
-        class="absolute bottom-0 inset-x-0 bg-black/40 text-white text-[10px] px-2 py-1 backdrop-blur-[2px] truncate"
-      >
-        {{ summary }}
-      </div>
+  <div class="relative w-full group select-none min-h-[64px] min-w-[64px] bg-background-dim/5 flex flex-col rounded-lg overflow-hidden">
+    <Image
+      v-if="!imageFailed"
+      :src="currentUrl"
+      preview
+      image-class="block w-full h-auto max-h-[256px] max-w-[256px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
+      class="size-full ui-flex-center"
+      referrerpolicy="no-referrer"
+      loading="lazy"
+      @error="onError"
+    />
+    <div v-else class="size-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-1 p-4">
+      <div class="i-ri-image-line text-4xl" />
+      <span class="text-xs">图片加载失败</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref, inject, watch } from 'vue'
 import { Image } from 'primevue'
-import type { ImageSegment, MFaceSegment } from '@/types'
+import { refreshUrl } from '@/utils/rkey'
+import { MsgCtxKey, type ImageSegment, type MFaceSegment } from '@/types'
 
+// 定义组件属性
 const props = defineProps<{ segment: ImageSegment | MFaceSegment }>()
-const hasError = ref(false)
+const imageFailed = ref(false)
 
-const imageUrl = computed(() => {
+// 注入消息上下文
+const msgCtx = inject(MsgCtxKey)
+
+// 计算图片链接
+const initialUrl = computed(() => {
   const d = props.segment.data
   if ('url' in d && d.url) return d.url
   if ('file' in d) {
@@ -56,5 +42,26 @@ const imageUrl = computed(() => {
   return ''
 })
 
-const summary = computed(() => (props.segment.data as any).summary || '')
+// 绑定响应式 URL
+const currentUrl = ref(initialUrl.value)
+
+// 加载失败处理
+const onError = async () => {
+  const url = currentUrl.value
+  if (url.includes('multimedia.nt.qq.com.cn')) {
+    const type = msgCtx?.value.groupId ? 'group' : 'private'
+    const newUrl = await refreshUrl(url, type, true)
+    if (newUrl !== currentUrl.value) {
+      currentUrl.value = newUrl
+      return
+    }
+  }
+  imageFailed.value = true
+}
+
+// 监听初始 URL 变化
+watch(initialUrl, (newUrl) => {
+  currentUrl.value = newUrl
+  imageFailed.value = false
+}, { immediate: true })
 </script>

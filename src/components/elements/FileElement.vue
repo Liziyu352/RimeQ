@@ -1,48 +1,56 @@
 <template>
   <div
-    class="ui-flex-x gap-3 p-3 my-1 w-full max-w-sm rounded-xl border ui-border-background-dim ui-bg-background-sub hover:ui-bg-background-dim/30 hover:border-primary/50 ui-trans cursor-pointer shadow-sm group"
+    class="flex items-center gap-3 p-3 w-full cursor-pointer group select-none relative hover:bg-background-dim/10 transition-colors"
     @click="download"
   >
     <!-- 图标 -->
-    <div class="size-12 rounded-lg bg-primary/10 ui-flex-center shrink-0 group-hover:scale-105 ui-trans">
-      <div class="i-ri-file-line text-2xl text-primary" />
-    </div>
-
-    <!-- 信息 -->
-    <div class="flex-1 min-w-0 flex flex-col gap-0.5">
-      <span class="text-sm font-bold ui-text-foreground-main truncate">{{ fileName }}</span>
-      <div class="ui-flex-x gap-2 text-[10px] ui-text-foreground-dim">
-        <span>{{ fileSize }}</span>
-        <span v-if="isFlash" class="px-1.5 rounded bg-red-500/10 text-red-500">闪照</span>
+    <div
+      class="relative size-12 shrink-0 ui-flex-center rounded-lg bg-background-dim/30 overflow-hidden"
+    >
+      <div :class="[iconInfo.icon, iconInfo.color, 'text-3xl']" />
+      <!-- 下载遮罩 -->
+      <div class="absolute inset-0 bg-black/40 ui-flex-center opacity-0 group-hover:opacity-100 transition-opacity text-white backdrop-blur-[1px]">
+        <div class="i-ri-download-line text-xl" />
       </div>
     </div>
-
-    <!-- 下载按钮 -->
-    <div class="size-8 rounded-full ui-flex-center ui-text-foreground-sub hover:bg-background-dim hover:text-primary ui-trans">
-      <div class="i-ri-download-2-line text-lg" />
+    <!-- 信息 -->
+    <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+      <span class="text-xs font-bold text-foreground-main truncate break-all leading-tight" :title="fileName">
+        {{ fileName }}
+      </span>
+      <div class="flex items-center gap-2 text-xs text-foreground-dim font-mono">
+        <span>{{ fileSize }}</span>
+        <span v-if="isFlash" class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-bold text-[10px] leading-none">闪传</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, getFileIcon } from '@/utils/format'
 import type { FileSegment, FlashSegment } from '@/types'
 
+// 定义属性
 const props = defineProps<{ segment: FileSegment | FlashSegment }>()
 
+// 闪传判断
 const isFlash = computed(() => props.segment.type === 'flash_file')
 
+// 计算文件名
 const fileName = computed(() => {
-  if (isFlash.value) return (props.segment as FlashSegment).data.title || '闪照文件'
-  return (props.segment as FileSegment).data.name || '未知文件'
+  if (isFlash.value) return (props.segment as FlashSegment).data.title
+  const d = (props.segment as FileSegment).data
+  return d.name || (d.file ? d.file.split(/[/\\]/).pop() : '') || '未知文件'
 })
 
-const fileSize = computed(() => {
-  if (isFlash.value) return '未知大小'
-  return formatFileSize((props.segment as FileSegment).data.file_size || 0)
-})
+// 计算文件大小
+const fileSize = computed(() => formatFileSize(Number((props.segment as FileSegment).data.file_size) || 0))
 
+// 获取图标样式
+const iconInfo = computed(() => getFileIcon(fileName.value))
+
+// 执行下载
 const download = () => {
   const data = props.segment.data as any
   if (data.url) window.open(data.url, '_blank')

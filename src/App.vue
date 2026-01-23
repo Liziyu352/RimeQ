@@ -86,7 +86,7 @@
           <div class="size-full relative min-w-[320px] md:min-w-[72px] xl:min-w-[320px]">
             <router-view v-slot="{ Component }" name="nav">
               <keep-alive>
-                <component :is="Component" :keyword="searchKeyword" />
+                <component :is="Component" />
               </keep-alive>
             </router-view>
           </div>
@@ -157,11 +157,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Avatar, IconField, InputIcon, InputText, Button } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useSettingStore, useSessionStore, useContactStore } from '@/stores'
+import { SearchKey } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
@@ -176,6 +177,9 @@ const isMobile = breakpoints.smaller('md')
 // 界面状态
 const searchKeyword = ref('')
 const showMenu = ref(false)
+
+// 注入上下文
+provide(SearchKey, searchKeyword)
 
 // 样式计算：根背景
 const rootStyle = computed(() => {

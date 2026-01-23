@@ -78,18 +78,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Avatar } from 'primevue'
 import { useSessionStore, useContactStore, type Session } from '@/stores'
 import { formatTime } from '@/utils/format'
+import { SearchKey } from '@/types'
 
 defineOptions({ name: 'SessionView' })
 
 // 路由与状态管理
 const router = useRouter()
 const route = useRoute()
-const props = defineProps<{ keyword?: string }>()
+const keyword = inject(SearchKey, ref(''))
 const sessionStore = useSessionStore()
 const contactStore = useContactStore()
 
@@ -104,8 +105,8 @@ const handleSessionClick = (id: string) => {
 // 过滤会话列表 (支持搜索)
 const filteredSessions = computed(() => {
   let list = sessionStore.sessions
-  if (props.keyword) {
-    const k = props.keyword.toLowerCase().trim()
+  if (keyword.value) {
+    const k = keyword.value.toLowerCase().trim()
     list = list.filter((s) =>
       getSessionName(s).toLowerCase().includes(k) || s.id.includes(k)
     )

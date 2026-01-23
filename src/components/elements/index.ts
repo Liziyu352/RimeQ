@@ -21,12 +21,11 @@ const components: Record<string, Component> = {
   node: defineAsyncComponent(() => import('./ForwardElement.vue')),
   markdown: defineAsyncComponent(() => import('./MarkdownElement.vue')),
   // 卡片类
-  card: defineAsyncComponent(() => import('./CardElement.vue')),
-  json: defineAsyncComponent(() => import('./CardElement.vue')),
-  xml: defineAsyncComponent(() => import('./CardElement.vue')),
+  json: defineAsyncComponent(() => import('./JsonElement.vue')),
+  card: defineAsyncComponent(() => import('./JsonElement.vue')),
+  xml: defineAsyncComponent(() => import('./XmlElement.vue')),
   // 杂项
-  default: defineAsyncComponent(() => import('./DefaultElement.vue')),
-  unknown: defineAsyncComponent(() => import('./UnknownElement.vue'))
+  default: defineAsyncComponent(() => import('./DefaultElement.vue'))
 }
 
 /**

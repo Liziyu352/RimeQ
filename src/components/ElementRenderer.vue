@@ -32,9 +32,11 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { getElement } from './elements/index'
 import { QFace } from '@/utils/qface'
+import { useSettingStore } from '@/stores'
 import type { Segment, FaceSegment } from '@/types'
 
 const props = defineProps<{ segments: Segment[] }>()
+const settingStore = useSettingStore()
 
 // 决定组件类型
 const resolveComponent = (seg: Segment) => {
@@ -47,6 +49,8 @@ const isInlineSegment = (seg: Segment) => {
   if (seg.type === 'text' || seg.type === 'at') return true
   // 表情类判断
   if (seg.type === 'face') {
+    if (!settingStore.config.renderSuperFace) return true
+    if (props.segments.filter(s => s.type !== 'reply').length > 1) return true
     const id = String((seg as FaceSegment).data.id)
     const face = QFace.get(id)
     return face && (face.type === 'face' || face.type === 'emoji')
