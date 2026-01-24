@@ -32,6 +32,8 @@ export const useMessageStore = defineStore('message', () => {
   const isMultiSelect = ref(false)
   /** 选中的消息 ID 集合 */
   const selectedIds = ref<number[]>([])
+  /** 转发目标 ID 列表 */
+  const forwardTargets = ref<string[]>([])
   /** 正在回复的目标消息 */
   const replyTarget = ref<Message | null>(null)
 
@@ -421,6 +423,7 @@ export const useMessageStore = defineStore('message', () => {
     if (id === undefined) {
       isMultiSelect.value = false
       selectedIds.value = []
+      forwardTargets.value = []
       return
     }
     if (!isMultiSelect.value) {
@@ -441,7 +444,7 @@ export const useMessageStore = defineStore('message', () => {
     replyTarget.value = message
   }
 
-  return { activeId, messages, isLoading, isLoaded,
+  return { activeId, messages, isLoading, isLoaded, forwardTargets,
     isMultiSelect, selectedIds, selectedMessages, replyTarget,
     setMultiSelect, setReplyTarget, openSession, pushMessage,
     fetchHistory, convertToMessage, updateMessage, recallMessage }

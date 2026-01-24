@@ -93,6 +93,19 @@
         </div>
       </div>
     </transition>
+    <!-- 转发面板 -->
+    <transition
+      enter-active-class="ui-trans duration-200 ease-out"
+      leave-active-class="ui-trans duration-150 ease-in"
+      enter-from-class="opacity-0 translate-y-4 scale-95 origin-bottom"
+      leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom"
+    >
+      <div v-if="isForwarding && isMultiSelect" class="absolute bottom-full left-0 right-0 mx-auto w-[550px] h-[520px] mb-2">
+        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-xl border backdrop-blur ui-bg-background-sub/95 ui-border-background-dim">
+           <ForwardSelect/>
+        </div>
+      </div>
+    </transition>
     <!-- 工具栏 -->
     <div class="ui-flex-between px-3 pt-1.5 pb-1 gap-2 select-none">
       <!-- 左侧功能按钮 -->
@@ -117,14 +130,14 @@
           icon="i-ri-image-line text-lg"
           rounded text
           class="!w-7 !h-7 !border-none !text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main ui-trans ui-ia-press"
-          @click="imgInput?.click(); activeTab = null"
+          @click="imgInput?.click()"
         />
         <!-- 文件上传 -->
         <Button
           icon="i-ri-file-line text-lg"
           rounded text
           class="!w-7 !h-7 !border-none !text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main ui-trans ui-ia-press"
-          @click="fileInput?.click(); activeTab = null"
+          @click="fileInput?.click()"
         />
       </div>
       <!-- 右侧辅助按钮 -->
@@ -132,15 +145,21 @@
         <!-- 多选模式指示 -->
         <transition enter-active-class="ui-trans" leave-active-class="ui-trans" enter-from-class="opacity-0 scale-90" leave-to-class="opacity-0 scale-90">
           <div v-if="isMultiSelect" class="ui-flex-x gap-2 max-w-[200px]">
-            <div class="h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold ui-flex-center gap-2 shadow-sm whitespace-nowrap">
+            <div
+              v-tooltip.top="'选择目标'"
+              class="h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold ui-flex-center gap-2 shadow-sm whitespace-nowrap cursor-pointer hover:bg-primary-hover ui-trans"
+              @click="isForwarding = !isForwarding"
+            >
               <div class="i-ri-check-double-line" />
               <span>已选 {{ messageStore.selectedIds.length }}</span>
+              <div :class="isForwarding ? 'i-ri-arrow-down-s-line' : 'i-ri-arrow-up-s-line'" class="text-xs opacity-80" />
             </div>
             <Button
+              v-tooltip.top="'退出多选'"
               icon="i-ri-close-line text-lg"
               text rounded
               class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-red-500 hover:!bg-background-dim"
-              @click="messageStore.setMultiSelect()"
+              @click="messageStore.setMultiSelect(); isForwarding = false"
             />
           </div>
         </transition>
@@ -183,13 +202,34 @@
         />
         <!-- 发送 / 转发按钮 -->
         <div class="absolute bottom-1 right-1 z-10">
+          <div v-if="isMultiSelect" class="flex items-center gap-2">
+            <Button
+              v-tooltip.top="'逐条转发'"
+              icon="i-ri-chat-forward-line text-lg"
+              rounded
+              class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
+              :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
+              :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length"
+              @click.stop="executeForward('single')"
+            />
+            <Button
+              v-tooltip.top="'合并转发'"
+              icon="i-ri-share-forward-fill text-lg"
+              rounded
+              class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
+              :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
+              :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length"
+              @click.stop="executeForward('merge')"
+            />
+          </div>
           <Button
-            :icon="isMultiSelect ? 'i-ri-share-forward-fill text-lg' : 'i-ri-send-plane-fill text-lg'"
+            v-else
+            icon="i-ri-send-plane-fill text-lg"
             rounded
             class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
-            :class="(!isMultiSelect && isEmpty) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
-            :disabled="isMultiSelect ? !messageStore.selectedIds.length : isEmpty"
-            @click.stop="handleSend"
+            :class="isEmpty ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
+            :disabled="isEmpty"
+            @click.stop="executeSend"
           />
         </div>
       </div>
@@ -235,16 +275,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onBeforeUnmount, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import { Button, useToast, Dialog } from 'primevue'
 import { EditorContent } from '@tiptap/vue-3'
 import type { AnimationItem } from 'lottie-web'
 import { bot } from '@/api'
-import { useMessageStore, useSettingStore } from '@/stores'
+import { useMessageStore, useSettingStore, useSessionStore, useContactStore } from '@/stores'
 import { useChatEditor } from '@/utils/editor'
 import { QFace } from '@/utils/qface'
 import { getTextPreview } from '@/utils/format'
-import { SegType } from '@/types'
+import { SegType, type Segment, type NodeSegment } from '@/types'
+import ForwardSelect from './ForwardSelect.vue'
 
 defineOptions({ name: 'ChatInput' })
 
@@ -252,14 +292,16 @@ const props = defineProps<{ chatId: string; isGroup: boolean }>()
 const emit = defineEmits<{ (e: 'send'): void }>()
 
 // 全局 Hooks
-const router = useRouter()
 const toast = useToast()
 const messageStore = useMessageStore()
 const settingStore = useSettingStore()
+const sessionStore = useSessionStore()
+const contactStore = useContactStore()
 
 // UI 界面状态
 const activeTab = ref<string | null>(null)
 const isExpanded = ref(false)
+const isForwarding = ref(false)
 const hoveringId = ref<string | null>(null)
 const imgInput = ref<HTMLInputElement>()
 const fileInput = ref<HTMLInputElement>()
@@ -281,7 +323,7 @@ const isEmpty = computed(() => !editor.value || editor.value.isEmpty)
 const { editor, focus, insertText, insertImage, insertMention, clear, getSegments } = useChatEditor({
   currentId: computed(() => props.chatId),
   isGroup: computed(() => props.isGroup),
-  onSend: handleSend,
+  onSend: executeSend,
   onFile: (f) => {
     const dt = new DataTransfer()
     dt.items.add(f)
@@ -379,13 +421,46 @@ function unloadLottie(id: string) {
   }
 }
 
-// 发送消息
-async function handleSend() {
-  // 处理多选逻辑
-  if (isMultiSelect.value) {
-    if (messageStore.selectedIds.length > 0) router.push(`/${props.chatId}/forward`)
-    return
+// 执行转发
+const executeForward = async (mode: 'merge' | 'single') => {
+  const targetIds = messageStore.forwardTargets
+  const messageIds = messageStore.selectedIds
+  if (!targetIds.length || !messageIds.length) return
+  try {
+    const targetMsgs = messageStore.messages.filter((m) => messageIds.includes(m.message_id))
+    if (mode === 'merge') {
+      // 合并转发
+      const nodes: Segment[] = targetMsgs.map((m) => ({
+        type: 'node', data: { nickname: m.sender.nickname, user_id: m.sender.user_id, content: m.message }
+      } as NodeSegment))
+      await Promise.all(targetIds.map(async (targetIdStr) => {
+        const targetId = Number(targetIdStr)
+        const session = sessionStore.getSession(targetIdStr)
+        const isGroup = session?.type === 'group' || contactStore.checkIsGroup(targetIdStr)
+        if (isGroup) await bot.sendGroupForwardMsg(targetId, nodes)
+        else await bot.sendPrivateForwardMsg(targetId, nodes)
+      }))
+    } else {
+      // 逐条转发
+      for (const msg of targetMsgs) {
+        for (const targetIdStr of targetIds) {
+          const targetId = Number(targetIdStr)
+          const session = sessionStore.getSession(targetIdStr)
+          const isGroup = session?.type === 'group' || contactStore.checkIsGroup(targetIdStr)
+          await bot.forwardSingleMsg(isGroup ? 'group' : 'private', targetId, msg.message_id)
+          await new Promise(r => setTimeout(r, 200))
+        }
+      }
+    }
+    messageStore.setMultiSelect()
+    isForwarding.value = false
+  } catch (e) {
+    toast.add({ severity: 'error', summary: '转发失败', detail: e, life: 3000 })
   }
+}
+
+// 发送消息
+async function executeSend() {
   if (isEmpty.value) return
   const segments = getSegments()
   // 添加回复节点
@@ -415,6 +490,8 @@ watch(isMultiSelect, (val) => {
   if (val) {
     activeTab.value = null
     isExpanded.value = false
+  } else {
+    isForwarding.value = false
   }
 })
 
@@ -422,6 +499,7 @@ watch(isMultiSelect, (val) => {
 watch(() => props.chatId, () => {
   isExpanded.value = false
   activeTab.value = null
+  isForwarding.value = false
   messageStore.setReplyTarget(null)
 })
 

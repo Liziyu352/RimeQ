@@ -15,7 +15,6 @@ import GroupFile from '@/components/GroupFile.vue'
 import GroupAlbum from '@/components/GroupAlbum.vue'
 import GroupNotice from '@/components/GroupNotice.vue'
 import GroupEssence from '@/components/GroupEssence.vue'
-import MultiForward from '@/components/MultiForward.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -71,12 +70,6 @@ const routes: RouteRecordRaw[] = [
     name: 'GroupEssence',
     components: { default: ChatView, nav: SessionList, sidebar: GroupEssence },
     meta: { title: '群精华' }
-  },
-  {
-    path: '/:id/forward',
-    name: 'MultiForward',
-    components: { default: ChatView, nav: SessionList, sidebar: MultiForward },
-    meta: { title: '多选转发' }
   },
   {
     path: '/:id?',

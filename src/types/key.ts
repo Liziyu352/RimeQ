@@ -11,11 +11,7 @@ export const ChatCtxKey: InjectionKey<{
 }> = Symbol('ChatCtx')
 
 /** 消息上下文 */
-export const MsgCtxKey: InjectionKey<ComputedRef<{
-  groupId?: number
-  messageId: number
-  isMe: boolean
-}>> = Symbol('MsgCtx')
+export const MsgCtxKey: InjectionKey<ComputedRef<{ groupId?: number; messageId: number; isMe: boolean }>> = Symbol('MsgCtx')
 
 /** 搜索上下文 */
 export const SearchKey: InjectionKey<Ref<string>> = Symbol('SearchKey')

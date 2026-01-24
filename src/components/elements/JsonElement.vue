@@ -12,6 +12,16 @@
         <span class="text-[10px] ui-text-foreground-dim truncate">{{ source }}</span>
       </div>
       <div class="flex items-start p-3 gap-3">
+        <!-- 预览图 -->
+        <Image
+          v-if="preview && !imageFailed"
+          :src="preview"
+          preview
+          image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
+          class="!flex w-16 h-16 shrink-0 bg-background-dim/20 rounded-xl overflow-hidden"
+          referrerpolicy="no-referrer"
+          @error="imageFailed = true"
+        />
         <!-- 文字信息 -->
         <div class="flex-1 min-w-0" @click="jump">
           <span class="font-bold text-sm ui-text-foreground-main line-clamp-3 leading-snug">
@@ -21,17 +31,6 @@
             {{ desc }}
           </span>
         </div>
-        <!-- 预览图 -->
-        <Image
-          v-if="!imageFailed"
-          :src="preview"
-          preview
-          image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
-          class="!flex w-16 h-16 shrink-0 bg-background-dim/20 rounded-xl overflow-hidden"
-          referrerpolicy="no-referrer"
-          @error="imageFailed = true"
-        >
-        </Image>
       </div>
     </div>
   </div>
@@ -53,13 +52,31 @@ const meta = computed(() => {
   const metaData = obj.meta ? (Object.values(obj.meta)[0] as any) : null
   switch (true) {
     // 小程序
-    case obj.app.includes('miniapp'):
+    case obj.app?.includes('miniapp'):
       result.title = metaData?.desc || obj.prompt
-      result.desc = `由 ${metaData.host.nick} 分享`
+      result.desc = metaData?.host?.nick ? `由 ${metaData.host.nick} 分享` : ''
       result.preview = metaData?.preview
       result.icon = metaData?.icon
       result.url = metaData?.qqdocurl || metaData?.url
       result.source = metaData?.title
+      break
+    // 群公告
+    case obj.app === 'com.tencent.mannounce':
+      result.title = decodeURIComponent(escape(atob(metaData?.title)))
+      result.desc = decodeURIComponent(escape(atob(metaData?.text)))
+      result.preview = ''
+      result.icon = ''
+      result.url = `https://web.qun.qq.com/mannounce/index.html?_wv=1031&_bid=148#gc=${metaData.gc}&fid=${metaData.fid}`
+      result.source = '群公告'
+      break
+    // 相册
+    case obj.app === 'com.tencent.feed.lua':
+      result.title = metaData?.title || obj.prompt
+      result.desc = metaData?.forwardMessage
+      result.preview = metaData?.cover
+      result.icon = metaData?.tagIcon
+      result.url = metaData?.pcJumpUrl || metaData?.legacyUrl || metaData?.jumpUrl
+      result.source = metaData?.tagName
       break
     // 名片
     case obj.app === 'com.tencent.contact.lua':
@@ -70,15 +87,7 @@ const meta = computed(() => {
       result.url = metaData?.pcJumpUrl || metaData?.jumpUrl
       result.source = metaData?.tag
       break
-    // 位置
-    case obj.app === 'com.tencent.map':
-      result.title = metaData?.name
-      result.desc = metaData?.address
-      result.preview = ''
-      result.url = `https://map.qq.com/m/place/search?query=${encodeURIComponent(metaData?.name)}&pointx=${metaData?.lng}&pointy=${metaData?.lat}`
-      result.source = '位置'
-      break
-    // 图文
+    // 图文（收藏）
     case obj.app === 'com.tencent.tuwen.lua':
       result.title = metaData?.title
       result.desc = metaData?.desc || obj.prompt
@@ -95,13 +104,21 @@ const meta = computed(() => {
       result.url = ''
       result.source = metaData?.title
       break
+    // 位置
+    case obj.app === 'com.tencent.map':
+      result.title = metaData?.name
+      result.desc = metaData?.address
+      result.preview = ''
+      result.url = `https://map.qq.com/m/place/search?query=${encodeURIComponent(metaData?.name)}&pointx=${metaData?.lng}&pointy=${metaData?.lat}`
+      result.source = '位置'
+      break
     // 默认
     default:
-      result.title = metaData?.title || obj.prompt || result.title
+      result.title = metaData?.title || obj.prompt || ''
       result.desc = metaData?.desc || metaData?.summary || ''
       result.preview = metaData?.preview || metaData?.cover || ''
       result.icon = metaData?.icon || metaData?.tagIcon || ''
-      result.url = metaData?.qqdocurl || metaData?.jumpUrl || metaData?.jumpUrl || ''
+      result.url = metaData?.qqdocurl || metaData?.jumpUrl || ''
       result.source = metaData?.tag || metaData?.source || obj.app
       break
   }
