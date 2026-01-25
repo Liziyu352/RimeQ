@@ -10,7 +10,11 @@
     </header>
     <!-- 列表区域 -->
     <div class="flex-1 min-h-0 bg-background-sub relative w-full overflow-hidden">
-      <div v-if="items.length > 0" class="size-full overflow-y-auto ui-scrollbar">
+      <!-- 加载中 -->
+      <div v-if="loading" class="h-full ui-flex-center">
+        <ProgressSpinner />
+      </div>
+      <div v-else-if="items.length > 0" class="size-full overflow-y-auto ui-scrollbar">
         <div v-for="item in items" :key="item.message_id" class="w-full px-3 py-2">
           <div class="relative bg-background-main border border-background-dim/50 rounded-xl shadow-sm group hover:shadow-md ui-trans flex flex-col overflow-hidden">
             <div class="flex items-center gap-3 p-3 pb-2">
@@ -66,7 +70,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Button, Avatar, useToast, useConfirm, Badge } from 'primevue'
+import { Button, Avatar, useToast, useConfirm, Badge, ProgressSpinner } from 'primevue'
 import { bot } from '@/api'
 import { formatTime } from '@/utils/format'
 import ElementRenderer from '@/components/ElementRenderer.vue'
@@ -83,6 +87,7 @@ const settingStore = useSettingStore()
 // 状态数据
 const groupId = computed(() => Number(route.params.id))
 const items = ref<any[]>([])
+const loading = ref(false)
 
 // 计算属性：当前用户信息
 const myInfo = computed(() => contactStore.members.get(groupId.value)?.find(m => m.user_id === settingStore.user?.user_id))
@@ -107,11 +112,16 @@ const handleDelete = (item: any) => {
 
 // 组件挂载
 onMounted(async () => {
-  if (groupId.value) try {
-    const res = await bot.getEssenceMsgList(groupId.value)
-    items.value = (res || []).sort((a, b) => b.operator_time - a.operator_time)
-  } catch (e) {
-    toast.add({ severity: 'error', summary: '加载精华列表失败', detail: String(e), life: 3000 })
+  if (groupId.value) {
+    loading.value = true
+    try {
+      const res = await bot.getEssenceMsgList(groupId.value)
+      items.value = (res || []).sort((a, b) => b.operator_time - a.operator_time)
+    } catch (e) {
+      toast.add({ severity: 'error', summary: '加载精华列表失败', detail: String(e), life: 3000 })
+    } finally {
+      loading.value = false
+    }
   }
 })
 </script>

@@ -47,7 +47,6 @@
                       icon="i-ri-check-line"
                       rounded
                       class="!w-9 !h-9 !p-0 !text-green-600 !bg-background-main hover:!bg-green-50 !border !border-background-dim shadow-sm transition-all"
-                      :loading="!!processing[item.flag]"
                       @click="handleRequest(item, true)"
                    />
                    <Button
@@ -55,7 +54,6 @@
                       icon="i-ri-close-line"
                       rounded
                       class="!w-9 !h-9 !p-0 !text-red-500 !bg-background-main hover:!bg-red-50 !border !border-background-dim shadow-sm transition-all"
-                      :loading="!!processing[item.flag]"
                       @click="handleRequest(item, false)"
                    />
                    <Button
@@ -168,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useToast, Avatar, Button } from 'primevue'
 import { bot } from '@/api'
 import { useContactStore } from '@/stores'
@@ -179,7 +177,6 @@ defineOptions({ name: 'NoticeView' })
 
 const toast = useToast()
 const contactStore = useContactStore()
-const processing = ref<Record<string, boolean>>({})
 
 // 排序列表
 const requests = computed(() => [...contactStore.requests].sort((a, b) => b.time - a.time))
@@ -239,8 +236,6 @@ const getNotice = (n: Notice): string => {
 
 // 处理请求
 const handleRequest = async (item: Request, approve: boolean) => {
-  const key = item.flag
-  processing.value[key] = true
   try {
     if (item.request_type === 'friend') {
       await bot.setFriendAddRequest(item.flag, approve)
@@ -251,8 +246,6 @@ const handleRequest = async (item: Request, approve: boolean) => {
     contactStore.removeRequest(item)
   } catch (e) {
     toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
-  } finally {
-    delete processing.value[key]
   }
 }
 </script>

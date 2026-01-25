@@ -61,8 +61,12 @@
     </header>
     <!-- 文件列表区域 -->
     <div class="flex-1 overflow-y-auto ui-scrollbar p-1" @click="isBatchMode = false">
+      <!-- 加载中 -->
+      <div v-if="loading" class="h-full ui-flex-center">
+        <ProgressSpinner />
+      </div>
       <!-- 列表项 -->
-      <div v-if="filteredItems.length" class="flex flex-col gap-0.5">
+      <div v-else-if="filteredItems.length" class="flex flex-col gap-0.5">
         <div
           v-for="item in filteredItems"
           :key="item.id"
@@ -183,7 +187,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, ContextMenu } from 'primevue'
+import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, ContextMenu, ProgressSpinner } from 'primevue'
 import type { MenuItem } from 'primevue/menuitem'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'
@@ -258,7 +262,7 @@ async function loadResources(folderId = '/', listRef = items.value, force = fals
   }
   loading.value = true
   try {
-    const res = folderId === '/' ? await bot.getGroupRootFiles(groupId.value) : await bot.getGroupFilesByFolder(groupId.value, folderId)
+    const res = folderId === '/' ? await bot.getGroupRootFiles(groupId.value, 256) : await bot.getGroupFilesByFolder(groupId.value, folderId, 256)
     const folders = (res.folders || []).map((f: any) => ({ id: f.folder_id, name: f.folder_name, type: 'folder', uploader: f.creator_name, count: f.total_file_count }))
     const result = listRef === moveDialog.folders
       ? folders

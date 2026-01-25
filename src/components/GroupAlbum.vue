@@ -21,7 +21,10 @@
     <div class="flex-1 min-h-0 relative bg-background-sub">
       <!-- 相册列表 -->
       <div v-if="!data.current" class="h-full overflow-y-auto ui-scrollbar p-3">
-        <div v-if="data.albums.length" class="flex flex-col gap-3">
+        <div v-if="ui.loading && !data.albums.length" class="h-full ui-flex-center">
+          <ProgressSpinner />
+        </div>
+        <div v-else-if="data.albums.length" class="flex flex-col gap-3">
           <div
             v-for="album in data.albums"
             :key="album.album_id"
@@ -87,12 +90,12 @@
              </div>
            </div>
            <!-- 底部锚点 -->
-           <div ref="loadTrigger" class="h-8 w-full shrink-0 flex items-center justify-center">
-              <div v-if="ui.loading" class="i-ri-loader-4-line animate-spin text-foreground-dim text-lg" />
+           <div ref="loadTrigger" class="h-12 w-full shrink-0 flex items-center justify-center">
+              <ProgressSpinner v-if="ui.loading" />
            </div>
         </template>
-        <div v-else-if="ui.loading" class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
-            <div class="i-ri-loader-4-line animate-spin text-2xl" />
+        <div v-else-if="ui.loading" class="h-full ui-flex-center">
+          <ProgressSpinner />
         </div>
         <div v-else class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
            <div class="i-ri-image-line text-4xl" />
@@ -247,7 +250,7 @@
 import { ref, onMounted, computed, reactive, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useIntersectionObserver } from '@vueuse/core'
-import { Button, Avatar, useToast, useConfirm, Dialog, InputText, Badge } from 'primevue'
+import { Button, Avatar, useToast, useConfirm, Dialog, InputText, Badge, ProgressSpinner } from 'primevue'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'
 import { formatTime } from '@/utils/format'
