@@ -1,3 +1,4 @@
+
 <template>
   <div class="ui-flex-col-full ui-bg-background-sub relative overflow-hidden">
     <!-- 顶部导航栏 -->
@@ -95,9 +96,7 @@
         />
         <!-- 成员计数 -->
         <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono ui-text-foreground-dim pointer-events-none">
-          <span class="ui-text-foreground-main">{{ filteredMembers.length }}</span>
-          <span class="opacity-40">/</span>
-          <span>{{ currentGroup?.max_member_count }}</span>
+          <span class="ui-text-foreground-main">{{ filteredMembers.length }} / {{ currentGroup?.max_member_count }}</span>
         </div>
       </IconField>
       <Button
@@ -115,50 +114,57 @@
       <VirtualScroller :items="sortedMembers" :item-size="56" class="size-full ui-scrollbar ui-bg-background-sub" :pt="{ content: { class: '!w-full' } }" >
         <template #item="{ item }">
           <div class="px-2 py-0.5 w-full">
-             <div
-               class="group ui-flex-x gap-3 px-2 rounded-lg hover:ui-bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none w-full"
-               :class="{
-                 'bg-primary/5 border-primary/20': selectedMembers.has(item.user_id) && isBatchMode,
-                 'opacity-50 cursor-not-allowed grayscale': isBatchMode && !canManage(item),
-                 'cursor-pointer': isBatchMode
-               }"
-               @click="isBatchMode && handleBatchSelect(item)"
-               @contextmenu.prevent="openMenu($event, item)"
-             >
-               <!-- 成员头像 -->
-               <div class="relative shrink-0 flex items-center h-full">
-                 <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`" shape="circle" class="!w-8 !h-8 border ui-border-background-dim ui-bg-background-dim" />
-               </div>
-               <!-- 成员信息 -->
-               <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 h-full">
-                 <!-- 昵称与头衔 -->
-                 <div class="ui-flex-x gap-1.5">
-                   <span class="text-sm font-medium ui-text-foreground-main truncate" :class="{'text-primary': item.user_id === myUserId}" >
-                     {{ item.card || item.nickname }}
-                   </span>
-                   <span v-if="item.role === 'owner'" class="text-[9px] px-1 rounded bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 leading-tight shrink-0">群主</span>
-                   <span v-else-if="item.role === 'admin'" class="text-[9px] px-1 rounded bg-green-500/10 text-green-600 border border-green-500/20 leading-tight shrink-0">管理</span>
-                   <span v-if="item.title" class="text-[9px] px-1 rounded bg-primary/10 text-primary border border-primary/20 leading-tight shrink-0 truncate">{{ item.title }}</span>
-                 </div>
-                 <!-- 账号与状态 -->
-                 <div class="text-[10px] ui-flex-x gap-2 leading-none">
-                   <span class="ui-text-foreground-dim font-mono opacity-60">{{ item.user_id }}</span>
-                   <div v-if="(item as any).shut_up_timestamp > Date.now() / 1000" class="text-red-500 ui-flex-x gap-0.5">
-                      <div class="i-ri-mic-off-line text-[9px]" />
-                      <span>{{ formatDuration((item as any).shut_up_timestamp - Date.now() / 1000) }}</span>
-                   </div>
-                 </div>
-               </div>
-               <!-- 操作按钮 -->
-                <div v-if="!isBatchMode" class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
-                   <Button
-                     icon="i-ri-more-2-fill"
-                     text rounded
-                     class="!w-8 !h-8 !text-foreground-dim hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim transition-all"
-                     @click.stop="openMenu($event, item)"
-                   />
+            <div
+              class="group ui-flex-x gap-3 px-2 rounded-lg hover:ui-bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none w-full"
+              :class="{
+                'bg-primary/5 border-primary/20': selectedMembers.has(item.user_id) && isBatchMode,
+                'opacity-50 cursor-not-allowed grayscale': isBatchMode && !canManage(item),
+                'cursor-pointer': isBatchMode
+              }"
+              @click="isBatchMode && handleBatchSelect(item)"
+              @contextmenu.prevent="openMenu($event, item)"
+            >
+              <!-- 成员头像 -->
+              <div class="relative shrink-0 flex items-center h-full">
+                <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`" shape="circle" class="!w-8 !h-8 border ui-border-background-dim ui-bg-background-dim" />
+              </div>
+              <!-- 成员信息 -->
+              <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 h-full">
+                <!-- 昵称与头衔 -->
+                <div class="ui-flex-x gap-1.5">
+                  <span class="text-sm font-medium ui-text-foreground-main truncate" :class="{'text-primary': item.user_id === myUserId}">
+                    {{ item.card || item.nickname }}
+                  </span>
+                  <Chip
+                    v-if="item.title || item.role === 'owner' || item.role === 'admin'"
+                    :label="item.title || (item.role === 'owner' ? '群主' : '管理')"
+                    class="!text-[9px] !h-4 !px-1 !border-none !rounded leading-tight shrink-0"
+                    :class="[
+                      item.role === 'owner' ? '!bg-yellow-500/10 !text-yellow-600' :
+                      item.role === 'admin' ? '!bg-green-500/10 !text-green-600' :
+                      '!bg-main/10 !text-primary'
+                    ]"
+                  />
                 </div>
-             </div>
+                <!-- 账号与状态 -->
+                <div class="text-[10px] ui-flex-x gap-2 leading-none">
+                  <span class="ui-text-foreground-dim font-mono opacity-60">{{ item.user_id }}</span>
+                  <div v-if="(item as any).shut_up_timestamp > Date.now() / 1000" class="text-red-500 ui-flex-x gap-0.5">
+                    <div class="i-ri-mic-off-line text-[9px]" />
+                    <span>{{ formatDuration((item as any).shut_up_timestamp - Date.now() / 1000) }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 操作按钮 -->
+              <div v-if="!isBatchMode" class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
+                <Button
+                  icon="i-ri-more-2-fill"
+                  text rounded
+                  class="!w-8 !h-8 !text-foreground-dim hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim transition-all"
+                  @click.stop="openMenu($event, item)"
+                />
+              </div>
+            </div>
           </div>
         </template>
       </VirtualScroller>
@@ -255,7 +261,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  Avatar, IconField, InputIcon, InputText, Button,
+  Avatar, IconField, InputIcon, InputText, Button, Chip,
   Dialog, useToast, ContextMenu, useConfirm,
   InputNumber, RadioButton, VirtualScroller
 } from 'primevue'

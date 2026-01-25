@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full group select-none min-h-[64px] min-w-[64px] bg-background-dim/5 flex flex-col rounded-lg overflow-hidden">
+  <div class="relative w-full group select-none min-h-[64px] min-w-[64px] bg-background-dim/5 flex flex-col overflow-hidden">
     <Image
       v-if="!imageFailed"
       :src="currentUrl"

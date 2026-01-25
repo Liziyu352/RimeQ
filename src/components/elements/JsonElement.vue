@@ -5,7 +5,7 @@
       :class="{ 'cursor-pointer': !!url }"
     >
       <!-- 顶部信息 -->
-      <div class="ui-flex-x gap-2 px-3 py-2 bg-background-dim/20">
+      <div v-if="source" class="ui-flex-x gap-2 px-3 py-2 bg-background-dim/20">
         <div v-if="icon" class="size-4 rounded-full overflow-hidden shrink-0">
           <img :src="icon" class="size-full object-cover" referrerpolicy="no-referrer" />
         </div>
@@ -14,7 +14,7 @@
       <div class="flex items-start p-3 gap-3">
         <!-- 预览图 -->
         <Image
-          v-if="preview && !imageFailed"
+          v-if="!imageFailed"
           :src="preview"
           preview
           image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
@@ -27,7 +27,7 @@
           <span class="font-bold text-sm ui-text-foreground-main line-clamp-3 leading-snug">
             {{ title }}
           </span>
-          <span v-if="desc" class="text-xs ui-text-foreground-sub line-clamp-2 leading-normal mt-1 block">
+          <span v-if="desc" class="text-xs ui-text-foreground-sub line-clamp-2 leading-normal mt-1 block whitespace-pre-wrap">
             {{ desc }}
           </span>
         </div>
@@ -60,7 +60,16 @@ const meta = computed(() => {
       result.url = metaData?.qqdocurl || metaData?.url
       result.source = metaData?.title
       break
-    // 群公告
+    // 合并转发
+    case obj.app === 'com.tencent.multimsg':
+      result.title = metaData?.summary || obj.prompt
+      result.desc = metaData?.news?.map((n: any) => n.text).join('\n')
+      result.preview = ''
+      result.icon = ''
+      result.url = ''
+      result.source = metaData?.source || obj.prompt
+      break
+    // 公告
     case obj.app === 'com.tencent.mannounce':
       result.title = decodeURIComponent(escape(atob(metaData?.title)))
       result.desc = decodeURIComponent(escape(atob(metaData?.text)))
@@ -114,11 +123,11 @@ const meta = computed(() => {
       break
     // 默认
     default:
-      result.title = metaData?.title || obj.prompt || ''
-      result.desc = metaData?.desc || metaData?.summary || ''
-      result.preview = metaData?.preview || metaData?.cover || ''
-      result.icon = metaData?.icon || metaData?.tagIcon || ''
-      result.url = metaData?.qqdocurl || metaData?.jumpUrl || ''
+      result.title = metaData?.title || obj.prompt
+      result.desc = metaData?.desc || metaData?.summary
+      result.preview = metaData?.preview || metaData?.cover
+      result.icon = metaData?.icon || metaData?.tagIcon
+      result.url = metaData?.qqdocurl || metaData?.jumpUrl
       result.source = metaData?.tag || metaData?.source || obj.app
       break
   }

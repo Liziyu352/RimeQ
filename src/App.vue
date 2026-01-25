@@ -31,9 +31,9 @@
                 shape="circle"
                 class="shrink-0 ring-2 ring-transparent group-hover:ring-primary/50 ui-trans ui-dur-fast w-10 h-10 bg-background-dim"
               />
-              <div
-                class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background-sub ui-trans ui-dur-fast"
-                :class="settingStore.isLogged ? 'bg-green-500' : 'bg-background-dim'"
+              <Badge
+                class="absolute bottom-0 right-0 !w-3 !h-3 !min-w-0 border-2 border-background-sub ui-trans ui-dur-fast"
+                :severity="settingStore.isLogged ? 'success' : 'secondary'"
               />
             </div>
           </div>

@@ -8,9 +8,7 @@
         <span class="font-bold text-base text-foreground-main truncate">
           {{ data.current ? data.current.name : '群相册' }}
         </span>
-        <span class="text-[10px] px-1.5 rounded-md bg-background-dim/50 text-foreground-dim font-mono leading-relaxed">
-          {{ data.current ? data.photos.length : data.albums.length }}
-        </span>
+        <Badge :value="data.current ? data.photos.length : data.albums.length" severity="secondary" class="!text-[10px] !h-4 !min-w-6" />
       </div>
       <!-- 操作按钮 -->
       <div class="flex gap-1">
@@ -249,7 +247,7 @@
 import { ref, onMounted, computed, reactive, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useIntersectionObserver } from '@vueuse/core'
-import { Button, Avatar, useToast, useConfirm, Dialog, InputText } from 'primevue'
+import { Button, Avatar, useToast, useConfirm, Dialog, InputText, Badge } from 'primevue'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'
 import { formatTime } from '@/utils/format'

@@ -5,7 +5,7 @@
       <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
       <div class="flex-1 min-w-0 flex items-center gap-2">
         <span class="font-bold text-base text-foreground-main truncate">群公告</span>
-        <span class="text-[10px] px-1.5 rounded-md bg-background-dim/50 text-foreground-dim font-mono">{{ notices.length }}</span>
+        <Badge :value="notices.length" severity="secondary" class="!text-[10px] !h-4 !min-w-6" />
       </div>
       <Button v-if="canPublish" v-tooltip.bottom="'新公告'" icon="i-ri-add-line" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-primary" @click="openDialog()" />
     </header>

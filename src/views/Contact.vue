@@ -22,12 +22,12 @@
               route.path === '/notice' ? '' : (noticeCount > 0 ? 'text-primary' : 'text-current')
             ]"
           />
-          <div
+          <Badge
             v-if="noticeCount > 0"
-            class="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold ui-flex-center border-2 leading-none z-10 border-background-sub"
-          >
-            {{ noticeCount > 99 ? '99+' : noticeCount }}
-          </div>
+            :value="noticeCount"
+            severity="danger"
+            class="absolute -top-1 -right-1 !text-[9px] !h-4 !min-w-4 border-2 border-background-sub"
+          />
         </div>
         <!-- 桌面/移动模式 -->
         <div
@@ -50,9 +50,7 @@
             <div class="i-ri-notification-3-fill text-lg" />
           </div>
           <div class="flex-1 font-bold text-sm transition-colors">系统通知</div>
-          <div v-if="noticeCount > 0" class="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-sm">
-            {{ noticeCount }}
-          </div>
+          <Badge v-if="noticeCount > 0" :value="noticeCount" severity="danger" />
           <div
             class="i-ri-arrow-right-s-line transition-all"
             :class="route.path === '/notice' ? 'text-white/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
@@ -79,53 +77,54 @@
       </div>
     </div>
     <!-- 滚动列表区域 -->
-    <div class="flex-1 min-h-0 overflow-y-auto ui-scrollbar relative scroll-smooth px-2 pb-2">
+    <div class="flex-1 min-h-0 overflow-y-auto ui-scrollbar relative scroll-smooth px-3 pb-2">
       <!-- 场景 A: 好友列表 -->
       <template v-if="currentTab === 'friend'">
-        <!-- 分组展示 -->
-        <div v-for="cat in filteredCategories" :key="cat.categoryId" class="select-none mb-1 last:mb-0">
-          <!-- 分组标题栏 -->
-          <div
-            class="sticky top-0 z-10 ui-flex-x px-2 py-2 cursor-pointer bg-background-sub/95 backdrop-blur hover:bg-background-dim/30 rounded-2xl transition-colors group border-b border-transparent hover:border-background-dim/50 gap-2 md:flex-col md:justify-center md:gap-0.5 xl:flex-row xl:gap-2"
-            @click="toggleCategory(cat.categoryId)"
+        <Accordion :value="expandedCats" multiple class="flex flex-col gap-1">
+          <AccordionPanel
+            v-for="cat in filteredCategories"
+            :key="cat.categoryId"
+            :value="cat.categoryId"
+            class="!border-none"
           >
-            <div
-              class="i-ri-arrow-right-s-fill text-foreground-sub transition-transform duration-200 shrink-0 group-hover:text-primary"
-              :class="{ 'rotate-90': expandedCats.includes(cat.categoryId) || keyword }"
-            />
-            <span class="text-xs font-bold text-foreground-sub group-hover:text-foreground-main flex-1 truncate block md:hidden xl:block">
-              {{ cat.categoryName }}
-            </span>
-            <span class="text-[10px] text-foreground-dim font-mono group-hover:text-foreground-sub transition-colors">
-              {{ isTablet ? cat.categoryMbCount : `${cat.onlineCount}/${cat.categoryMbCount}` }}
-            </span>
-          </div>
-          <!-- 分组好友项 -->
-          <div v-show="expandedCats.includes(cat.categoryId) || keyword" class="pr-1 pl-2 md:pl-1 md:pt-1 xl:pl-2 xl:pt-0">
-            <div
-              v-for="friend in cat.buddyList"
-              :key="friend.user_id"
-              class="ui-flex-x gap-3 p-2 rounded-2xl group relative overflow-hidden ui-ia-hover md:justify-center xl:justify-start"
-              @click="router.push(`/${friend.user_id}`)"
+            <AccordionHeader
+              class="!p-2 !bg-transparent hover:!bg-background-dim/30 !border-none !rounded-2xl transition-colors group !flex items-center gap-2"
             >
-              <!-- 选中指示条 -->
-              <div class="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Avatar
-                shape="circle"
-                :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${friend.user_id}`"
-                class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
-              />
-              <div class="ui-flex-truncate block md:hidden xl:block">
-                <div class="text-sm font-medium text-foreground-main truncate group-hover:text-primary transition-colors">
-                  {{ friend.remark || friend.nickname }}
-                </div>
-                <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60">
-                  {{ friend.nickname }} ({{ friend.user_id }})
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <span class="text-xs font-bold text-foreground-sub group-hover:text-foreground-main truncate">
+                  {{ cat.categoryName }}
+                </span>
+                <Badge
+                  :value="isTablet ? cat.categoryMbCount : `${cat.onlineCount}/${cat.categoryMbCount}`"
+                  severity="secondary"
+                  class="!text-[9px] !h-3.5 !bg-transparent !text-foreground-dim"
+                />
+              </div>
+            </AccordionHeader>
+            <AccordionContent :pt="{ content: { class: '!p-1 !bg-transparent' } }">
+              <div class="flex flex-col gap-0.5">
+                <div
+                  v-for="friend in cat.buddyList"
+                  :key="friend.user_id"
+                  class="ui-flex-x gap-3 p-2 rounded-xl cursor-pointer hover:bg-background-dim/50 ui-trans group/item"
+                  @click="router.push(`/${friend.user_id}`)"
+                >
+                  <Avatar
+                    shape="circle"
+                    :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${friend.user_id}`"
+                    class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
+                  />
+                  <div class="ui-flex-truncate">
+                    <div class="text-sm font-medium text-foreground-main truncate group-hover/item:text-primary transition-colors">
+                      {{ friend.remark || friend.nickname }}
+                    </div>
+                    <div class="text-[10px] text-foreground-sub font-mono opacity-50">{{ friend.user_id }}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionPanel>
+        </Accordion>
       </template>
       <!-- 场景 B: 群组列表 -->
       <template v-else>
@@ -144,8 +143,9 @@
             <div class="text-sm font-medium text-foreground-main truncate group-hover:text-primary transition-colors">
               {{ group.group_remark ? `${group.group_remark} (${group.group_name})` : group.group_name }}
             </div>
-            <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60">
-              {{ group.group_id }} ({{ group.member_count }}/{{ group.max_member_count }})
+            <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60 flex items-center gap-1.5">
+              <span>{{ group.group_id }}</span>
+              <Badge :value="`${group.member_count}/${group.max_member_count}`" severity="secondary" class="!text-[9px] !h-3.5 !bg-transparent !px-0" />
             </div>
           </div>
         </div>
@@ -157,7 +157,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Avatar } from 'primevue'
+import { Avatar, Badge, Accordion, AccordionPanel, AccordionHeader, AccordionContent } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useContactStore } from '@/stores'
 import { type GroupInfo, SearchKey } from '@/types'
@@ -179,16 +179,18 @@ const expandedCats = ref<number[]>([])
 // 计算属性：通知数量
 const noticeCount = computed(() => contactStore.requests.length)
 
-// 默认展开
+// 监听展开
 watch(
-  () => contactStore.friends,
-  (cats) => {
-    if (cats.length > 0 && expandedCats.value.length === 0) {
-      const first = cats[0]
-      if (first) expandedCats.value.push(first.categoryId)
+  [() => contactStore.friends, keyword],
+  ([cats, k]) => {
+    if (k.trim()) {
+      expandedCats.value = cats.map(c => c.categoryId)
+    } else if (expandedCats.value.length === 0 && cats.length > 0) {
+      const firstCat = cats[0]
+      if (firstCat) expandedCats.value = [firstCat.categoryId]
     }
   },
-  { deep: true, immediate: true }
+  { immediate: true, deep: true }
 )
 
 // 列表过滤
@@ -214,11 +216,4 @@ const filteredCategories = computed(() => {
 const filteredGroups = computed(() => {
   return filterList<GroupInfo>(contactStore.groups, keyword.value, ['group_name', 'group_id'])
 })
-
-// 切换分组展开/折叠
-const toggleCategory = (id: number) => {
-  const idx = expandedCats.value.indexOf(id)
-  if (idx > -1) expandedCats.value.splice(idx, 1)
-  else expandedCats.value.push(id)
-}
 </script>

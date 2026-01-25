@@ -31,13 +31,13 @@
                 ]"
               />
               <!-- 未读角标 -->
-              <div
+              <Badge
                 v-if="session.unread > 0"
-                class="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold ui-flex-center border-2 z-10 shadow-sm pointer-events-none leading-none ui-trans ui-dur-normal"
+                :value="session.unread"
+                severity="danger"
+                class="absolute -top-1 -right-1 !text-[10px] !h-4 !max-w-9 ui-trans ui-dur-normal"
                 :class="isActive(session.id) ? 'border-primary' : 'border-background-sub'"
-              >
-                {{ session.unread > 99 ? '99+' : session.unread }}
-              </div>
+              />
             </div>
             <!-- 文本信息 (平板模式隐藏) -->
             <div
