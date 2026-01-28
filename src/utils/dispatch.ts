@@ -61,8 +61,11 @@ function noticeEvent(data: Notice) {
     // 转为系统消息
     case 'friend_add':
     case 'group_ban':
+    case 'group_admin':
+    case 'group_increase':
+    case 'group_decrease':
       messageStore.convertToMessage(data)
-      if (data.notice_type === 'group_ban') contactStore.updateGroupMember(data)
+      if (data.notice_type !== 'friend_add') contactStore.updateGroupMember(data)
       break
     case 'notify':
       const notifyTypes = ['poke', 'lucky_king', 'honor', 'title']
@@ -79,13 +82,6 @@ function noticeEvent(data: Notice) {
     case 'essence':
     case 'group_msg_emoji_like':
       messageStore.updateMessage(data)
-      break
-    // 添加消息通知
-    case 'group_increase':
-    case 'group_decrease':
-    case 'group_admin':
-      contactStore.addNotice(data)
-      contactStore.updateGroupMember(data)
       break
     // 更新用户信息
     case 'group_card':

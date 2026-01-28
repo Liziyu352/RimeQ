@@ -279,14 +279,14 @@ export const useMessageStore = defineStore('message', () => {
           text = `${userName} 退出了群聊`
         } else {
           const operatorName = contactStore.getUserName(notice.operator_id, notice.group_id)
-          text = `${userName} 已被 ${operatorName} 移出了群聊`
+          text = `${userName} 被 ${operatorName} 移出了群聊`
         }
         break
       }
       case 'group_admin': {
         targetId = notice.group_id
         const userName = contactStore.getUserName(notice.user_id, notice.group_id)
-        text = notice.sub_type === 'set' ? `${userName} 成为了管理员` : `${userName} 被取消管理员`
+        text = `${userName} 被${notice.sub_type === 'set' ? '设为' : '取消'}了管理员`
         break
       }
       case 'group_ban': {

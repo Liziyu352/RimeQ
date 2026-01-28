@@ -4,7 +4,7 @@ import { useSettingStore } from '@/stores/setting'
 // 视图组件
 import ChatView from '@/views/Chat.vue'
 import LoginView from '@/views/Login.vue'
-import NoticeView from '@/views/Notice.vue'
+import RequestView from '@/views/Request.vue'
 import SessionList from '@/views/Session.vue'
 import ContactList from '@/views/Contact.vue'
 import SettingsView from '@/views/Settings.vue'
@@ -36,10 +36,10 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '好友' }
   },
   {
-    path: '/notice',
-    name: 'Notice',
-    components: { default: NoticeView, nav: ContactList },
-    meta: { title: '通知' }
+    path: '/request',
+    name: 'Request',
+    components: { default: RequestView, nav: ContactList },
+    meta: { title: '请求' }
   },
   {
     path: '/:id/info',

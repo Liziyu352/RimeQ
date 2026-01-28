@@ -65,50 +65,53 @@
       <div v-if="loading" class="h-full ui-flex-center">
         <ProgressSpinner />
       </div>
-      <!-- 列表项 -->
-      <div v-else-if="filteredItems.length" class="flex flex-col gap-0.5">
-        <div
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="group ui-flex-x gap-2 px-2 py-1.5 rounded-lg cursor-pointer ui-trans hover:bg-background-dim/40 border border-transparent hover:border-background-dim/30 active:scale-[0.99] relative overflow-hidden"
-          :class="{ '!bg-primary/20 !border-primary/20': selectedFiles.has(item.id) && isBatchMode }"
-          @click.stop="handleItemClick(item)"
-          @contextmenu.prevent="!isBatchMode && ((menuTarget = item), menu.show($event))"
-        >
-          <!-- 图标 -->
-          <div class="shrink-0 text-xl flex items-center justify-center w-7 h-7" :class="getFileIcon(item.name, item.type)?.color">
-            <div :class="getFileIcon(item.name, item.type)?.icon" />
-          </div>
-          <!-- 信息 -->
-          <div class="ui-flex-truncate flex flex-col gap-0.5 min-w-0 ui-trans relative z-0">
-            <div class="text-sm text-foreground-main truncate group-hover:text-primary ui-trans font-medium pr-1">
-              {{ item.name }}
-            </div>
-            <div class="text-[10px] text-foreground-sub/70 flex items-center gap-1.5 font-mono leading-none min-w-0">
-              <span class="shrink-0">{{ item.type === 'folder' ? `${item.count}项` : item.size }}</span>
-              <template v-if="item.uploader">
-                <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
-                <span class="truncate">{{ item.uploader }}</span>
-              </template>
-              <template v-if="item.expire_time">
-                <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
-                <span class="shrink-0">
-                  {{ Math.ceil((item.expire_time * 1000 - Date.now()) / 86400000) }}天
-                </span>
-              </template>
-            </div>
-          </div>
-          <!-- 悬浮操作按钮 -->
-          <div class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
-            <Button icon="i-ri-more-2-fill" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim" @click.stop="(menuTarget = item), menu.show($event)"/>
-          </div>
-        </div>
-      </div>
       <!-- 空状态 -->
-      <div v-else class="flex flex-col items-center justify-center py-20 text-foreground-dim opacity-60">
+      <div v-else-if="!filteredItems.length" class="flex flex-col items-center justify-center py-20 text-foreground-dim opacity-60">
         <div class="i-ri-folder-open-line text-4xl mb-2" />
         <span class="text-xs">暂无文件</span>
       </div>
+      <!-- 列表项 -->
+      <VirtualScroller v-else :items="filteredItems" :item-size="64" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
+        <template #item="{ item }">
+          <div class="py-[1px]">
+            <div
+              :key="item.id"
+              class="group ui-flex-x gap-2 px-2 py-1.5 rounded-lg cursor-pointer ui-trans hover:bg-background-dim/40 border border-transparent hover:border-background-dim/30 active:scale-[0.99] relative overflow-hidden"
+              :class="{ '!bg-primary/20 !border-primary/20': selectedFiles.has(item.id) && isBatchMode }"
+              @click.stop="handleItemClick(item)"
+              @contextmenu.prevent="!isBatchMode && ((menuTarget = item), menu.show($event))"
+            >
+              <!-- 图标 -->
+              <div class="shrink-0 text-xl flex items-center justify-center w-7 h-7" :class="getFileIcon(item.name, item.type)?.color">
+                <div :class="getFileIcon(item.name, item.type)?.icon" />
+              </div>
+              <!-- 信息 -->
+              <div class="ui-flex-truncate flex flex-col gap-0.5 min-w-0 ui-trans relative z-0">
+                <div class="text-sm text-foreground-main truncate group-hover:text-primary ui-trans font-medium pr-1">
+                  {{ item.name }}
+                </div>
+                <div class="text-[10px] text-foreground-sub/70 flex items-center gap-1.5 font-mono leading-none min-w-0">
+                  <span class="shrink-0">{{ item.type === 'folder' ? `${item.count}项` : item.size }}</span>
+                  <template v-if="item.uploader">
+                    <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
+                    <span class="truncate">{{ item.uploader }}</span>
+                  </template>
+                  <template v-if="item.expire_time">
+                    <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
+                    <span class="shrink-0">
+                      {{ Math.ceil((item.expire_time * 1000 - Date.now()) / 86400000) }}天
+                    </span>
+                  </template>
+                </div>
+              </div>
+              <!-- 悬浮操作按钮 -->
+              <div class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
+                <Button icon="i-ri-more-2-fill" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim" @click.stop="(menuTarget = item), menu.show($event)"/>
+              </div>
+            </div>
+          </div>
+        </template>
+      </VirtualScroller>
     </div>
     <!-- 批量操作栏 -->
     <Transition
@@ -187,7 +190,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, ContextMenu, ProgressSpinner } from 'primevue'
+import { Button, useToast, useConfirm, Dialog, InputText, IconField, InputIcon, ContextMenu, ProgressSpinner, VirtualScroller } from 'primevue'
 import type { MenuItem } from 'primevue/menuitem'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'

@@ -6,20 +6,20 @@
       <div v-if="!keyword">
         <!-- 平板模式 -->
         <div
-          title="系统通知"
+          title="验证消息"
           class="h-10 w-full ui-flex-center rounded-2xl cursor-pointer ui-ia group border hidden md:flex xl:hidden relative"
           :class="[
-            route.path === '/notice'
+            route.path === '/request'
               ? '!bg-primary !text-white shadow-md border-transparent'
               : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
           ]"
-          @click="router.push('/notice')"
+          @click="router.push('/request')"
         >
           <div
             class="text-xl transition-colors"
             :class="[
               noticeCount > 0 ? 'i-ri-notification-3-fill' : 'i-ri-notification-3-line',
-              route.path === '/notice' ? '' : (noticeCount > 0 ? 'text-primary' : 'text-current')
+              route.path === '/request' ? '' : (noticeCount > 0 ? 'text-primary' : 'text-current')
             ]"
           />
           <Badge
@@ -33,27 +33,27 @@
         <div
           class="h-12 ui-flex-x px-3 gap-3 rounded-2xl cursor-pointer border ui-ia group flex md:hidden xl:flex"
           :class="[
-            route.path === '/notice'
+            route.path === '/request'
               ? '!bg-primary !text-white shadow-md border-transparent'
               : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
           ]"
-          @click="router.push('/notice')"
+          @click="router.push('/request')"
         >
           <div
             class="w-8 h-8 rounded-full ui-flex-center shrink-0 shadow-sm transition-colors"
             :class="[
-              route.path === '/notice'
+              route.path === '/request'
                 ? 'bg-white/20 text-white'
                 : 'bg-white dark:bg-black/20 text-primary'
             ]"
           >
             <div class="i-ri-notification-3-fill text-lg" />
           </div>
-          <div class="flex-1 font-bold text-sm transition-colors">系统通知</div>
+          <div class="flex-1 font-bold text-sm transition-colors">验证消息</div>
           <Badge v-if="noticeCount > 0" :value="noticeCount" severity="danger" />
           <div
             class="i-ri-arrow-right-s-line transition-all"
-            :class="route.path === '/notice' ? 'text-white/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
+            :class="route.path === '/request' ? 'text-white/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
           />
         </div>
       </div>
@@ -128,27 +128,29 @@
       </template>
       <!-- 场景 B: 群组列表 -->
       <template v-else>
-        <div
-          v-for="group in filteredGroups"
-          :key="group.group_id"
-          class="ui-flex-x gap-3 p-2 rounded-2xl group relative ui-ia-hover md:justify-center xl:justify-start"
-          @click="router.push(`/${group.group_id}`)"
-        >
-          <Avatar
-            shape="circle"
-            :image="`https://p.qlogo.cn/gh/${group.group_id}/${group.group_id}/0`"
-            class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
-          />
-          <div class="ui-flex-truncate block md:hidden xl:block">
-            <div class="text-sm font-medium text-foreground-main truncate group-hover:text-primary transition-colors">
-              {{ group.group_remark ? `${group.group_remark} (${group.group_name})` : group.group_name }}
+        <VirtualScroller :items="filteredGroups" :item-size="32" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
+          <template #item="{ item: group }">
+            <div
+              class="ui-flex-x gap-3 p-2 rounded-2xl group relative ui-ia-hover md:justify-center xl:justify-start"
+              @click="router.push(`/${group.group_id}`)"
+            >
+              <Avatar
+                shape="circle"
+                :image="`https://p.qlogo.cn/gh/${group.group_id}/${group.group_id}/0`"
+                class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
+              />
+              <div class="ui-flex-truncate block md:hidden xl:block">
+                <div class="text-sm font-medium text-foreground-main truncate group-hover:text-primary transition-colors">
+                  {{ group.group_remark ? `${group.group_remark} (${group.group_name})` : group.group_name }}
+                </div>
+                <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60 flex items-center gap-1.5">
+                  <span>{{ group.group_id }}</span>
+                  <Badge :value="`${group.member_count}/${group.max_member_count}`" severity="secondary" class="!text-[9px] !h-3.5 !bg-transparent !px-0" />
+                </div>
+              </div>
             </div>
-            <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60 flex items-center gap-1.5">
-              <span>{{ group.group_id }}</span>
-              <Badge :value="`${group.member_count}/${group.max_member_count}`" severity="secondary" class="!text-[9px] !h-3.5 !bg-transparent !px-0" />
-            </div>
-          </div>
-        </div>
+          </template>
+        </VirtualScroller>
       </template>
     </div>
   </div>
@@ -157,7 +159,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Avatar, Badge, Accordion, AccordionPanel, AccordionHeader, AccordionContent } from 'primevue'
+import { Avatar, Badge, Accordion, AccordionPanel, AccordionHeader, AccordionContent, VirtualScroller } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useContactStore } from '@/stores'
 import { type GroupInfo, SearchKey } from '@/types'

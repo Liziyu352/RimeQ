@@ -88,74 +88,8 @@
            </div>
         </div>
       </section>
-      <!-- 系统通知 -->
-      <section v-if="notices.length > 0" class="flex gap-1 relative shrink-0 min-h-[60px]">
-        <!-- 左侧列表 -->
-        <div class="flex-1 min-w-0">
-          <TransitionGroup
-            tag="div"
-            class="flex flex-col gap-2"
-            enter-active-class="ui-trans ui-dur-fast"
-            leave-active-class="ui-trans ui-dur-fast"
-            enter-from-class="opacity-0 -translate-x-4"
-            leave-to-class="opacity-0 -translate-x-4"
-          >
-            <div
-              v-for="(item, idx) in notices"
-              :key="item.time + '_' + idx"
-              class="group relative bg-background-sub hover:bg-background-dim/40 rounded-2xl p-3 shadow-sm border border-transparent hover:border-background-dim/50 ui-trans ui-dur-fast flex items-center gap-4 overflow-hidden"
-            >
-              <!-- 头像 -->
-              <div class="shrink-0">
-                 <Avatar
-                  :image="getAvatar(item)"
-                  shape="circle"
-                  class="!w-12 !h-12 border border-background-dim bg-background-dim shadow-sm"
-                />
-              </div>
-              <!-- 文本信息 -->
-              <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
-                <div class="text-sm font-bold text-foreground-main truncate">
-                  {{ getNotice(item) }}
-                </div>
-              </div>
-              <!-- 右侧选项 -->
-              <div class="shrink-0 flex items-center gap-4">
-                <div class="opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 ui-trans ui-dur-fast">
-                  <Button
-                    v-tooltip.top="'删除'"
-                    icon="i-ri-close-line"
-                    rounded
-                    class="!w-9 !h-9 !p-0 !text-foreground-sub !bg-background-main hover:!text-red-500 hover:!bg-red-50 !border !border-background-dim shadow-sm transition-all"
-                    @click="contactStore.removeNotice(item)"
-                  />
-                </div>
-                <!-- 时间 -->
-                <div class="text-xs font-bold text-foreground-dim/60 font-mono whitespace-nowrap min-w-[40px] text-right">
-                  {{ formatTime(item.time * 1000) }}
-                </div>
-              </div>
-            </div>
-          </TransitionGroup>
-        </div>
-        <!-- 右侧指示条 -->
-        <div
-          class="w-6 shrink-0 rounded-2xl border border-transparent hover:border-foreground-dim/10 cursor-pointer group/bar transition-all duration-300 relative flex justify-center"
-          @click="contactStore.removeNotice({} as any, true)"
-        >
-           <div class="sticky top-1/2 -translate-y-1/2 h-fit py-2 flex flex-col items-center gap-1.5 text-[10px]">
-              <span class="font-bold text-foreground-dim/50 group-hover/bar:text-foreground-main transition-colors select-none" style="writing-mode: vertical-rl; letter-spacing: 2px;">
-                通知
-              </span>
-              <span class="font-bold text-foreground-dim/80 group-hover/bar:text-foreground-main transition-colors select-none" style="writing-mode: vertical-rl; text-orientation: upright;">
-                {{ notices.length }}
-              </span>
-              <div class="i-ri-delete-bin-line text-foreground-dim/50 group-hover/bar:text-foreground-main text-sm transition-all opacity-0 group-hover/bar:opacity-100" />
-           </div>
-        </div>
-      </section>
       <!-- 空状态 -->
-      <div v-if="requests.length === 0 && notices.length === 0" class="flex flex-col items-center justify-center py-32 text-foreground-dim select-none opacity-60">
+      <div v-if="requests.length === 0" class="flex flex-col items-center justify-center py-32 text-foreground-dim select-none opacity-60">
         <div class="w-24 h-24 rounded-3xl bg-background-dim/30 ui-flex-center mb-6">
            <div class="i-ri-notification-off-line text-4xl" />
         </div>
@@ -171,16 +105,15 @@ import { useToast, Avatar, Button } from 'primevue'
 import { bot } from '@/api'
 import { useContactStore } from '@/stores'
 import { formatTime } from '@/utils/format'
-import type { Request, Notice } from '@/types'
+import type { Request } from '@/types'
 
-defineOptions({ name: 'NoticeView' })
+defineOptions({ name: 'RequestView' })
 
 const toast = useToast()
 const contactStore = useContactStore()
 
 // 排序列表
 const requests = computed(() => [...contactStore.requests].sort((a, b) => b.time - a.time))
-const notices = computed(() => [...contactStore.notices.user].sort((a, b) => b.time - a.time))
 
 // 生成请求
 const getRequest = (item: Request): string => {
@@ -193,45 +126,10 @@ const getRequest = (item: Request): string => {
 }
 
 // 获取头像
-const getAvatar = (item: Request | Notice) => {
-  if (item.post_type === 'request') {
-    if (item.request_type === 'group' && item.sub_type === 'invite')
-      return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
-    return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}` }
-  if ('user_id' in item && item.user_id) return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`
-  if ('operator_id' in item && item.operator_id) return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.operator_id}`
-  if ('group_id' in item && item.group_id) return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
-}
-
-// 生成通知
-const getNotice = (n: Notice): string => {
-  switch (n.notice_type) {
-    case 'group_increase': {
-      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
-      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
-      if (n.sub_type === 'invite') {
-        const opName = contactStore.getUserName(n.operator_id, n.group_id, String(n.operator_id))
-        return `${opName} 邀请 ${userName} 加入了 ${groupName}`
-      }
-      return `${userName} 加入了 ${groupName}`
-    }
-    case 'group_decrease': {
-      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
-      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
-      if (n.sub_type === 'kick') {
-        const opName = contactStore.getUserName(n.operator_id, n.group_id, String(n.operator_id))
-        return `${userName} 被 ${opName} 移出了 ${groupName}`
-      }
-      return `${userName} 退出了 ${groupName}`
-    }
-    case 'group_admin': {
-      const groupName = contactStore.getGroupName(n.group_id, String(n.group_id))
-      const userName = contactStore.getUserName(n.user_id, n.group_id, String(n.user_id))
-      return `${userName} 被${n.sub_type === 'set' ? '设为' : '取消'}了 ${groupName} 的管理员`
-    }
-    default:
-      return ''
-  }
+const getAvatar = (item: Request) => {
+  if (item.request_type === 'group' && item.sub_type === 'invite')
+    return `https://p.qlogo.cn/gh/${item.group_id}/${item.group_id}/0`
+  return `https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`
 }
 
 // 处理请求

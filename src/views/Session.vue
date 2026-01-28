@@ -3,76 +3,79 @@
   <div class="ui-flex-col-full bg-transparent">
     <!-- 滚动区域 -->
     <div class="flex-1 overflow-y-auto ui-scrollbar px-2 py-2">
-      <div class="flex flex-col gap-1">
-        <!-- 会话项 -->
-        <div
-          v-for="session in filteredSessions"
-          :key="session.id"
-          class="group relative rounded-xl cursor-pointer select-none overflow-hidden ui-trans ui-dur-normal p-2.5 md:p-2 xl:p-2.5"
-          :class="[
-            isActive(session.id)
-              ? 'bg-primary text-primary-content shadow-md shadow-primary/20'
-              : 'hover:ui-bg-background-dim/50 bg-transparent text-foreground-main'
-          ]"
-          @click="handleSessionClick(session.id)"
-        >
-          <!-- 内容布局 -->
-          <div class="grid grid-cols-[auto_1fr] items-center ui-trans ui-dur-normal">
-            <!-- 头像区域 -->
-            <div class="relative ui-flex-center">
-              <Avatar
-                shape="circle"
-                :image="session.avatar"
-                class="shrink-0 select-none ui-trans ui-dur-normal !w-10 !h-10"
-                :class="[
-                  isActive(session.id)
-                    ? 'ring-0 bg-transparent'
-                    : 'border ui-border-background-dim/30 bg-background-sub'
-                ]"
-              />
-              <!-- 未读角标 -->
-              <Badge
-                v-if="session.unread > 0"
-                :value="session.unread"
-                severity="danger"
-                class="absolute -top-1 -right-1 !text-[10px] !h-4 !max-w-9 ui-trans ui-dur-normal"
-                :class="isActive(session.id) ? 'border-primary' : 'border-background-sub'"
-              />
-            </div>
-            <!-- 文本信息 (平板模式隐藏) -->
+      <VirtualScroller :items="filteredSessions" :item-size="64" class="size-full ui-scrollbar" >
+        <template #item="{ item: session }">
+          <div class="py-0.5">
+            <!-- 会话项 -->
             <div
-              class="grid ui-trans ui-dur-normal ease-in-out grid-cols-[1fr] opacity-100 ml-3 md:grid-cols-[0fr] md:opacity-0 md:ml-0 xl:grid-cols-[1fr] xl:opacity-100 xl:ml-3"
+              :key="session.id"
+              class="group relative rounded-xl cursor-pointer select-none overflow-hidden ui-trans ui-dur-normal p-2.5 md:p-2 xl:p-2.5"
+              :class="[
+                isActive(session.id)
+                  ? 'bg-primary text-primary-content shadow-md shadow-primary/20'
+                  : 'hover:ui-bg-background-dim/50 bg-transparent text-foreground-main'
+              ]"
+              @click="handleSessionClick(session.id)"
             >
-              <div class="overflow-hidden min-w-0 flex flex-col justify-center h-10">
-                <!-- 顶部：名称 + 时间 -->
-                <div class="ui-flex-between mb-0.5">
-                  <span
-                    class="text-[14px] font-medium truncate ui-trans ui-dur-fast"
-                    :class="isActive(session.id) ? 'font-bold' : ''"
-                  >
-                    {{ getSessionName(session) }}
-                  </span>
-                  <span
-                    class="text-xs shrink-0 ml-2 font-mono ui-trans ui-dur-fast"
-                    :class="isActive(session.id) ? 'text-primary-content/80' : 'text-foreground-dim'"
-                  >
-                    {{ formatTime(session.time) }}
-                  </span>
+              <!-- 内容布局 -->
+              <div class="grid grid-cols-[auto_1fr] items-center ui-trans ui-dur-normal">
+                <!-- 头像区域 -->
+                <div class="relative ui-flex-center">
+                  <Avatar
+                    shape="circle"
+                    :image="session.avatar"
+                    class="shrink-0 select-none ui-trans ui-dur-normal !w-10 !h-10"
+                    :class="[
+                      isActive(session.id)
+                        ? 'ring-0 bg-transparent'
+                        : 'border ui-border-background-dim/30 bg-background-sub'
+                    ]"
+                  />
+                  <!-- 未读角标 -->
+                  <Badge
+                    v-if="session.unread > 0"
+                    :value="session.unread"
+                    severity="danger"
+                    class="absolute -top-1 -right-1 !text-[10px] !h-4 !max-w-9 ui-trans ui-dur-normal"
+                    :class="isActive(session.id) ? 'border-primary' : 'border-background-sub'"
+                  />
                 </div>
-                <!-- 底部：预览内容 -->
-                <div class="ui-flex-x">
-                  <span
-                    class="truncate text-[12px] ui-trans ui-dur-fast"
-                    :class="isActive(session.id) ? 'text-primary-content/70' : 'text-foreground-sub opacity-80'"
-                  >
-                    {{ session.preview }}
-                  </span>
+                <!-- 文本信息 (平板模式隐藏) -->
+                <div
+                  class="grid ui-trans ui-dur-normal ease-in-out grid-cols-[1fr] opacity-100 ml-3 md:grid-cols-[0fr] md:opacity-0 md:ml-0 xl:grid-cols-[1fr] xl:opacity-100 xl:ml-3"
+                >
+                  <div class="overflow-hidden min-w-0 flex flex-col justify-center h-10">
+                    <!-- 顶部：名称 + 时间 -->
+                    <div class="ui-flex-between mb-0.5">
+                      <span
+                        class="text-[14px] font-medium truncate ui-trans ui-dur-fast"
+                        :class="isActive(session.id) ? 'font-bold' : ''"
+                      >
+                        {{ getSessionName(session) }}
+                      </span>
+                      <span
+                        class="text-xs shrink-0 ml-2 font-mono ui-trans ui-dur-fast"
+                        :class="isActive(session.id) ? 'text-primary-content/80' : 'text-foreground-dim'"
+                      >
+                        {{ formatTime(session.time) }}
+                      </span>
+                    </div>
+                    <!-- 底部：预览内容 -->
+                    <div class="ui-flex-x">
+                      <span
+                        class="truncate text-[12px] ui-trans ui-dur-fast"
+                        :class="isActive(session.id) ? 'text-primary-content/70' : 'text-foreground-sub opacity-80'"
+                      >
+                        {{ session.preview }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </VirtualScroller>
     </div>
   </div>
 </template>
@@ -80,7 +83,7 @@
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Avatar } from 'primevue'
+import { Avatar, Badge, VirtualScroller } from 'primevue'
 import { useSessionStore, useContactStore, type Session } from '@/stores'
 import { formatTime } from '@/utils/format'
 import { SearchKey } from '@/types'

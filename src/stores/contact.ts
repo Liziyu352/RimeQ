@@ -3,10 +3,7 @@ import { reactive, shallowRef } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { bot } from '@/api'
 import { database } from './database'
-import type { GroupInfo, Request, Notice, FriendCategory, GroupMemberInfo,
-  GroupIncreaseNotice, GroupDecreaseNotice, GroupAdminNotice } from '@/types'
-
-type UserNotice = GroupIncreaseNotice | GroupDecreaseNotice | GroupAdminNotice
+import type { GroupInfo, Request, Notice, FriendCategory, GroupMemberInfo } from '@/types'
 
 /**
  * 联系人与通知状态管理 Store
@@ -20,7 +17,7 @@ export const useContactStore = defineStore('contact', () => {
   /** 持久化的系统请求 */
   const requests = useStorage<Request[]>('rimeq-requests', [])
   /** 持久化的系统通知 */
-  const notices = useStorage<{ user: UserNotice[], msg: Notice[] }>('rimeq-notices', { user: [], msg: [] })
+  const notices = useStorage<Notice[]>('rimeq-notices', [])
   /** 群成员内存缓存 */
   const members = reactive(new Map<number, GroupMemberInfo[]>())
   /** 已加载成员列表的群组 ID */
@@ -166,12 +163,13 @@ export const useContactStore = defineStore('contact', () => {
    * 添加一条需要用户处理的通知
    * @param notice - 新的通知对象
    */
-  function addNotice(notice: UserNotice) {
-    const targetArray = notices.value.user
-    const exists = targetArray.some(n =>
-      n.time === notice.time && n.user_id === notice.user_id && n.notice_type === notice.notice_type
+  function addNotice(notice: Notice) {
+    const exists = notices.value.some(n =>
+      n.time === notice.time &&
+      n.notice_type === notice.notice_type &&
+      (n as any).user_id === (notice as any).user_id
     )
-    if (!exists) targetArray.unshift(notice)
+    if (!exists) notices.value.unshift(notice)
   }
 
   /**
@@ -194,16 +192,15 @@ export const useContactStore = defineStore('contact', () => {
    * @param notice - 要移除的通知对象
    * @param clear - 是否清空所有通知
    */
-  function removeNotice(notice: UserNotice, clear = false) {
-    if (clear) {
-      notices.value = { user: [], msg: [] }
-      return
-    }
+  function removeNotice(notice: Notice, clear = false) {
+    if (clear) return (notices.value = [])
     if (!notice) return
-    const index = notices.value.user.findIndex(n =>
-      n.time === notice.time && n.user_id === notice.user_id && n.notice_type === notice.notice_type
+    const index = notices.value.findIndex(n =>
+      n.time === notice.time &&
+      n.notice_type === notice.notice_type &&
+      (n as any).user_id === (notice as any).user_id
     )
-    if (index !== -1) notices.value.user.splice(index, 1)
+    if (index > -1) notices.value.splice(index, 1)
   }
 
   /**
