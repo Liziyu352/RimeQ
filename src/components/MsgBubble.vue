@@ -43,8 +43,17 @@
         <!-- 昵称 / 头衔 -->
         <template v-if="msg.message_type === 'group'">
           <span class="text-xs font-medium ui-text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
-          <Chip v-if="msg.sender.role === 'owner'" label="群主" class="!text-[10px] !h-4 !px-1 !bg-yellow-500/10 !text-yellow-600 !border-none !rounded-sm font-bold" />
-          <Chip v-if="msg.sender.role === 'admin'" label="管理" class="!text-[10px] !h-4 !px-1 !bg-green-500/10 !text-green-600 !border-none !rounded-sm font-bold" />
+          <!-- 头衔展示 -->
+          <Chip
+            v-if="groupMember.title || groupMember.role === 'owner' || groupMember.role === 'admin'"
+            :label="groupMember.title || (groupMember.role === 'owner' ? '群主' : '管理')"
+            class="!text-[10px] !h-4 !px-1 !border-none !rounded-sm font-bold leading-tight shrink-0"
+            :class="[
+              groupMember.role === 'owner' ? '!bg-yellow-500/10 !text-yellow-600' :
+              groupMember.role === 'admin' ? '!bg-green-500/10 !text-green-600' :
+              '!bg-main/10 !text-primary'
+            ]"
+          />
         </template>
         <!-- 撤回状态 -->
         <span v-if="isRecalled" class="text-[10px] ui-text-foreground-dim flex items-center gap-1 bg-background-dim/50 px-1.5 py-0.5 rounded-sm">
@@ -117,7 +126,7 @@
 <script setup lang="ts">
 import { computed, inject, provide } from 'vue'
 import { Avatar, Chip } from 'primevue'
-import { useSettingStore, useMessageStore } from '@/stores'
+import { useSettingStore, useMessageStore, useContactStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
 import ElementRenderer from '@/components/ElementRenderer.vue'
 import { getElement } from '@/components/elements'
@@ -125,6 +134,7 @@ import { ChatCtxKey, MsgCtxKey, type Message } from '@/types'
 
 const settingStore = useSettingStore()
 const messageStore = useMessageStore()
+const contactStore = useContactStore()
 
 const props = defineProps<{
   msg: Message
@@ -142,6 +152,15 @@ const isMe = computed(() => props.msg.sender.user_id === settingStore.user?.user
 const isSystem = computed(() => props.msg.sender.user_id === 10000) // 是否系统通知
 const isRecalled = computed(() => !!(props.msg as any).recalled) // 是否已被撤回
 const systemPreview = computed(() => isSystem.value ? getTextPreview(props.msg.message, props.msg.group_id) : '') // 系统消息预览
+
+// 计算属性：群成员信息
+const groupMember = computed(() => {
+  if (props.msg.message_type === 'group' && props.msg.group_id) {
+    const member = contactStore.members.get(props.msg.group_id)?.find(m => m.user_id === props.msg.sender.user_id)
+    if (member) return member
+  }
+  return props.msg.sender
+})
 
 provide(MsgCtxKey, computed(() => ({
   groupId: props.msg.group_id,

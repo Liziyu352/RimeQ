@@ -128,7 +128,7 @@
       </template>
       <!-- 场景 B: 群组列表 -->
       <template v-else>
-        <VirtualScroller :items="filteredGroups" :item-size="32" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
+        <VirtualScroller :items="filteredGroups" :item-size="50" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
           <template #item="{ item: group }">
             <div
               class="ui-flex-x gap-3 p-2 rounded-2xl group relative ui-ia-hover md:justify-center xl:justify-start"

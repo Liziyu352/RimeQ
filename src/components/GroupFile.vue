@@ -71,9 +71,9 @@
         <span class="text-xs">暂无文件</span>
       </div>
       <!-- 列表项 -->
-      <VirtualScroller v-else :items="filteredItems" :item-size="64" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
+      <VirtualScroller v-else :items="filteredItems" :item-size="46" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
         <template #item="{ item }">
-          <div class="py-[1px]">
+          <div class="h-[46px] py-[1px]">
             <div
               :key="item.id"
               class="group ui-flex-x gap-2 px-2 py-1.5 rounded-lg cursor-pointer ui-trans hover:bg-background-dim/40 border border-transparent hover:border-background-dim/30 active:scale-[0.99] relative overflow-hidden"

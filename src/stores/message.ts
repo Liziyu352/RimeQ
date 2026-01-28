@@ -266,9 +266,9 @@ export const useMessageStore = defineStore('message', () => {
         const userName = contactStore.getUserName(notice.user_id, notice.group_id)
         if (notice.sub_type === 'invite' || notice.user_id !== notice.operator_id) {
           const operatorName = contactStore.getUserName(notice.operator_id, notice.group_id)
-          text = `${operatorName} 邀请 ${userName} 加入了群聊`
+          text = `${operatorName} 邀请 ${userName} 加入了本群`
         } else {
-          text = `${userName} 加入了群聊`
+          text = `${userName} 加入了本群`
         }
         break
       }
@@ -276,10 +276,10 @@ export const useMessageStore = defineStore('message', () => {
         targetId = notice.group_id
         const userName = contactStore.getUserName(notice.user_id, notice.group_id)
         if (notice.sub_type === 'leave') {
-          text = `${userName} 退出了群聊`
+          text = `${userName} 退出了本群`
         } else {
           const operatorName = contactStore.getUserName(notice.operator_id, notice.group_id)
-          text = `${userName} 被 ${operatorName} 移出了群聊`
+          text = `${userName} 被 ${operatorName} 移出了本群`
         }
         break
       }
@@ -302,21 +302,17 @@ export const useMessageStore = defineStore('message', () => {
       }
       case 'notify': {
         if (notice.sub_type === 'poke') {
-          const isGroup = !!notice.group_id
-          targetId = isGroup ? notice.group_id! : (notice.user_id === settingStore.user?.user_id ? notice.target_id : notice.user_id)
+          const { group_id, user_id, target_id, raw_info } = notice
+          const isGroup = !!group_id
+          targetId = isGroup ? group_id! : (user_id === settingStore.user?.user_id ? target_id : user_id)
           targetType = isGroup ? 'group' : 'private'
-          const operatorName = contactStore.getUserName(notice.user_id, isGroup ? notice.group_id : undefined)
-          const targetName = isGroup ? contactStore.getUserName(notice.target_id, notice.group_id) : '你'
-          let actionText = '戳了戳'
-          try {
-            const rawInfo = notice.raw_info
-            if (rawInfo && typeof rawInfo === 'string') {
-            } else if (Array.isArray(rawInfo)) {
-               const texts = rawInfo.filter((i: any) => i.type === 'nor' && i.txt).map((i: any) => i.txt)
-               if (texts.length > 0) actionText = texts.join(' ')
-            }
-          } catch { /* ignore */ }
-          text = `${operatorName} ${actionText} ${targetName}`
+          if (Array.isArray(raw_info)) {
+            let idx = 0
+            text = raw_info.map((n: any) => {
+              if (n.type === 'qq') return contactStore.getUserName(idx++ === 0 ? user_id : target_id, group_id)
+              return n.type === 'nor' ? n.txt : ''
+            }).join('')
+          }
         } else if (notice.sub_type === 'lucky_king') {
           targetId = notice.group_id
           const luckyName = contactStore.getUserName(notice.target_id, notice.group_id)
