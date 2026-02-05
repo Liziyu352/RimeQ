@@ -40,7 +40,7 @@
               <span
                 class="px-1 rounded-[4px] text-[9px] font-bold leading-none border h-3.5 flex items-center"
                 :class="[
-                  index === selectedIndex ? 'bg-white/20 text-white border-white/20' : '',
+                  index === selectedIndex ? 'bg-primary-content/20 text-primary-content border-primary-content/20' : '',
                   item.role === 'owner' && index !== selectedIndex ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' : '',
                   item.role === 'admin' && index !== selectedIndex ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' : ''
                 ]"

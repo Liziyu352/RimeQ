@@ -117,21 +117,22 @@ export const useSettingStore = defineStore('setting', () => {
       h = Math.round(h * 60)
     }
     s = Math.round(s * 100)
+    const L = Math.round(l * 100)
 
     return {
       // 品牌色
-      '--primary-color': `hsl(${h}, ${s}%, ${l}%)`,
-      '--primary-hover': `hsl(${h}, ${s}%, ${isDark ? Math.min(l + 5, 95) : Math.max(l - 5, 20)}%)`,
-      '--primary-active': `hsl(${h}, ${s}%, ${isDark ? Math.min(l + 10, 98) : Math.max(l - 10, 10)}%)`,
+      '--primary-color': `hsl(${h}, ${s}%, ${L}%)`,
+      '--primary-hover': `hsl(${h}, ${Math.min(s + 5, 100)}%, ${isDark ? Math.min(L + 10, 90) : Math.max(L - 10, 15)}%)`,
+      '--primary-active': `hsl(${h}, ${Math.min(s + 10, 100)}%, ${isDark ? Math.min(L + 20, 95) : Math.max(L - 20, 10)}%)`,
       '--primary-content': ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#000000' : '#ffffff',
       // 背景色
-      '--color-main': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 6%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 95%)`,
-      '--color-sub': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 11%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 99%)`,
-      '--color-dim': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 18%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 90%)`,
+      '--color-main': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 3%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 99%)`,
+      '--color-sub': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 6%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 96%)`,
+      '--color-dim': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 9%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 93%)`,
       // 文本色
       '--text-main': isDark ? 'hsla(0, 0%, 100%, 0.9)' : 'hsla(0, 0%, 0%, 0.9)',
       '--text-sub': isDark ? 'hsla(0, 0%, 100%, 0.6)' : 'hsla(0, 0%, 0%, 0.6)',
-      '--text-dim': isDark ? 'hsla(0, 0%, 100%, 0.35)' : 'hsla(0, 0%, 0%, 0.35)',
+      '--text-dim': isDark ? 'hsla(0, 0%, 100%, 0.3)' : 'hsla(0, 0%, 0%, 0.3)',
     }
   }
 

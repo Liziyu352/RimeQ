@@ -9,7 +9,7 @@
   <div
     v-else
     :id="`msg-${msg.message_id}`"
-    class="flex w-full mb-3 gap-3 relative group transition-opacity duration-200"
+    class="flex w-full mb-3 gap-3 relative group ui-trans ui-dur-normal"
     :class="[
       isMe ? 'flex-row-reverse' : 'flex-row',
       selectionMode && !isSelected ? 'opacity-50' : 'opacity-100'
@@ -42,27 +42,27 @@
       >
         <!-- 昵称 / 头衔 -->
         <template v-if="msg.message_type === 'group'">
-          <span class="text-xs font-medium ui-text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
+          <span class="text-xs font-medium text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
           <!-- 头衔展示 -->
           <Chip
             v-if="groupMember.title || groupMember.role === 'owner' || groupMember.role === 'admin'"
             :label="groupMember.title || (groupMember.role === 'owner' ? '群主' : '管理')"
-            class="!text-[10px] !h-4 !px-1 !border-none !rounded-sm font-bold leading-tight shrink-0"
+            class="text-[10px] h-4 !px-1 font-bold leading-tight shrink-0"
             :class="[
-              groupMember.role === 'owner' ? '!bg-yellow-500/10 !text-yellow-600' :
-              groupMember.role === 'admin' ? '!bg-green-500/10 !text-green-600' :
-              '!bg-main/10 !text-primary'
+              groupMember.role === 'owner' ? 'bg-yellow-500/10 !text-yellow-600' :
+              groupMember.role === 'admin' ? 'bg-green-500/10 !text-green-600' :
+              'bg-background-dim/50 text-foreground-sub'
             ]"
           />
         </template>
         <!-- 撤回状态 -->
-        <span v-if="isRecalled" class="text-[10px] ui-text-foreground-dim flex items-center gap-1 bg-background-dim/50 px-1.5 py-0.5 rounded-sm">
+        <span v-if="isRecalled" class="text-[10px] text-foreground-dim flex items-center gap-1 bg-background-dim/50 px-1.5 py-0.5 rounded-sm">
           <div class="i-ri-arrow-go-back-line" /> 已撤回
         </span>
       </div>
       <!-- 气泡容器 -->
       <div
-        class="relative flex flex-col overflow-hidden rounded-2xl shadow-sm ui-bg-background-sub ui-trans"
+        class="relative flex flex-col overflow-hidden rounded-2xl shadow-sm bg-background-sub ui-trans"
         :class="[
           selectionMode ? 'cursor-default' : '',
           (forceMarkdown || showRaw) ? 'rounded-b-none' : ''
@@ -71,17 +71,17 @@
         <!-- 回复区域 -->
         <div
           v-if="replyDetail"
-          class="px-3 py-2 text-xs flex flex-col gap-0.5 select-none cursor-pointer border-b ui-border-background-dim/50 bg-background-dim/30 hover:bg-background-dim/50 ui-trans"
+          class="px-3 py-2 text-xs flex flex-col gap-0.5 select-none cursor-pointer border-b border-background-dim/50 bg-background-dim/30 hover:bg-background-dim/50 ui-trans"
           @click.stop="scrollToMsg(replyDetail.id)"
         >
-          <div class="ui-flex-x gap-1.5 font-bold ui-text-foreground-main">
+          <div class="ui-flex-x gap-1.5 font-bold text-foreground-main">
             <div class="i-ri-reply-fill text-primary" />
             <span>{{ replyDetail.sender }}</span>
           </div>
-          <span class="truncate max-w-[180px] ui-text-foreground-sub">{{ replyDetail.text }}</span>
+          <span class="truncate max-w-[180px] text-foreground-sub">{{ replyDetail.text }}</span>
         </div>
         <!-- 消息内容 -->
-        <div class="text-[15px] ui-text-foreground-main">
+        <div class="text-[15px] text-foreground-main">
           <ElementRenderer
             :segments="msg.message"
           />

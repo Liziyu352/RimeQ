@@ -1,7 +1,7 @@
 <template>
   <!-- 根容器 -->
   <div
-    class="ui-flex-col-full overflow-hidden select-none text-foreground-main font-sans ui-trans ui-dur-normal bg-background-main p-2 gap-2"
+    class="ui-flex-col-full overflow-hidden select-none text-foreground-main font-sans ui-trans ui-dur-normal p-2 gap-2"
     :style="rootStyle"
   >
     <!-- 背景遮罩 -->
@@ -49,8 +49,8 @@
                 v-tooltip.bottom="btn.label"
                 :icon="btn.icon"
                 text rounded severity="secondary"
-                class="!w-8 !h-8 !p-0 ui-trans ui-dur-fast"
-                :class="route.path === btn.path ? '!bg-primary !text-primary-content shadow-sm' : '!text-foreground-sub hover:!bg-primary/10 hover:!text-primary'"
+                class="w-8 h-8 p-0 ui-trans ui-dur-normal"
+                :class="route.path === btn.path ? 'bg-primary text-primary-content shadow-sm' : 'text-foreground-sub hover:bg-primary/10 hover:text-primary'"
                 @click="router.push(btn.path)"
               />
             </div>
@@ -59,8 +59,8 @@
               <InputText
                 v-model="searchKeyword"
                 placeholder="搜索"
-                class="w-full !h-9 !text-sm !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-9"
-                :pt="{ root: { class: 'ui-trans ui-dur-fast' } }"
+                class="w-full h-9 text-sm !bg-background-dim !border-transparent focus:border-primary/50 !rounded-lg pl-9 ui-trans ui-dur-normal"
+                :pt="{ root: { class: 'ui-trans ui-dur-normal' } }"
               />
             </IconField>
           </div>
@@ -76,13 +76,13 @@
             v-tooltip.right="btn.label"
             :icon="btn.icon"
             text rounded severity="secondary"
-            class="!w-9 !h-9 !p-0 ui-trans ui-dur-fast"
-            :class="route.path === btn.path ? '!bg-primary !text-primary-content shadow-sm' : '!text-foreground-sub hover:!bg-primary/10 hover:!text-primary'"
+            class="w-9 h-9 p-0 ui-trans ui-dur-normal"
+            :class="route.path === btn.path ? 'bg-primary text-primary-content shadow-sm' : 'text-foreground-sub hover:bg-primary/10 hover:text-primary'"
             @click="router.push(btn.path)"
           />
         </div>
         <!-- 导航列表 -->
-        <div class="flex-1 overflow-hidden relative bg-background-sub w-full">
+        <div class="flex-1 overflow-hidden relative bg-background-sub w-full ui-trans ui-dur-normal">
           <div class="size-full relative min-w-[320px] md:min-w-[72px] xl:min-w-[320px]">
             <router-view v-slot="{ Component }" name="nav">
               <keep-alive>
@@ -100,7 +100,7 @@
         <!-- 标题栏 -->
         <header
           v-if="pageTitle"
-          class="h-16 shrink-0 border-b border-background-dim/50 bg-background-sub/95 backdrop-blur ui-flex-between px-4 z-20 select-none transition-all"
+          class="h-16 shrink-0 border-b border-background-dim/50 bg-background-sub/95 backdrop-blur ui-flex-between px-4 z-20 select-none ui-trans ui-dur-normal"
         >
           <div class="flex items-center gap-3 h-full overflow-hidden">
             <div

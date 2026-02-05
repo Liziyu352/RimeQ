@@ -158,7 +158,7 @@
               v-tooltip.top="'退出多选'"
               icon="i-ri-close-line text-lg"
               text rounded
-              class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-red-500 hover:!bg-background-dim"
+              class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-primary hover:!bg-background-dim"
               @click="messageStore.setMultiSelect(); isForwarding = false"
             />
           </div>
@@ -192,7 +192,7 @@
                 <span class="opacity-60 ml-1 truncate">{{ getTextPreview(messageStore.replyTarget.message, messageStore.replyTarget.group_id) }}</span>
               </div>
             </div>
-            <div class="i-ri-close-line text-sm cursor-pointer ui-text-foreground-dim hover:text-red-500 ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
+            <div class="i-ri-close-line text-sm cursor-pointer ui-text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
           </div>
         </transition>
         <!-- Tiptap 编辑器 -->
@@ -251,7 +251,7 @@
             v-for="i in 6" :key="i"
             :label="String(i)"
             severity="secondary" outlined
-            class="!w-9 !h-9 !p-0 !rounded-xl !border-surface-200 dark:!border-surface-700 hover:!border-primary hover:!bg-primary/5 transition-all font-bold"
+            class="!w-9 !h-9 !p-0 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all font-bold"
             @click="postSegment([{ type: 'dice', data: { result: String(i) } }])"
           />
         </template>
@@ -261,7 +261,7 @@
             v-for="opt in [{v:1, l:'布', i:'🖐'}, {v:2, l:'剪刀', i:'✌'}, {v:3, l:'石头', i:'✊'}]"
             :key="opt.v"
             severity="secondary" outlined
-            class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-surface-200 dark:!border-surface-700 hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]"
+            class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]"
             @click="postSegment([{ type: 'rps', data: { result: String(opt.v) } }])"
           >
             <div class="text-lg leading-none filter drop-shadow-sm">{{ opt.i }}</div>

@@ -62,10 +62,6 @@ export default defineConfig({
     }
   },
   shortcuts: [
-    // 颜色
-    [/^ui-bg-(.+)$/, ([, c]) => `bg-${c.replace('.', '-')} transition-colors`],
-    [/^ui-text-(.+)$/, ([, c]) => `text-${c.replace('.', '-')} transition-colors`],
-    [/^ui-border-(.+)$/, ([, c]) => `border-${c.replace('.', '-')} transition-colors`],
     // 布局
     ['ui-flex-center', 'flex items-center justify-center'],
     ['ui-flex-between', 'flex items-center justify-between'],

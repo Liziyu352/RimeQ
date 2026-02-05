@@ -13,13 +13,13 @@
               v-for="tab in tabs"
               :key="tab.key"
               :value="tab.key"
-              class="px-6 py-1.5 text-sm font-bold ui-flex-x gap-2 transition-all duration-300"
+              class="px-6 py-1.5 text-sm font-bold ui-flex-x gap-2"
             >
               <div :class="tab.icon" />
               <span>{{ tab.label }}</span>
             </Tab>
           </TabList>
-          <TabPanels class="!bg-transparent p-0">
+            <TabPanels class="!bg-transparent p-0">
             <!-- 用户设置面板 -->
             <TabPanel value="user" class="p-0 flex flex-col gap-6">
               <div>
@@ -64,7 +64,7 @@
                   <!-- 修改昵称 -->
                   <div class="p-4 ui-flex-x gap-3">
                     <label class="text-sm font-medium text-foreground-main whitespace-nowrap">昵称</label>
-                    <InputText v-model="profile.nickname" class="!h-9 flex-1 !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !text-sm" />
+                    <InputText v-model="profile.nickname" class="h-9 flex-1 !bg-background-dim !border-transparent focus:border-primary/50 rounded-lg text-sm transition-colors" />
                     <Button label="保存" size="small" @click="saveProfile" />
                   </div>
                   <!-- 记住密码 -->
@@ -93,7 +93,7 @@
               </div>
             </TabPanel>
             <!-- 外观设置面板 -->
-            <TabPanel value="appearance" class="!p-0 flex flex-col gap-6">
+            <TabPanel value="appearance" class="p-0 flex flex-col gap-6">
               <div>
                 <h2 class="text-sm font-semibold text-foreground-sub mb-2 px-1">明暗</h2>
                 <div class="bg-background-sub rounded-2xl shadow-sm border border-background-dim overflow-hidden divide-y divide-background-dim">
@@ -168,7 +168,7 @@
                     <div class="w-full max-w-xs">
                       <InputGroup>
                         <Button as="label" for="bg-upload" icon="i-ri-upload-2-line" class="cursor-pointer" />
-                        <InputText v-model="settingStore.config.backgroundImg" placeholder="https://" class="!text-xs !bg-background-dim/50 focus:!bg-background-dim" />
+                        <InputText v-model="settingStore.config.backgroundImg" placeholder="https://" class="text-xs !bg-background-dim !border-transparent" />
                         <Button v-if="settingStore.config.backgroundImg" icon="i-ri-delete-bin-line" severity="danger" @click="settingStore.config.backgroundImg = ''" />
                       </InputGroup>
                       <input id="bg-upload" type="file" accept="image/*" class="hidden" @change="handleImageUpload">
@@ -205,7 +205,7 @@
               </div>
             </TabPanel>
             <!-- 高级设置面板 -->
-            <TabPanel value="advanced" class="!p-0 flex flex-col gap-6">
+            <TabPanel value="advanced" class="p-0 flex flex-col gap-6">
               <div>
                 <h2 class="text-sm font-semibold text-foreground-sub mb-2 px-1">功能</h2>
                 <div class="bg-background-sub rounded-2xl shadow-sm border border-background-dim overflow-hidden divide-y divide-background-dim">

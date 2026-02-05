@@ -1,11 +1,11 @@
 <template>
   <!-- 登录页容器 -->
-  <div class="min-h-screen w-full ui-flex-center p-4 bg-background-sub ui-trans ui-dur-normal">
+  <div class="min-h-screen w-full ui-flex-center p-4 ui-trans ui-dur-normal">
     <!-- 登录卡片 -->
-    <div class="w-full max-w-md bg-background-main rounded-2xl shadow-xl overflow-hidden p-8 md:p-10 border border-background-dim ui-trans ui-dur-normal">
+    <div class="w-full max-w-md bg-background-sub rounded-2xl shadow-xl overflow-hidden p-8 md:p-10 border border-background-dim ui-trans ui-dur-normal">
       <!-- 顶部 Logo 区域 -->
       <div class="ui-flex-y mb-8">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-4 text-white">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-4 text-primary">
           <div class="i-ri-chat-smile-2-fill text-4xl drop-shadow-md" />
         </div>
         <h1 class="text-2xl font-bold text-foreground-main tracking-wide">RimeQ</h1>
@@ -19,7 +19,7 @@
             v-model="form.connectAddress"
             placeholder="ws://"
             :disabled="loading"
-            class="w-full !pl-10 h-10 !bg-background-sub !border-background-dim focus:!border-primary focus:!ring-1 focus:!ring-primary/20 text-foreground-main text-sm rounded-lg ui-trans ui-dur-fast focus:outline-none"
+            class="w-full pl-10 h-10 text-sm !bg-background-dim !border-transparent !rounded-lg ui-trans ui-dur-normal focus:outline-none"
           />
         </IconField>
         <!-- 密钥输入框 -->
@@ -33,7 +33,7 @@
             fluid
             :disabled="loading"
             class="w-full"
-            input-class="w-full !pl-10 h-10 !bg-background-sub !border-background-dim focus:!border-primary focus:!ring-1 focus:!ring-primary/20 text-foreground-main text-sm rounded-lg ui-trans ui-dur-fast focus:outline-none"
+            input-class="w-full pl-10 h-10 text-sm !bg-background-dim !border-transparent !rounded-lg ui-trans ui-dur-normal focus:outline-none"
             @keydown.enter="!loading && handleLogin()"
           />
         </IconField>
@@ -53,7 +53,7 @@
           :label="loading ? '登录中...' : '登录'"
           :loading="loading"
           :icon="loading ? 'i-ri-loader-4-line animate-spin' : ''"
-          class="w-full font-bold h-10 shadow-lg shadow-primary/20 hover:shadow-primary/30 ui-trans ui-dur-fast !bg-primary hover:!bg-primary-hover !border-none text-white text-sm"
+          class="w-full font-bold h-10 shadow-lg shadow-primary/20 hover:shadow-primary/30 ui-trans ui-dur-normal text-primary-content text-sm"
           @click="handleLogin()"
         />
       </div>

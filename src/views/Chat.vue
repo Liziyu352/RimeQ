@@ -4,10 +4,10 @@
     <main class="ui-flex-col-full min-w-0 relative">
       <!-- 空状态 -->
       <div v-if="!id" class="ui-flex-y size-full ui-text-foreground-dim select-none pb-20">
-        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-6 text-white">
+        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-6 text-primary">
           <div class="i-ri-chat-smile-2-fill text-5xl drop-shadow-md" />
         </div>
-        <h2 class="text-xl font-bold ui-text-foreground-main mb-2 tracking-wide">RimeQ</h2>
+        <h2 class="text-xl font-bold text-foreground-main mb-2 tracking-wide">RimeQ</h2>
         <p class="text-xs opacity-60">选择联系人开始聊天</p>
       </div>
       <!-- 活跃会话区域 -->
@@ -40,7 +40,7 @@
         <!-- 回到底部按钮 -->
         <div
           v-if="showScroll"
-          class="absolute bottom-20 right-6 z-20 cursor-pointer bg-primary text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center gap-1 select-none"
+          class="absolute bottom-25 right-5 cursor-pointer bg-primary text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center gap-1 select-none"
           @click="scrollToBottom(true)"
         >
           <div class="i-ri-arrow-down-double-line" />

@@ -48,13 +48,13 @@
                     <!-- 顶部：名称 + 时间 -->
                     <div class="ui-flex-between mb-0.5">
                       <span
-                        class="text-[14px] font-medium truncate ui-trans ui-dur-fast"
+                        class="text-[14px] font-medium truncate ui-trans ui-dur-normal"
                         :class="isActive(session.id) ? 'font-bold' : ''"
                       >
                         {{ getSessionName(session) }}
                       </span>
                       <span
-                        class="text-xs shrink-0 ml-2 font-mono ui-trans ui-dur-fast"
+                        class="text-xs shrink-0 ml-2 font-mono ui-trans ui-dur-normal"
                         :class="isActive(session.id) ? 'text-primary-content/80' : 'text-foreground-dim'"
                       >
                         {{ formatTime(session.time) }}
@@ -63,7 +63,7 @@
                     <!-- 底部：预览内容 -->
                     <div class="ui-flex-x">
                       <span
-                        class="truncate text-[12px] ui-trans ui-dur-fast"
+                        class="truncate text-[12px] ui-trans ui-dur-normal"
                         :class="isActive(session.id) ? 'text-primary-content/70' : 'text-foreground-sub opacity-80'"
                       >
                         {{ session.preview }}

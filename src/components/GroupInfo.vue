@@ -142,7 +142,7 @@
                     :class="[
                       item.role === 'owner' ? '!bg-yellow-500/10 !text-yellow-600' :
                       item.role === 'admin' ? '!bg-green-500/10 !text-green-600' :
-                      '!bg-main/10 !text-primary'
+                      '!bg-background-dim/50 !text-foreground-sub'
                     ]"
                   />
                 </div>

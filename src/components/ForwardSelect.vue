@@ -51,13 +51,13 @@
           </div>
           <div
             v-for="item in selectedItems" :key="item.id"
-            class="group ui-flex-x gap-2.5 p-1.5 rounded-xl cursor-pointer hover:bg-red-500/10 ui-trans"
+            class="group ui-flex-x gap-2.5 p-1.5 rounded-xl cursor-pointer ui-trans"
             @click="moveItem(item, false)"
           >
             <Avatar :image="item.avatar" shape="circle" class="size-8 shrink-0 border ui-border-background-dim/50" />
             <div class="flex-1 min-w-0 flex flex-col justify-center">
-              <span class="text-xs font-medium ui-text-foreground-main truncate">{{ item.name }}</span>
-              <span class="text-[10px] ui-text-foreground-dim font-mono opacity-50">{{ item.id }}</span>
+              <span class="text-xs font-medium text-foreground-main truncate">{{ item.name }}</span>
+              <span class="text-[10px] text-foreground-dim font-mono opacity-50">{{ item.id }}</span>
             </div>
             <div class="i-ri-close-line text-red-500 opacity-0 group-hover:opacity-100 ui-trans shrink-0" />
           </div>
