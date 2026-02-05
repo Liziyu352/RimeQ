@@ -1,14 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed } from 'vue'
 import { useStorage, usePreferredDark } from '@vueuse/core'
-import { colord, extend } from 'colord'
-import mixPlugin from 'colord/plugins/mix'
-import a11yPlugin from 'colord/plugins/a11y'
 import { bot, socket } from '@/api'
 import { useContactStore } from './contact'
 import { dispatchEvent } from '@/utils/dispatch'
-
-extend([mixPlugin, a11yPlugin])
 
 /**
  * 全局应用设置与状态管理
@@ -94,6 +89,53 @@ export const useSettingStore = defineStore('setting', () => {
   }
 
   /**
+   * 生成主题变量
+   * @param hex - 主题色 Hex
+   * @param isDark - 是否深色模式
+   */
+  function generateThemeVars(hex: string, isDark: boolean) {
+    // Hex 转 RGB
+    let c = hex.substring(1)
+    if (c.length === 3) c = c.split('').map(i => i + i).join('')
+    const r = parseInt(c.substring(0, 2), 16)
+    const g = parseInt(c.substring(2, 4), 16)
+    const b = parseInt(c.substring(4, 6), 16)
+    // RGB 转 HSL
+    const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255
+    const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm)
+    let h = 0, s = 0
+    const l = (max + min) / 2
+
+    if (max !== min) {
+      const d = max - min
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      switch (max) {
+        case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break
+        case gNorm: h = (bNorm - rNorm) / d + 2; break
+        case bNorm: h = (rNorm - gNorm) / d + 4; break
+      }
+      h = Math.round(h * 60)
+    }
+    s = Math.round(s * 100)
+
+    return {
+      // 品牌色
+      '--primary-color': `hsl(${h}, ${s}%, ${l}%)`,
+      '--primary-hover': `hsl(${h}, ${s}%, ${isDark ? Math.min(l + 5, 95) : Math.max(l - 5, 20)}%)`,
+      '--primary-active': `hsl(${h}, ${s}%, ${isDark ? Math.min(l + 10, 98) : Math.max(l - 10, 10)}%)`,
+      '--primary-content': ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#000000' : '#ffffff',
+      // 背景色
+      '--color-main': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 6%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 95%)`,
+      '--color-sub': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 11%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 99%)`,
+      '--color-dim': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 18%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 90%)`,
+      // 文本色
+      '--text-main': isDark ? 'hsla(0, 0%, 100%, 0.9)' : 'hsla(0, 0%, 0%, 0.9)',
+      '--text-sub': isDark ? 'hsla(0, 0%, 100%, 0.6)' : 'hsla(0, 0%, 0%, 0.6)',
+      '--text-dim': isDark ? 'hsla(0, 0%, 100%, 0.35)' : 'hsla(0, 0%, 0%, 0.35)',
+    }
+  }
+
+  /**
    * 应用当前的主题设置
    * 根据配置计算并注入 CSS 变量到 DOM，实现主题动态切换
    */
@@ -101,6 +143,7 @@ export const useSettingStore = defineStore('setting', () => {
     const root = document.documentElement
     const isDark = config.value.followSystemTheme ? systemDark.value : config.value.forceDarkMode
     root.classList.toggle('dark', isDark)
+    // 注入 CSS
     const styleId = 'rimeq-custom-css'
     let styleEl = document.getElementById(styleId) as HTMLStyleElement | null
     if (!styleEl) {
@@ -109,27 +152,8 @@ export const useSettingStore = defineStore('setting', () => {
       document.head.appendChild(styleEl)
     }
     styleEl.textContent = config.value.customCSS || ''
-    const primary = colord(config.value.themeColor)
-    const bgBase = isDark ? colord('#121212') : colord('#ffffff')
-    const fgBase = isDark ? colord('#ffffff') : colord('#121212')
-    const primaryContent = primary.isDark() ? '#ffffff' : '#000000'
-    const vars: Record<string, string> = {
-      '--primary-color': primary.toHex(),
-      '--primary-hover': isDark ? primary.lighten(0.1).toHex() : primary.darken(0.05).toHex(),
-      '--primary-active': isDark ? primary.darken(0.1).toHex() : primary.darken(0.1).toHex(),
-      '--primary-soft': primary.alpha(isDark ? 0.2 : 0.12).toRgbString(),
-      '--primary-content': primaryContent,
-      '--color-main': bgBase.mix(primary, isDark ? 0.05 : 0.02).toHex(),
-      '--color-sub': isDark
-        ? bgBase.lighten(0.05).mix(primary, 0.05).toHex()
-        : bgBase.darken(0.02).mix(primary, 0.03).toHex(),
-      '--color-dim': isDark
-        ? bgBase.lighten(0.12).mix(primary, 0.05).toHex()
-        : bgBase.darken(0.06).mix(primary, 0.05).toHex(),
-      '--text-main': fgBase.alpha(0.9).toRgbString(),
-      '--text-sub': fgBase.alpha(0.6).toRgbString(),
-      '--text-dim': fgBase.alpha(0.35).toRgbString(),
-    }
+    // 生成变量
+    const vars = generateThemeVars(config.value.themeColor, isDark)
     Object.entries(vars).forEach(([key, val]) => root.style.setProperty(key, val))
   }
 

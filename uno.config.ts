@@ -26,23 +26,22 @@ export default defineConfig({
     colors: {
       // 品牌色
       primary: {
-        DEFAULT: 'var(--primary-color)',
-        hover: 'var(--primary-hover)',
-        active: 'var(--primary-active)',
-        soft: 'var(--primary-soft)',
-        content: 'var(--primary-content)',
+        DEFAULT: 'var(--primary-color)', // 主色
+        hover: 'var(--primary-hover)', // 悬停
+        active: 'var(--primary-active)', // 激活
+        content: 'var(--primary-content)', // 内容
       },
-      // UI 背景色
+      // 背景色
       background: {
-        main: 'var(--color-main)',
-        sub: 'var(--color-sub)',
-        dim: 'var(--color-dim)',
+        main: 'var(--color-main)', // 主背景
+        sub: 'var(--color-sub)', // 次背景
+        dim: 'var(--color-dim)', // 辅助背景
       },
-      // UI 前景色
+      // 文字色
       foreground: {
-        main: 'var(--text-main)',
-        sub: 'var(--text-sub)',
-        dim: 'var(--text-dim)',
+        main: 'var(--text-main)', // 主要文本
+        sub: 'var(--text-sub)', // 次要文本
+        dim: 'var(--text-dim)', // 提示文本
       },
     },
     animation: {

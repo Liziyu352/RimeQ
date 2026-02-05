@@ -6,7 +6,7 @@ import { createPinia } from 'pinia'
 import 'virtual:uno.css'
 // PrimeVue
 import PrimeVue from 'primevue/config'
-import Aura from '@primevue/themes/aura'
+import Aura from '@primeuix/themes/aura'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 // 插件

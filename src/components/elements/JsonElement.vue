@@ -13,15 +13,27 @@
       </div>
       <div class="flex items-start p-3 gap-3">
         <!-- 预览图 -->
-        <Image
-          v-if="!imageFailed"
-          :src="preview"
-          preview
-          image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
-          class="!flex w-16 h-16 shrink-0 bg-background-dim/20 rounded-xl overflow-hidden"
-          referrerpolicy="no-referrer"
-          @error="imageFailed = true"
-        />
+        <div class="relative w-16 h-16 shrink-0 bg-background-dim/20 rounded-xl overflow-hidden group/image">
+          <Image
+            v-if="!imageFailed"
+            :src="preview"
+            preview
+            image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
+            referrerpolicy="no-referrer"
+            @error="imageFailed = true"
+          />
+          <!-- 播放按钮 -->
+          <div
+            v-if="audioUrl"
+            class="absolute inset-0 bg-black/30 ui-flex-center opacity-0 group-hover/image:opacity-100 transition-opacity cursor-pointer backdrop-blur-[1px]"
+            @click.stop="togglePlay"
+          >
+            <div
+              class="text-white drop-shadow-md text-2xl transition-transform active:scale-90"
+              :class="isPlaying ? 'i-ri-pause-circle-fill' : 'i-ri-play-circle-fill'"
+            />
+          </div>
+        </div>
         <!-- 文字信息 -->
         <div class="flex-1 min-w-0" @click="jump">
           <span class="font-bold text-sm ui-text-foreground-main line-clamp-3 leading-snug">
@@ -33,6 +45,14 @@
         </div>
       </div>
     </div>
+    <!-- 音频播放 -->
+    <audio
+      ref="audioRef"
+      :src="audioUrl"
+      class="hidden"
+      @ended="onReset"
+      @error="onReset"
+    />
   </div>
 </template>
 
@@ -45,9 +65,13 @@ import type { JsonSegment } from '@/types'
 const props = defineProps<{ segment: JsonSegment }>()
 const imageFailed = ref(false)
 
+// 音频控制状态
+const audioRef = ref<HTMLAudioElement>()
+const isPlaying = ref(false)
+
 // 解析元数据
 const meta = computed(() => {
-  const result = { title: '', desc: '', preview: '', icon: '', url: '', source: '' }
+  const result = { title: '', desc: '', preview: '', icon: '', url: '', source: '', audioUrl: '' }
   const obj = typeof props.segment.data.data === 'string' ? JSON.parse(props.segment.data.data) : props.segment.data.data
   const metaData = obj.meta ? (Object.values(obj.meta)[0] as any) : null
   switch (true) {
@@ -105,6 +129,16 @@ const meta = computed(() => {
       result.url = metaData?.jumpUrl
       result.source = metaData?.tag
       break
+    // 音乐
+    case obj.app === 'com.tencent.music.lua':
+      result.title = metaData?.title || obj.prompt
+      result.desc = metaData?.desc
+      result.preview = metaData?.preview
+      result.icon = metaData?.tagIcon
+      result.url = metaData?.jumpUrl
+      result.source = metaData?.tag
+      result.audioUrl = metaData?.musicUrl
+      break
     // 邀请
     case obj.app === 'com.tencent.together':
       result.title = metaData?.title
@@ -141,6 +175,25 @@ const preview = computed(() => meta.value.preview)
 const icon = computed(() => meta.value.icon)
 const source = computed(() => meta.value.source)
 const url = computed(() => meta.value.url)
+const audioUrl = computed(() => meta.value.audioUrl)
+
+// 播放控制
+const togglePlay = () => {
+  const audio = audioRef.value
+  if (!audio || !audioUrl.value) return
+  if (isPlaying.value) {
+    audio.pause()
+    isPlaying.value = false
+  } else {
+    audio.play().catch(onReset)
+    isPlaying.value = true
+  }
+}
+
+// 状态重置
+const onReset = () => {
+  isPlaying.value = false
+}
 
 // 打开链接
 const jump = () => {
