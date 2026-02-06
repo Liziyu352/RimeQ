@@ -10,84 +10,109 @@
       <div v-if="activeTab" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
         <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
-            <!-- 普通表情列表 -->
-            <div v-if="activeTab === 'face'" class="flex flex-col gap-1">
-              <!-- 普通表情 -->
-              <div class="grid grid-cols-8 gap-1">
-                <div
-                  v-for="item in QFace.getList('face')"
-                  :key="item.id"
-                  class="aspect-square p-1 rounded cursor-pointer ui-trans hover:bg-background-dim"
-                  :title="item.name"
-                  @click="insertImage(item.assets.static); focus()"
-                >
-                  <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
-                </div>
-              </div>
-              <!-- 分隔线 -->
-              <div class="flex items-center gap-1 px-1 py-1 opacity-60">
-                <div class="h-px bg-background-dim flex-1" />
-                <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">QFace / Emoji</span>
-                <div class="h-px bg-background-dim flex-1" />
-              </div>
-              <!-- Emoji -->
-              <div class="grid grid-cols-8 gap-1">
-                <div
-                  v-for="item in QFace.getList('emoji')"
-                  :key="item.id"
-                  class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-dim"
-                  :title="item.name"
-                  @click="insertText(item.id); focus()"
-                >
-                  {{ item.id }}
-                </div>
-              </div>
-            </div>
-            <!-- 超级表情列表 -->
-            <div v-else-if="activeTab === 'super'" class="flex flex-col gap-1">
-              <template
-                v-for="group in [{ id: 0, name: '特殊' }, { id: 1, name: '黄脸' }, { id: 2, name: '旺旺' },
-                  { id: 3, name: '喜花妮' }, { id: 4, name: '黄脸' }, { id: 5, name: '企鹅' }, { id: 6, name: '噗噗星人' }]"
-                :key="group.id"
-              >
-                <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
-                  <!-- 分隔线 -->
-                  <div class="flex items-center gap-1 px-1 py-1 opacity-60">
-                    <div class="h-px bg-background-dim flex-1" />
-                    <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
-                    <div class="h-px bg-background-dim flex-1" />
+            <div class="flex flex-col gap-1">
+              <!-- 普通表情列表 -->
+              <template v-if="activeTab === 'face'">
+                <div class="grid grid-cols-8 gap-1">
+                  <div
+                    v-for="item in QFace.getList('face')"
+                    :key="item.id"
+                    class="aspect-square rounded cursor-pointer ui-trans hover:bg-background-dim"
+                    :title="item.name"
+                    @click="insertImage(item.assets.static); focus()"
+                  >
+                    <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
                   </div>
-                  <!-- 列表 -->
-                  <div class="grid grid-cols-5 gap-1">
-                    <div
-                      v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
-                      :key="item.id"
-                      class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim"
-                      :title="item.name"
-                      @mouseenter="loadLottie(item.id, item.assets.lottie)"
-                      @mouseleave="unloadLottie(item.id)"
-                      @click="handleFace(item)"
-                    >
-                      <img
-                        v-show="hoveringId !== item.id"
-                        :src="item.assets.static"
-                        class="size-full object-contain pointer-events-none"
-                        loading="lazy"
-                      />
-                      <div
-                        v-show="hoveringId === item.id"
-                        :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
-                        class="size-full pointer-events-none"
-                      />
-                    </div>
+                </div>
+                <!-- 分隔线 -->
+                <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                  <div class="h-px bg-background-dim flex-1" />
+                  <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">Emoji</span>
+                  <div class="h-px bg-background-dim flex-1" />
+                </div>
+                <!-- Emoji -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div
+                    v-for="item in QFace.getList('emoji')"
+                    :key="item.id"
+                    class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-dim"
+                    :title="item.name"
+                    @click="insertText(item.id); focus()"
+                  >
+                    {{ item.id }}
                   </div>
                 </div>
               </template>
-            </div>
-            <!-- 收藏表情列表 -->
-            <div v-else class="size-full ui-flex-y gap-2 text-foreground-dim opacity-60">
-              <div class="i-ri-star-smile-line text-4xl" />
-              <span class="text-xs">暂无收藏</span>
+              <!-- 超级表情列表 -->
+              <template v-else-if="activeTab === 'super'">
+                <template
+                  v-for="group in [{ id: 0, name: '特殊' }, { id: 1, name: '黄脸' }, { id: 2, name: '旺旺' },
+                    { id: 3, name: '喜花妮' }, { id: 4, name: '黄脸' }, { id: 5, name: '企鹅' }, { id: 6, name: '噗噗星人' }]"
+                  :key="group.id"
+                >
+                  <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
+                    <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                      <div class="h-px bg-background-dim flex-1" />
+                      <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
+                      <div class="h-px bg-background-dim flex-1" />
+                    </div>
+                    <div class="grid grid-cols-5 gap-1">
+                      <div
+                        v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
+                        :key="item.id"
+                        class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim"
+                        :title="item.name"
+                        @mouseenter="loadLottie(item.id, item.assets.lottie)"
+                        @mouseleave="unloadLottie(item.id)"
+                        @click="handleFace(item)"
+                      >
+                        <img
+                          v-show="hoveringId !== item.id"
+                          :src="item.assets.static"
+                          class="size-full object-contain pointer-events-none"
+                          loading="lazy"
+                        />
+                        <div
+                          v-show="hoveringId === item.id"
+                          :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
+                          class="size-full pointer-events-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </template>
+              <!-- 收藏表情列表 -->
+              <template v-else-if="activeTab === 'collection'">
+                <div v-if="collections.length" class="grid grid-cols-5 gap-1">
+                  <div
+                    v-for="(url, idx) in collections"
+                    :key="idx"
+                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim overflow-hidden"
+                    @click="insertImage(url); focus()"
+                  >
+                    <img :src="url" class="size-full object-contain pointer-events-none" loading="lazy" referrerpolicy="no-referrer" />
+                  </div>
+                </div>
+                <div v-else class="h-56 ui-flex-y gap-2 text-foreground-dim opacity-60">
+                  <div class="i-ri-star-smile-line text-4xl" />
+                  <span class="text-xs">暂无收藏</span>
+                </div>
+              </template>
+              <!-- 本地表情列表 -->
+              <template v-else-if="activeTab === 'local'">
+                <div v-if="localFiles.length" class="grid grid-cols-5 gap-1">
+                  <div
+                    v-for="(item, idx) in localFiles"
+                    :key="idx"
+                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim overflow-hidden"
+                    :title="item.file.name"
+                    @click="handleUpload('img', item.file)"
+                  >
+                    <img :src="item.url" class="size-full object-contain pointer-events-none" loading="lazy" />
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -113,9 +138,10 @@
         <!-- 表情面板 -->
         <Button
           v-for="btn in [
-            { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: ' 普通表情' },
+            { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: '普通表情' },
             { id: 'super', icon: 'i-ri-user-smile-line text-lg', tip: '超级表情' },
-            { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' }
+            { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' },
+            { id: 'local', icon: 'i-ri-folder-image-line text-lg', tip: '本地表情' }
           ]"
           :key="btn.id"
           v-tooltip.top="btn.tip"
@@ -123,7 +149,7 @@
           rounded text
           class="!w-7 !h-7 !border-none ui-trans ui-ia-press"
           :class="activeTab === btn.id ? '!bg-primary !text-primary-content shadow-sm' : '!text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main'"
-          @click="activeTab = activeTab === btn.id ? null : btn.id"
+          @click="toggleTab(btn.id)"
         />
         <!-- 图片上传 -->
         <Button
@@ -274,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onBeforeUnmount, reactive } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount, reactive, shallowRef } from 'vue'
 import { Button, useToast, Dialog } from 'primevue'
 import { EditorContent } from '@tiptap/vue-3'
 import type { AnimationItem } from 'lottie-web'
@@ -308,6 +334,8 @@ const fileInput = ref<HTMLInputElement>()
 
 // 表情逻辑状态
 const gameDialog = reactive({ visible: false, type: 'dice' as 'dice' | 'rps' })
+const collections = ref<string[]>([])
+const localFiles = shallowRef<{ file: File, url: string }[]>([])
 
 // Lottie 资源管理
 const lottieMap = new Map<string, AnimationItem>()
@@ -335,6 +363,17 @@ const { editor, focus, insertText, insertImage, insertMention, clear, getSegment
 // 暴露方法
 defineExpose({ insertText, insertMention, focus })
 
+// 切换面板
+function toggleTab(id: string) {
+  if (activeTab.value === id) {
+    activeTab.value = null
+    return
+  }
+  activeTab.value = id
+  if (id === 'local' && localFiles.value.length === 0) chooseLocalFolder()
+  if (id === 'collection' && collections.value.length === 0) bot.fetchCustomFace(1000).then(list => collections.value = list)
+}
+
 // 发送消息
 async function postSegment(segments: any[]) {
   gameDialog.visible = false
@@ -360,12 +399,27 @@ function handleFace(item: any) {
   postSegment([{ type, data }])
 }
 
-// 文件上传
-async function handleUpload(type: 'img' | 'file', e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
+// 选择本地文件夹
+async function chooseLocalFolder() {
+  // @ts-ignore showDirectoryPicker 无类型定义
+  const dirHandle = await window.showDirectoryPicker()
+  localFiles.value.forEach(i => URL.revokeObjectURL(i.url))
+  const list: { file: File, url: string }[] = []
+  const imageRegex = /\.(jpg|jpeg|png|gif|webp|bmp)$/i
+  for await (const entry of dirHandle.values()) {
+      if (entry.kind === 'file' && imageRegex.test(entry.name)) {
+        const file = await entry.getFile()
+        list.push({ file, url: URL.createObjectURL(file) })
+      }
+  }
+  localFiles.value = list
+}
+
+// 文件上传 / 图片插入
+async function handleUpload(type: 'img' | 'file', payload: Event | File) {
+  const file = payload instanceof Event ? (payload.target as HTMLInputElement).files?.[0] : payload
   if (!file) return
-  input.value = ''
+  if (payload instanceof Event) (payload.target as HTMLInputElement).value = ''
   if (type === 'img') {
     const reader = new FileReader()
     reader.onload = (ev) => {
