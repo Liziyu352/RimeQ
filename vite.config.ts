@@ -13,6 +13,7 @@ import { PrimeVueResolver } from '@primevue/auto-import-resolver'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [
     vue(),
     vueDevTools(),

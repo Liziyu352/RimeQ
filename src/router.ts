@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { useSettingStore } from '@/stores/setting'
 
 // 视图组件
@@ -16,72 +16,70 @@ import GroupAlbum from '@/components/GroupAlbum.vue'
 import GroupNotice from '@/components/GroupNotice.vue'
 import GroupEssence from '@/components/GroupEssence.vue'
 
-const routes: RouteRecordRaw[] = [
-  {
-    path: '/login',
-    name: 'Login',
-    components: { default: LoginView, nav: SessionList },
-    meta: { public: true, title: '登录' }
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    components: { default: SettingsView, nav: SessionList },
-    meta: { title: '设置' }
-  },
-  {
-    path: '/contact',
-    name: 'Contact',
-    components: { default: ChatView, nav: ContactList },
-    meta: { title: '好友' }
-  },
-  {
-    path: '/request',
-    name: 'Request',
-    components: { default: RequestView, nav: ContactList },
-    meta: { title: '请求' }
-  },
-  {
-    path: '/:id/info',
-    name: 'GroupInfo',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupInfo },
-    meta: { title: '群信息' }
-  },
-  {
-    path: '/:id/file',
-    name: 'GroupFile',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupFile },
-    meta: { title: '群文件' }
-  },
-  {
-    path: '/:id/album',
-    name: 'GroupAlbum',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupAlbum },
-    meta: { title: '群相册' }
-  },
-  {
-    path: '/:id/notice',
-    name: 'GroupNotice',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupNotice },
-    meta: { title: '群公告' }
-  },
-  {
-    path: '/:id/essence',
-    name: 'GroupEssence',
-    components: { default: ChatView, nav: SessionList, sidebar: GroupEssence },
-    meta: { title: '群精华' }
-  },
-  {
-    path: '/:id?',
-    name: 'Chat',
-    components: { default: ChatView, nav: SessionList },
-    meta: { title: '会话' }
-  }
-]
-
 export const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes: [
+    {
+      path: '/login',
+      name: 'Login',
+      components: { default: LoginView, nav: SessionList },
+      meta: { public: true, title: '登录' }
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      components: { default: SettingsView, nav: SessionList },
+      meta: { title: '设置' }
+    },
+    {
+      path: '/contact',
+      name: 'Contact',
+      components: { default: ChatView, nav: ContactList },
+      meta: { title: '好友' }
+    },
+    {
+      path: '/request',
+      name: 'Request',
+      components: { default: RequestView, nav: ContactList },
+      meta: { title: '请求' }
+    },
+    {
+      path: '/:id/info',
+      name: 'GroupInfo',
+      components: { default: ChatView, nav: SessionList, sidebar: GroupInfo },
+      meta: { title: '群信息' }
+    },
+    {
+      path: '/:id/file',
+      name: 'GroupFile',
+      components: { default: ChatView, nav: SessionList, sidebar: GroupFile },
+      meta: { title: '群文件' }
+    },
+    {
+      path: '/:id/album',
+      name: 'GroupAlbum',
+      components: { default: ChatView, nav: SessionList, sidebar: GroupAlbum },
+      meta: { title: '群相册' }
+    },
+    {
+      path: '/:id/notice',
+      name: 'GroupNotice',
+      components: { default: ChatView, nav: SessionList, sidebar: GroupNotice },
+      meta: { title: '群公告' }
+    },
+    {
+      path: '/:id/essence',
+      name: 'GroupEssence',
+      components: { default: ChatView, nav: SessionList, sidebar: GroupEssence },
+      meta: { title: '群精华' }
+    },
+    {
+      path: '/:id?',
+      name: 'Chat',
+      components: { default: ChatView, nav: SessionList },
+      meta: { title: '会话' }
+    }
+  ]
 })
 
 /**
