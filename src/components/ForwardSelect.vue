@@ -3,19 +3,19 @@
     <!-- 搜索栏 -->
     <div class="shrink-0 px-3 pt-3 pb-1 ui-flex-x">
       <IconField class="flex-1">
-        <InputIcon class="i-ri-search-line ui-text-foreground-sub text-sm" />
+        <InputIcon class="i-ri-search-line text-foreground-sub text-sm" />
         <InputText
           v-model="keyword"
           placeholder="搜索好友或群聊..."
-          class="w-full !h-9 !text-sm !ui-bg-background-dim/50 focus:!ui-bg-background-dim !border-transparent focus:!border-primary/50 !rounded-xl !pl-9 ui-trans"
+          class="w-full !h-9 !text-sm !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-xl !pl-9 ui-trans"
         />
       </IconField>
     </div>
     <!-- 主体双栏 -->
     <div class="flex-1 flex min-h-0 w-full p-3 gap-2 justify-center overflow-hidden">
       <!-- 源列表 -->
-      <div class="flex-1 max-w-[260px] flex flex-col min-w-0 border ui-border-background-dim/50 rounded-2xl bg-background-dim/10 overflow-hidden">
-        <div class="shrink-0 px-3 py-1.5 border-b ui-border-background-dim/50 flex justify-between items-center bg-background-dim/20">
+      <div class="flex-1 max-w-[260px] flex flex-col min-w-0 border border-background-dim/50 rounded-2xl bg-background-dim/10 overflow-hidden">
+        <div class="shrink-0 px-3 py-1.5 border-b border-background-dim/50 flex justify-between items-center bg-background-dim/20">
           <span class="text-[11px] font-bold text-foreground-sub">{{ keyword ? '搜索结果' : '最近会话' }}</span>
           <span class="text-[10px] text-foreground-dim font-mono opacity-60">{{ displaySource.length }}</span>
         </div>
@@ -29,18 +29,18 @@
             class="group ui-flex-x gap-2.5 p-1.5 rounded-xl cursor-pointer hover:bg-primary/10 ui-trans"
             @click="moveItem(item, true)"
           >
-            <Avatar :image="item.avatar" shape="circle" class="size-8 shrink-0 border ui-border-background-dim/50" />
+            <Avatar :image="item.avatar" shape="circle" class="size-8 shrink-0 border border-background-dim/50" />
             <div class="flex-1 min-w-0 flex flex-col justify-center">
-              <span class="text-xs font-medium ui-text-foreground-main truncate">{{ item.name }}</span>
-              <span class="text-[10px] ui-text-foreground-dim font-mono opacity-50">{{ item.id }}</span>
+              <span class="text-xs font-medium text-foreground-main truncate">{{ item.name }}</span>
+              <span class="text-[10px] text-foreground-dim font-mono opacity-50">{{ item.id }}</span>
             </div>
             <div class="i-ri-add-line text-primary opacity-0 group-hover:opacity-100 ui-trans shrink-0" />
           </div>
         </div>
       </div>
       <!-- 已选列表 -->
-      <div class="flex-1 max-w-[260px] flex flex-col min-w-0 border ui-border-background-dim/50 rounded-2xl bg-background-dim/10 overflow-hidden">
-        <div class="shrink-0 px-3 py-1.5 border-b ui-border-background-dim/50 flex justify-between items-center bg-background-dim/20">
+      <div class="flex-1 max-w-[260px] flex flex-col min-w-0 border border-background-dim/50 rounded-2xl bg-background-dim/10 overflow-hidden">
+        <div class="shrink-0 px-3 py-1.5 border-b border-background-dim/50 flex justify-between items-center bg-background-dim/20">
           <span class="text-[11px] font-bold text-foreground-sub">已选结果</span>
           <span class="text-[10px] text-foreground-dim font-mono opacity-60">{{ selectedItems.length }}</span>
         </div>
@@ -54,7 +54,7 @@
             class="group ui-flex-x gap-2.5 p-1.5 rounded-xl cursor-pointer ui-trans"
             @click="moveItem(item, false)"
           >
-            <Avatar :image="item.avatar" shape="circle" class="size-8 shrink-0 border ui-border-background-dim/50" />
+            <Avatar :image="item.avatar" shape="circle" class="size-8 shrink-0 border border-background-dim/50" />
             <div class="flex-1 min-w-0 flex flex-col justify-center">
               <span class="text-xs font-medium text-foreground-main truncate">{{ item.name }}</span>
               <span class="text-[10px] text-foreground-dim font-mono opacity-50">{{ item.id }}</span>

@@ -1,6 +1,6 @@
 
 <template>
-  <div class="ui-flex-col-full ui-bg-background-sub relative overflow-hidden">
+  <div class="ui-flex-col-full bg-background-sub relative overflow-hidden">
     <!-- 顶部导航栏 -->
     <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
       <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
@@ -10,14 +10,14 @@
         </span>
         <div
           v-if="myLevel > 1"
-          class="i-ri-edit-line text-sm ui-text-foreground-dim hover:text-primary cursor-pointer shrink-0 ui-trans p-1 rounded-md hover:bg-background-dim/50"
+          class="i-ri-edit-line text-sm text-foreground-dim hover:text-primary cursor-pointer shrink-0 ui-trans p-1 rounded-md hover:bg-background-dim/50"
           @click="openEditDialog('name')"
         />
       </div>
     </header>
     <!-- 信息面板 -->
     <section class="shrink-0 px-3 pb-0 z-20">
-      <div class="ui-bg-background-main rounded-2xl p-4 border ui-border-background-dim/50 shadow-sm flex flex-col gap-3 relative overflow-hidden">
+      <div class="bg-background-main rounded-2xl p-4 border border-background-dim/50 shadow-sm flex flex-col gap-3 relative overflow-hidden">
         <div class="flex items-center gap-3 h-12">
           <!-- 群头像 -->
           <div
@@ -28,25 +28,25 @@
             <Avatar
               :image="`https://p.qlogo.cn/gh/${groupId}/${groupId}/0`"
               shape="circle"
-              class="!w-12 !h-12 border ui-border-background-dim shadow-sm ui-bg-background-sub"
+              class="!w-12 !h-12 border border-background-dim shadow-sm bg-background-sub"
             />
             <!-- 上传遮罩 -->
-            <div v-if="myLevel > 1" class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full ui-bg-background-sub border ui-border-background-dim shadow-sm ui-flex-center opacity-0 group-hover:opacity-100 ui-trans scale-75 group-hover:scale-100">
-              <div class="i-ri-camera-line text-[10px] ui-text-foreground-main" />
+            <div v-if="myLevel > 1" class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background-sub border border-background-dim shadow-sm ui-flex-center opacity-0 group-hover:opacity-100 ui-trans scale-75 group-hover:scale-100">
+              <div class="i-ri-camera-line text-[10px] text-foreground-main" />
             </div>
             <input v-if="myLevel > 1" ref="avatarInput" type="file" accept="image/*" class="hidden" @change="handleAvatarUpload" />
           </div>
           <!-- 中间信息栏 -->
           <div class="flex-1 min-w-0 flex flex-col justify-center h-full gap-0.5">
             <!-- 群号 -->
-            <div class="flex items-center gap-2 text-sm ui-text-foreground-dim">
+            <div class="flex items-center gap-2 text-sm text-foreground-dim">
               <span class="opacity-70 shrink-0">群号:</span>
               <span class="font-mono select-all">{{ groupId }}</span>
             </div>
             <!-- 备注 -->
-            <div class="group/remark flex items-center gap-2 text-sm ui-text-foreground-dim cursor-pointer" @click="openEditDialog('remark')">
+            <div class="group/remark flex items-center gap-2 text-sm text-foreground-dim cursor-pointer" @click="openEditDialog('remark')">
               <span class="opacity-70 shrink-0">备注:</span>
-              <span class="truncate ui-trans ui-text-foreground-sub">
+              <span class="truncate ui-trans text-foreground-sub">
                 {{ currentGroup?.group_remark || '无' }}
               </span>
               <div class="i-ri-edit-2-line text-[10px] opacity-0 group-hover/remark:opacity-100 ui-trans" />
@@ -65,22 +65,22 @@
           </div>
         </div>
         <!-- 管理操作栏 -->
-        <div v-if="myLevel > 1" class="grid grid-cols-2 gap-2 pt-2 border-t ui-border-background-dim/30 mt-1">
+        <div v-if="myLevel > 1" class="grid grid-cols-2 gap-2 pt-2 border-t border-background-dim/30 mt-1">
           <div
-            class="ui-flex-center gap-2 py-1.5 rounded-lg hover:ui-bg-background-dim/30 ui-trans cursor-pointer select-none"
+            class="ui-flex-center gap-2 py-1.5 rounded-lg hover:bg-background-dim/30 ui-trans cursor-pointer select-none"
             @click="toggleWholeBan"
           >
             <div class="w-6 h-3 rounded-full p-0.5 ui-trans relative shrink-0" :class="groupConfig.wholeBan ? 'bg-primary' : 'bg-background-dim'">
               <div class="w-2 h-2 bg-white rounded-full shadow-sm transition-transform" :class="groupConfig.wholeBan ? 'translate-x-3' : 'translate-x-0'" />
             </div>
-            <span class="text-xs font-medium ui-text-foreground-sub">全体禁言</span>
+            <span class="text-xs font-medium text-foreground-sub">全体禁言</span>
           </div>
           <div
-            class="ui-flex-center gap-2 py-1.5 rounded-lg hover:ui-bg-background-dim/30 ui-trans cursor-pointer select-none group/btn"
+            class="ui-flex-center gap-2 py-1.5 rounded-lg hover:bg-background-dim/30 ui-trans cursor-pointer select-none group/btn"
             @click="joinOptionDialog.visible = true"
           >
-            <div class="i-ri-settings-4-line text-xs ui-text-foreground-dim group-hover/btn:text-primary ui-trans" />
-            <span class="text-xs font-medium ui-text-foreground-sub">加群方式</span>
+            <div class="i-ri-settings-4-line text-xs text-foreground-dim group-hover/btn:text-primary ui-trans" />
+            <span class="text-xs font-medium text-foreground-sub">加群方式</span>
           </div>
         </div>
       </div>
@@ -88,15 +88,15 @@
     <!-- 搜索栏 -->
     <div class="shrink-0 px-3 py-2 ui-flex-x gap-2 z-10">
       <IconField class="flex-1">
-        <InputIcon class="i-ri-search-line ui-text-foreground-sub text-xs" />
+        <InputIcon class="i-ri-search-line text-foreground-sub text-xs" />
         <InputText
           v-model="keyword"
           placeholder="搜索成员..."
-          class="w-full !h-8 !text-xs !ui-bg-background-dim/50 focus:!ui-bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-8 !pr-16 ui-trans"
+          class="w-full !h-8 !text-xs !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-8 !pr-16 ui-trans"
         />
         <!-- 成员计数 -->
-        <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono ui-text-foreground-dim pointer-events-none">
-          <span class="ui-text-foreground-main">{{ filteredMembers.length }} / {{ currentGroup?.max_member_count }}</span>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-foreground-dim pointer-events-none">
+          <span class="text-foreground-main">{{ filteredMembers.length }} / {{ currentGroup?.max_member_count }}</span>
         </div>
       </IconField>
       <Button
@@ -104,18 +104,18 @@
         v-tooltip.bottom="'批量管理'"
         :icon="isBatchMode ? 'i-ri-check-double-line text-primary' : 'i-ri-list-check'"
         text rounded
-        class="!w-8 !h-8 !ui-text-foreground-sub shrink-0 bg-background-main border border-background-dim shadow-sm"
+        class="!w-8 !h-8 !text-foreground-sub shrink-0 bg-background-main border border-background-dim shadow-sm"
         :class="{ '!bg-primary/10 !border-primary/20': isBatchMode }"
         @click="toggleBatchMode"
       />
     </div>
     <!-- 成员列表容器 -->
     <div class="flex-1 min-h-0 relative flex flex-col w-full">
-      <VirtualScroller :items="sortedMembers" :item-size="56" class="size-full ui-scrollbar ui-bg-background-sub" :pt="{ content: { class: '!w-full' } }" >
+      <VirtualScroller :items="sortedMembers" :item-size="56" class="size-full ui-scrollbar bg-background-sub" :pt="{ content: { class: '!w-full' } }" >
         <template #item="{ item }">
           <div class="px-2 py-0.5 w-full">
             <div
-              class="group ui-flex-x gap-3 px-2 rounded-lg hover:ui-bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none w-full"
+              class="group ui-flex-x gap-3 px-2 rounded-lg hover:bg-background-dim/40 relative h-[52px] ui-trans border border-transparent select-none w-full"
               :class="{
                 'bg-primary/5 border-primary/20': selectedMembers.has(item.user_id) && isBatchMode,
                 'opacity-50 cursor-not-allowed grayscale': isBatchMode && !canManage(item),
@@ -126,13 +126,13 @@
             >
               <!-- 成员头像 -->
               <div class="relative shrink-0 flex items-center h-full">
-                <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`" shape="circle" class="!w-8 !h-8 border ui-border-background-dim ui-bg-background-dim" />
+                <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.user_id}`" shape="circle" class="!w-8 !h-8 border border-background-dim bg-background-dim" />
               </div>
               <!-- 成员信息 -->
               <div class="flex-1 min-w-0 flex flex-col justify-center gap-0.5 h-full">
                 <!-- 昵称与头衔 -->
                 <div class="ui-flex-x gap-1.5">
-                  <span class="text-sm font-medium ui-text-foreground-main truncate" :class="{'text-primary': item.user_id === myUserId}">
+                  <span class="text-sm font-medium text-foreground-main truncate" :class="{'text-primary': item.user_id === myUserId}">
                     {{ item.card || item.nickname }}
                   </span>
                   <Chip
@@ -148,7 +148,7 @@
                 </div>
                 <!-- 账号与状态 -->
                 <div class="text-[10px] ui-flex-x gap-2 leading-none">
-                  <span class="ui-text-foreground-dim font-mono opacity-60">{{ item.user_id }}</span>
+                  <span class="text-foreground-dim font-mono opacity-60">{{ item.user_id }}</span>
                   <div v-if="(item as any).shut_up_timestamp > Date.now() / 1000" class="text-red-500 ui-flex-x gap-0.5">
                     <div class="i-ri-mic-off-line text-[9px]" />
                     <span>{{ formatDuration((item as any).shut_up_timestamp - Date.now() / 1000) }}</span>
@@ -175,9 +175,9 @@
         enter-from-class="translate-y-full opacity-0"
         leave-to-class="translate-y-full opacity-0"
       >
-        <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 ui-bg-background-main border ui-border-background-dim shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3">
+        <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-main border border-background-dim shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3">
           <!-- 选中状态 -->
-          <div class="text-xs font-bold ui-text-foreground-main flex items-center gap-1 shrink-0">
+          <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
             <span>已选 {{ selectedMembers.size }} 人</span>
           </div>
           <!-- 功能按钮组 -->
@@ -235,14 +235,14 @@
             ]"
             :key="opt.value"
             class="ui-flex-x gap-3 p-2.5 rounded-lg border cursor-pointer ui-trans"
-            :class="joinOptionDialog.type === opt.value ? 'border-primary bg-primary/5' : 'ui-border-background-dim hover:ui-bg-background-dim/30'"
+            :class="joinOptionDialog.type === opt.value ? 'border-primary bg-primary/5' : 'border-background-dim hover:bg-background-dim/30'"
             @click="joinOptionDialog.type = opt.value"
           >
             <RadioButton :model-value="joinOptionDialog.type" :value="opt.value" readonly class="scale-90" />
             <span>{{ opt.label }}</span>
           </div>
         </div>
-        <div v-if="[3, 4].includes(joinOptionDialog.type)" class="flex flex-col gap-2 ui-bg-background-dim/30 p-2 rounded-lg">
+        <div v-if="[3, 4].includes(joinOptionDialog.type)" class="flex flex-col gap-2 bg-background-dim/30 p-2 rounded-lg">
           <InputText v-model="joinOptionDialog.question" placeholder="问题" class="w-full !text-xs !h-8" />
           <InputText v-model="joinOptionDialog.answer" placeholder="答案" class="w-full !text-xs !h-8" />
         </div>

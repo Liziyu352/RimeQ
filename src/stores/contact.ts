@@ -226,7 +226,7 @@ export const useContactStore = defineStore('contact', () => {
     }
     if (fallbackNick) return fallbackNick
     bot.getStrangerInfo(Number(userId)).catch(() => {})
-    return `用户 ${String(userId)}`
+    return `用户(${String(userId)})`
   }
 
   /**
@@ -244,7 +244,7 @@ export const useContactStore = defineStore('contact', () => {
       .then(res => {
         if (!groups.value.some(g => String(g.group_id) === id)) groups.value.push(res)
       }).catch(() => {})
-    return `群 ${id}`
+    return `群(${id})`
   }
 
   /**

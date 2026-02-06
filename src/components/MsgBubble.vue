@@ -1,7 +1,7 @@
 <template>
   <!-- 系统提示 -->
   <div v-if="isSystem" class="ui-flex-center w-full py-2 select-none">
-    <div class="ui-bg-background-dim/30 ui-text-foreground-dim text-xs px-3 py-1 rounded-full backdrop-blur-sm">
+    <div class="bg-background-dim text-foreground-dim text-xs px-3 py-1 rounded-full backdrop-blur-sm">
       {{ systemPreview }}
     </div>
   </div>
@@ -9,7 +9,7 @@
   <div
     v-else
     :id="`msg-${msg.message_id}`"
-    class="flex w-full mb-3 gap-3 relative group ui-trans ui-dur-normal"
+    class="flex w-full mb-3 gap-3 relative ui-trans ui-dur-normal"
     :class="[
       isMe ? 'flex-row-reverse' : 'flex-row',
       selectionMode && !isSelected ? 'opacity-50' : 'opacity-100'
@@ -30,7 +30,7 @@
     <Avatar
       shape="circle"
       :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${msg.sender.user_id}`"
-      class="size-10 shadow-sm border ui-border-background-dim shrink-0 ui-ia bg-background-sub"
+      class="size-10 shadow-sm border border-background-dim shrink-0 ui-ia bg-background-sub"
       @dblclick="chatCtx.onPoke(msg.sender.user_id)"
     />
     <!-- 内容 -->

@@ -3,7 +3,7 @@
     <!-- 主体区域 -->
     <main class="ui-flex-col-full min-w-0 relative">
       <!-- 空状态 -->
-      <div v-if="!id" class="ui-flex-y size-full ui-text-foreground-dim select-none pb-20">
+      <div v-if="!id" class="ui-flex-y size-full text-foreground-dim select-none pb-20">
         <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-6 text-primary">
           <div class="i-ri-chat-smile-2-fill text-5xl drop-shadow-md" />
         </div>

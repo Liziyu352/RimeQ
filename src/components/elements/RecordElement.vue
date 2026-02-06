@@ -23,7 +23,7 @@
       />
     </div>
     <!-- 时长 -->
-    <span class="text-xs font-mono ui-text-foreground-dim w-10 text-center">
+    <span class="text-xs font-mono text-foreground-dim w-10 text-center">
       {{ audioFailed ? '--:--' : formattedDuration }}
     </span>
     <!-- Audio 元素 -->

@@ -13,8 +13,8 @@
         <!-- 搜索框 -->
         <div class="flex-1 max-w-sm">
           <IconField class="w-full">
-            <InputIcon class="i-ri-search-line ui-text-foreground-sub text-xs" />
-            <InputText v-model="keyword" placeholder="搜索文件..." class="w-full !h-8 !text-xs !ui-bg-background-dim/50 focus:!ui-bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-8 ui-trans" />
+            <InputIcon class="i-ri-search-line text-foreground-sub text-xs" />
+            <InputText v-model="keyword" placeholder="搜索文件..." class="w-full !h-8 !text-xs !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-8 ui-trans" />
           </IconField>
         </div>
         <!-- 操作按钮组 -->
@@ -120,9 +120,9 @@
       enter-from-class="translate-y-full opacity-0"
       leave-to-class="translate-y-full opacity-0"
     >
-      <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 ui-bg-background-main border ui-border-background-dim shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3" @click.stop>
+      <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-main border border-background-dim shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3" @click.stop>
         <div class="ui-flex-x gap-1">
-          <div class="text-xs font-bold ui-text-foreground-main flex items-center gap-1 shrink-0">
+          <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
             <span>已选 {{ selectedFiles.size }} 项</span>
           </div>
           <Button v-tooltip.top="isAllSelected ? '取消全选' : '全选'" :icon="isAllSelected ? 'i-ri-checkbox-circle-line' : 'i-ri-checkbox-blank-circle-line'" text rounded class="!w-8 !h-8 !text-primary" @click="handleSelectAll" />
@@ -165,7 +165,7 @@
             >{{ f.name }}</span>
           </template>
         </div>
-        <div class="flex-1 border ui-border-background-dim rounded-lg overflow-y-auto ui-scrollbar p-1">
+        <div class="flex-1 border border-background-dim rounded-lg overflow-y-auto ui-scrollbar p-1">
           <div class="flex flex-col gap-1">
             <div
               v-for="folder in moveDialog.folders"

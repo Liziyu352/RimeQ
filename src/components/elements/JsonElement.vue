@@ -1,7 +1,7 @@
 <template>
   <div class="w-full max-w-sm">
     <div
-      class="flex flex-col h-full ui-bg-background-sub overflow-hidden ui-trans group"
+      class="flex flex-col h-full bg-background-sub overflow-hidden ui-trans group"
       :class="{ 'cursor-pointer': !!url }"
     >
       <!-- 顶部信息 -->
@@ -9,7 +9,7 @@
         <div v-if="icon" class="size-4 rounded-full overflow-hidden shrink-0">
           <img :src="icon" class="size-full object-cover" referrerpolicy="no-referrer" />
         </div>
-        <span class="text-[10px] ui-text-foreground-dim truncate">{{ source }}</span>
+        <span class="text-[10px] text-foreground-dim truncate">{{ source }}</span>
       </div>
       <div class="flex items-start p-3 gap-3">
         <!-- 预览图 -->
@@ -36,10 +36,10 @@
         </div>
         <!-- 文字信息 -->
         <div class="flex-1 min-w-0" @click="jump">
-          <span class="font-bold text-sm ui-text-foreground-main line-clamp-3 leading-snug">
+          <span class="font-bold text-sm text-foreground-main line-clamp-3 leading-snug">
             {{ title }}
           </span>
-          <span v-if="desc" class="text-xs ui-text-foreground-sub line-clamp-2 leading-normal mt-1 block whitespace-pre-wrap">
+          <span v-if="desc" class="text-xs text-foreground-sub line-clamp-2 leading-normal mt-1 block whitespace-pre-wrap">
             {{ desc }}
           </span>
         </div>

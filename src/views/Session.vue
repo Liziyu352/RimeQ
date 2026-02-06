@@ -13,7 +13,7 @@
               :class="[
                 isActive(session.id)
                   ? 'bg-primary text-primary-content shadow-md shadow-primary/20'
-                  : 'hover:ui-bg-background-dim/50 bg-transparent text-foreground-main'
+                  : 'hover:bg-background-dim/50 bg-transparent text-foreground-main'
               ]"
               @click="handleSessionClick(session.id)"
             >
@@ -28,7 +28,7 @@
                     :class="[
                       isActive(session.id)
                         ? 'ring-0 bg-transparent'
-                        : 'border ui-border-background-dim/30 bg-background-sub'
+                        : 'border border-background-dim/30 bg-background-sub'
                     ]"
                   />
                   <!-- 未读角标 -->

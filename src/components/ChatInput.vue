@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex flex-col shrink-0 z-20 ui-bg-background-sub border-t ui-border-background-dim ui-trans">
+  <div class="relative flex flex-col shrink-0 z-20 bg-background-sub border-t border-background-dim ui-trans">
     <!-- 表情面板 -->
     <transition
       enter-active-class="ui-trans duration-200 ease-out"
@@ -8,7 +8,7 @@
       leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
     >
       <div v-if="activeTab" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
-        <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur ui-bg-background-sub/95 ui-border-background-dim">
+        <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
             <!-- 普通表情列表 -->
             <div v-if="activeTab === 'face'" class="flex flex-col gap-1">
@@ -17,7 +17,7 @@
                 <div
                   v-for="item in QFace.getList('face')"
                   :key="item.id"
-                  class="aspect-square p-1 rounded cursor-pointer ui-trans hover:ui-bg-background-dim"
+                  class="aspect-square p-1 rounded cursor-pointer ui-trans hover:bg-background-dim"
                   :title="item.name"
                   @click="insertImage(item.assets.static); focus()"
                 >
@@ -35,7 +35,7 @@
                 <div
                   v-for="item in QFace.getList('emoji')"
                   :key="item.id"
-                  class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
+                  class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-dim"
                   :title="item.name"
                   @click="insertText(item.id); focus()"
                 >
@@ -62,7 +62,7 @@
                     <div
                       v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
                       :key="item.id"
-                      class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:ui-bg-background-dim"
+                      class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim"
                       :title="item.name"
                       @mouseenter="loadLottie(item.id, item.assets.lottie)"
                       @mouseleave="unloadLottie(item.id)"
@@ -101,7 +101,7 @@
       leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom"
     >
       <div v-if="isForwarding && isMultiSelect" class="absolute bottom-full left-0 right-0 mx-auto w-[550px] h-[520px] mb-2">
-        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-xl border backdrop-blur ui-bg-background-sub/95 ui-border-background-dim">
+        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
            <ForwardSelect/>
         </div>
       </div>
@@ -183,22 +183,22 @@
       >
         <!-- 回复预览指示 -->
         <transition enter-active-class="ui-trans ui-dur-fast" leave-active-class="ui-trans ui-dur-fast" enter-from-class="opacity-0 -translate-y-2 h-0 m-0" leave-to-class="opacity-0 -translate-y-2 h-0 m-0">
-          <div v-if="messageStore.replyTarget" class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border ui-border-background-dim ui-bg-background-sub/50 ui-flex-between shrink-0 select-none">
+          <div v-if="messageStore.replyTarget" class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border border-background-dim bg-background-sub/50 ui-flex-between shrink-0 select-none">
             <div class="ui-flex-x gap-2 overflow-hidden pr-2 text-xs">
               <div class="w-1 h-3 rounded-full bg-primary shrink-0" />
               <div class="ui-flex-truncate">
-                <span class="ui-text-foreground-sub">回复 </span>
-                <span class="font-bold ui-text-foreground-main">{{ messageStore.replyTarget.sender.nickname }}</span>
+                <span class="text-foreground-sub">回复 </span>
+                <span class="font-bold text-foreground-main">{{ messageStore.replyTarget.sender.nickname }}</span>
                 <span class="opacity-60 ml-1 truncate">{{ getTextPreview(messageStore.replyTarget.message, messageStore.replyTarget.group_id) }}</span>
               </div>
             </div>
-            <div class="i-ri-close-line text-sm cursor-pointer ui-text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
+            <div class="i-ri-close-line text-sm cursor-pointer text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
           </div>
         </transition>
         <!-- Tiptap 编辑器 -->
         <editor-content
           :editor="editor"
-          class="chat-editor flex-1 w-full px-4 py-2 pr-12 text-sm leading-6 ui-text-foreground-main caret-primary ui-scrollbar overflow-y-auto flex flex-col justify-center"
+          class="chat-editor flex-1 w-full px-4 py-2 pr-12 text-sm leading-6 text-foreground-main caret-primary ui-scrollbar overflow-y-auto flex flex-col justify-center"
         />
         <!-- 发送 / 转发按钮 -->
         <div class="absolute bottom-1 right-1 z-10">
