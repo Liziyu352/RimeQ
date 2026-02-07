@@ -33,23 +33,7 @@ registerRoute(
         statuses: [0, 200],
       }),
       new ExpirationPlugin({
-        maxAgeSeconds: 3 * 24 * 60 * 60,
-      }),
-    ],
-  })
-)
-
-// 缓存图片资源
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'image-cache',
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 1 * 24 * 60 * 60,
+        maxAgeSeconds: 24 * 60 * 60,
       }),
     ],
   })

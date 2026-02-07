@@ -48,14 +48,12 @@ export class Socket {
    */
   public connect(url: string, token: string): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN && this.url === url && this.token === token) {
-      console.log('[API] WebSocket is already connected.');
       return Promise.resolve()
     }
 
     clearTimeout(this.reconnectTimer)
 
     if (this.ws) {
-      console.log('[API] Closing existing WebSocket connection before reconnecting.');
       this.ws.onclose = null
       this.ws.close()
       this.cleanup()
@@ -127,9 +125,7 @@ export class Socket {
 
     return new Promise((resolve, reject) => {
       const timer = window.setTimeout(() => {
-        if (this.pending.delete(echo)) {
-          reject(new Error(`${action} Timeout`))
-        }
+        if (this.pending.delete(echo)) reject(new Error(`${action} Timeout`))
       }, timeout)
 
       this.pending.set(echo, { resolve, reject, timer })

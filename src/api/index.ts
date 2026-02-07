@@ -1,4 +1,5 @@
 import { socket } from './socket'
+import { httpsse } from './httpsse'
 import { BaseClient } from './base'
 import type * as T from '@/types'
 
@@ -18,12 +19,28 @@ export class ExtendedClient extends BaseClient {
   // ============================================================================
 
   /**
-   * 连接到 WebSocket 服务
+   * 注册全局事件接收器
+   * @param fn - 接收数据的回调函数
+   */
+  onReceive(fn: (data: any) => void) {
+    socket.onReceive(fn)
+    httpsse.onReceive(fn)
+  }
+
+  /**
+   * 连接服务
    * @param url - 服务地址
    * @param token - 访问令牌
    */
-  async connect(url: string, token: string) {
-    await socket.connect(url, token)
+  async connect(address: string, token: string) {
+    if (address.startsWith('http://') || address.startsWith('https://')) {
+      this.mode = 'http'
+      await httpsse.connect(address, token)
+    } else {
+      this.mode = 'ws'
+      await socket.connect(address, token)
+    }
+
     try {
       const ver = await this.getVersionInfo()
       if (ver.app_name.includes('NapCat')) this.setBackend('NapCat')
@@ -34,7 +51,11 @@ export class ExtendedClient extends BaseClient {
 
   /** 断开连接 */
   disconnect() {
-    socket.disconnect()
+    if (this.mode === 'ws') {
+      socket.disconnect()
+    } else {
+      httpsse.disconnect()
+    }
   }
 
   // ============================================================================
@@ -1117,6 +1138,3 @@ export class ExtendedClient extends BaseClient {
 }
 
 export const bot = new ExtendedClient()
-
-/** 重新导出 socket */
-export { socket }

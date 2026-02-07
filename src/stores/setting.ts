@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed } from 'vue'
 import { useStorage, usePreferredDark } from '@vueuse/core'
-import { bot, socket } from '@/api'
+import { bot } from '@/api'
 import { useContactStore } from './contact'
 import { dispatchEvent } from '@/utils/dispatch'
 
@@ -54,8 +54,8 @@ export const useSettingStore = defineStore('setting', () => {
 
   /**
    * 执行登录流程
-   * 建立 WebSocket 连接，获取用户信息，并初始化相关数据
-   * @param addr - WebSocket 服务地址
+   * 建立连接，获取用户信息，并初始化相关数据
+   * @param addr - 服务地址
    * @param tk - 访问令牌 (Token)
    * @throws 当连接或获取用户信息失败时抛出错误
    */
@@ -66,7 +66,7 @@ export const useSettingStore = defineStore('setting', () => {
       if (!info) throw new Error('Unable to Fetch Login Info')
       user.value = info
       isConnected.value = true
-      socket.onReceive(dispatchEvent)
+      bot.onReceive(dispatchEvent)
       const contactStore = useContactStore()
       contactStore.fetchContacts()
       config.value.connectAddress = addr
@@ -79,11 +79,11 @@ export const useSettingStore = defineStore('setting', () => {
 
   /**
    * 执行登出操作
-   * 断开 WebSocket 连接并清理用户状态
+   * 断开连接并清理用户状态
    */
   function logout() {
     bot.disconnect()
-    socket.onReceive(() => {})
+    bot.onReceive(() => {})
     isConnected.value = false
     user.value = null
   }

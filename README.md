@@ -1,5 +1,3 @@
-# RimeQ
-
 <p align="center">
   <strong>兼容 OneBot 的非官方网页 QQ 客户端</strong>
 </p>
@@ -21,11 +19,11 @@
   </a>
 </p>
 
-## 简介
+# RimeQ
 
-**RimeQ** 是一个支持完善、功能丰富、界面美观的网页版 QQ 客户端。
+一个支持完善、功能丰富、界面美观的网页版 QQ 客户端。
 
-支持通过 WebSocket 连接到兼容 [OneBot](https://github.com/botuniverse/onebot-11) 协议的后端（[NapCat](https://github.com/NapNeko/NapCat), [LLOneBot](https://github.com/LLOneBot/LuckyLilliaBot), [Lagrange](https://github.com/LagrangeDev/Lagrange.OneBot)），考虑支持 [Milky](https://github.com/SaltifyDev/milky)。
+支持连接到兼容 [OneBot](https://github.com/botuniverse/onebot-11) 协议的后端（[NapCat](https://github.com/NapNeko/NapCat), [LLOneBot](https://github.com/LLOneBot/LuckyLilliaBot), [Lagrange](https://github.com/LagrangeDev/Lagrange.OneBot)）。
 
 ## 功能特性
 
@@ -50,8 +48,9 @@
   - 支持群相册，适配不同后端，支持编辑与点赞等操作。
 
 - **其它特性**：
-  - 响应式设计，适配不同宽度设备，并支持 PWA，可本地打开。
+  - 响应式设计，适配不同宽度设备，并支持 PWA。
   - 可选防撤回，本地缓存历史消息，支持搜索消息历史。
+  - 支持使用 HTTP SSE 与 Websocket 进行连接。
 
 ## Star History
 

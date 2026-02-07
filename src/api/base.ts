@@ -1,8 +1,12 @@
 import { socket } from './socket'
+import { httpsse } from './httpsse'
 import type * as T from '@/types'
 
 /** 后端类型 */
 export type BackendType = 'NapCat' | 'Lagrange' | 'LLOneBot'
+
+/** 通信模式 */
+export type TransportMode = 'ws' | 'http'
 
 /**
  * OneBot v11 标准 API 客户端
@@ -10,6 +14,7 @@ export type BackendType = 'NapCat' | 'Lagrange' | 'LLOneBot'
  */
 export class BaseClient {
   public backend: BackendType = 'NapCat'
+  public mode: TransportMode = 'ws'
 
   /**
    * 设置后端类型
@@ -26,7 +31,11 @@ export class BaseClient {
    * @returns Promise 解析后的响应数据
    */
   protected request<R>(action: string, params: Record<string, any> = {}): Promise<R> {
-    return socket.request<R>(action, params)
+    if (this.mode === 'http') {
+      return httpsse.request<R>(action, params)
+    } else {
+      return socket.request<R>(action, params)
+    }
   }
 
   // ============================================================================
