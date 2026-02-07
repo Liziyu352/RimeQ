@@ -48,12 +48,14 @@ export class Socket {
    */
   public connect(url: string, token: string): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN && this.url === url && this.token === token) {
+      console.log('[API] WebSocket is already connected.');
       return Promise.resolve()
     }
 
     clearTimeout(this.reconnectTimer)
 
     if (this.ws) {
+      console.log('[API] Closing existing WebSocket connection before reconnecting.');
       this.ws.onclose = null
       this.ws.close()
       this.cleanup()
@@ -64,38 +66,28 @@ export class Socket {
     this.token = token
 
     return new Promise((resolve, reject) => {
-      const target = url.replace(/^http/, 'ws')
-      const wsUrl = `${target}?access_token=${encodeURIComponent(token)}`
+      const ws = new WebSocket(`${url}?access_token=${encodeURIComponent(token)}`)
+      this.ws = ws
 
-      try {
-        const ws = new WebSocket(wsUrl)
-        this.ws = ws
+      ws.onopen = () => {
+        this.resetWatchdog()
+        resolve()
+      }
 
-        ws.onopen = () => {
-          this.resetWatchdog()
-          resolve()
+      ws.onmessage = (e) => this.handlePacket(e.data)
+
+      ws.onclose = (e) => {
+        console.warn(`[API] WebSocket 连接关闭 (Code: ${e.code}, Reason: "${e.reason}", Close Event: ${e.wasClean})`);
+        this.cleanup()
+        if (!this.isManualClose && this.url) {
+          clearTimeout(this.reconnectTimer)
+          this.reconnectTimer = window.setTimeout(() => this.connect(this.url, this.token), 3000)
         }
+      }
 
-        ws.onmessage = (e) => this.handlePacket(e.data)
-
-        ws.onclose = (e) => {
-          console.warn(`[API] Websocket 连接中断: ${e.code}`)
-          this.cleanup()
-          if (!this.isManualClose && this.url) {
-            clearTimeout(this.reconnectTimer)
-            this.reconnectTimer = window.setTimeout(() => {
-              console.log('[API] 正在重连...')
-              this.connect(this.url, this.token).catch(() => { })
-            }, 3000)
-          }
-        }
-
-        ws.onerror = (e) => {
-          if (ws.readyState !== WebSocket.OPEN) reject(new Error('Connection Error'))
-          console.error('[API] Websocket 连接出错:', e)
-        }
-      } catch (e) {
-        reject(e)
+      ws.onerror = (e) => {
+        if (ws.readyState !== WebSocket.OPEN) reject(new Error('Connection Error'))
+        console.error('[API] Websocket 连接出错:', e)
       }
     })
   }
