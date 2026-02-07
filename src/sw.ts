@@ -1,40 +1,18 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { clientsClaim } from 'workbox-core'
-import { registerRoute } from 'workbox-routing'
-import { CacheFirst } from 'workbox-strategies'
-import { CacheableResponsePlugin } from 'workbox-cacheable-response'
-import { ExpirationPlugin } from 'workbox-expiration'
 
 // TS 类型声明
 declare let self: ServiceWorkerGlobalScope
 
-// 强制激活
+// 允许消息激活
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting()
-  }
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
+
+// 控制页面
 clientsClaim()
-
-// 自动清理
+// 清理缓存
 cleanupOutdatedCaches()
-
-// 预缓存应用外壳
+// 缓存代码
 precacheAndRoute(self.__WB_MANIFEST || [])
-
-// 缓存 QQ 头像
-registerRoute(
-  ({ url }) => url.hostname.endsWith('qlogo.cn'),
-  new CacheFirst({
-    cacheName: 'avatar-cache',
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 24 * 60 * 60,
-      }),
-    ],
-  })
-)

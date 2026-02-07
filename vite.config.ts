@@ -43,10 +43,23 @@ export default defineConfig({
       },
       manifest: {
         name: 'RimeQ',
-        short_name: 'QQ',
+        short_name: 'RimeQ',
+        description: 'A Web QQ for OneBot Client',
         theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
-        icons: []
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
       }
     })
   ],
