@@ -7,7 +7,7 @@
       enter-from-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
       leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
     >
-      <div v-if="activeTab" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
+      <div v-if="activeTab" ref="panelRef" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
         <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
             <div class="flex flex-col gap-1">
@@ -132,7 +132,7 @@
       </div>
     </transition>
     <!-- 工具栏 -->
-    <div class="ui-flex-between px-3 pt-1.5 pb-1 gap-2 select-none">
+    <div ref="toolbarRef" class="ui-flex-between px-3 pt-1.5 pb-1 gap-2 select-none">
       <!-- 左侧功能按钮 -->
       <div class="ui-flex-x gap-1">
         <!-- 表情面板 -->
@@ -303,6 +303,7 @@
 import { ref, computed, watch, nextTick, onBeforeUnmount, reactive, shallowRef } from 'vue'
 import { Button, useToast, Dialog } from 'primevue'
 import { EditorContent } from '@tiptap/vue-3'
+import { onClickOutside } from '@vueuse/core'
 import type { AnimationItem } from 'lottie-web'
 import { bot } from '@/api'
 import { useMessageStore, useSettingStore, useSessionStore, useContactStore } from '@/stores'
@@ -331,6 +332,8 @@ const isForwarding = ref(false)
 const hoveringId = ref<string | null>(null)
 const imgInput = ref<HTMLInputElement>()
 const fileInput = ref<HTMLInputElement>()
+const panelRef = ref<HTMLElement>()
+const toolbarRef = ref<HTMLElement>()
 
 // 表情逻辑状态
 const gameDialog = reactive({ visible: false, type: 'dice' as 'dice' | 'rps' })
@@ -342,6 +345,11 @@ const lottieMap = new Map<string, AnimationItem>()
 const lottieRefs = new Map<string, HTMLElement>()
 const lottieCache = new Map<string, any>()
 const loadingSet = new Set<string>()
+
+// 点击外部关闭
+onClickOutside(panelRef, () => activeTab.value = null, {
+  ignore: [toolbarRef]
+})
 
 // 计算属性
 const isMultiSelect = computed(() => messageStore.isMultiSelect)
@@ -364,14 +372,14 @@ const { editor, focus, insertText, insertImage, insertMention, clear, getSegment
 defineExpose({ insertText, insertMention, focus })
 
 // 切换面板
-function toggleTab(id: string) {
+async function toggleTab(id: string) {
   if (activeTab.value === id) {
     activeTab.value = null
     return
   }
   activeTab.value = id
   if (id === 'local' && localFiles.value.length === 0) chooseLocalFolder()
-  if (id === 'collection' && collections.value.length === 0) bot.fetchCustomFace(1000).then(list => collections.value = list)
+  if (id === 'collection') if (collections.value.length === 0) collections.value = await bot.fetchCustomFace(1000)
 }
 
 // 发送消息

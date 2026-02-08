@@ -9,9 +9,6 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
-// 插件
-import { MotionPlugin } from '@vueuse/motion'
-import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 import App from './App.vue'
 
@@ -21,8 +18,6 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-app.use(MotionPlugin)
-app.use(autoAnimatePlugin)
 app.use(ToastService)
 app.use(ConfirmationService)
 app.use(PrimeVue, {

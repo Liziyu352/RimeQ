@@ -211,22 +211,23 @@ export const useContactStore = defineStore('contact', () => {
    * @returns 用户的显示名称
    */
   function getUserName(userId: string | number, groupId?: string | number, fallbackNick?: string): string {
-    const gid = groupId ? Number(groupId) : undefined
+    const uid = Number(userId)
+    const gid = groupId ? Number(groupId) : 0
     if (gid && members.has(gid)) {
-      const member = members.get(gid)?.find(u => String(u.user_id) === String(userId))
+      const member = members.get(gid)?.find(u => u.user_id === uid)
       if (member) return member.card || member.nickname
     }
     for (const cat of friends.value) {
-      const f = cat.buddyList.find(u => String(u.user_id) === String(userId))
+      const f = cat.buddyList.find(u => u.user_id === uid)
       if (f) return f.remark || f.nickname
     }
     for (const memberList of members.values()) {
-      const m = memberList.find(u => String(u.user_id) === String(userId))
+      const m = memberList.find(u => u.user_id === uid)
       if (m) return m.card || m.nickname
     }
+    if (gid && !members.has(gid)) fetchGroupMembers(gid)
     if (fallbackNick) return fallbackNick
-    bot.getStrangerInfo(Number(userId)).catch(() => {})
-    return `用户(${String(userId)})`
+    return `用户(${uid})`
   }
 
   /**
@@ -239,11 +240,11 @@ export const useContactStore = defineStore('contact', () => {
     const id = String(groupId)
     const group = groups.value.find(g => String(g.group_id) === id)
     if (group) return group.group_name
-    if (fallbackName) return fallbackName
     bot.getGroupInfo(Number(id))
       .then(res => {
         if (!groups.value.some(g => String(g.group_id) === id)) groups.value.push(res)
       }).catch(() => {})
+    if (fallbackName) return fallbackName
     return `群(${id})`
   }
 

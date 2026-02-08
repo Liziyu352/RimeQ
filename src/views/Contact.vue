@@ -7,10 +7,10 @@
         <!-- 平板模式 -->
         <div
           title="验证消息"
-          class="h-10 w-full ui-flex-center rounded-2xl cursor-pointer ui-ia group border hidden md:flex xl:hidden relative"
+          class="h-10 w-full ui-flex-center rounded-2xl cursor-pointer ui-ia border hidden md:flex xl:hidden relative"
           :class="[
             route.path === '/request'
-              ? '!bg-primary !text-primary-content shadow-md border-transparent'
+              ? 'bg-primary text-primary shadow-sm border-transparent'
               : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
           ]"
           @click="router.push('/request')"
@@ -31,10 +31,10 @@
         </div>
         <!-- 桌面/移动模式 -->
         <div
-          class="h-12 ui-flex-x px-3 gap-3 rounded-2xl cursor-pointer border ui-ia group flex md:hidden xl:flex"
+          class="h-12 ui-flex-x px-3 gap-3 rounded-2xl cursor-pointer border ui-ia flex md:hidden xl:flex"
           :class="[
             route.path === '/request'
-              ? '!bg-primary !text-primary-content shadow-md border-transparent'
+              ? 'bg-primary text-primary shadow-sm border-transparent'
               : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
           ]"
           @click="router.push('/request')"
@@ -43,17 +43,17 @@
             class="w-8 h-8 rounded-full ui-flex-center shrink-0 shadow-sm transition-colors"
             :class="[
               route.path === '/request'
-                ? 'bg-primary-content/20 text-primary-content'
+                ? 'bg-primary text-primary'
                 : 'bg-background-sub text-primary'
             ]"
           >
             <div class="i-ri-notification-3-fill text-lg" />
           </div>
-          <div class="flex-1 font-bold text-sm transition-colors">验证消息</div>
+          <div class="flex-1 font-bold text-sm transition-colors text-foreground-sub">验证消息</div>
           <Badge v-if="noticeCount > 0" :value="noticeCount" severity="danger" />
           <div
             class="i-ri-arrow-right-s-line transition-all"
-            :class="route.path === '/request' ? 'text-primary-content/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
+            :class="route.path === '/request' ? 'text-primary/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
           />
         </div>
       </div>
@@ -67,7 +67,7 @@
           class="flex-1 ui-flex-center font-bold rounded-xl cursor-pointer ui-trans ui-dur-fast py-1.5 text-sm md:text-xs xl:text-sm"
           :class="[
             currentTab === tab.key
-              ? '!bg-background-sub text-primary shadow-sm ring-1 ring-background-dim/10'
+              ? 'bg-background-sub text-primary shadow-sm'
               : 'text-foreground-sub hover:text-foreground-main hover:bg-background-sub/50',
           ]"
           @click="currentTab = tab.key"
