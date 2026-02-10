@@ -19,29 +19,41 @@
           class="flex-1 overflow-y-auto px-3 md:px-4 ui-scrollbar relative"
           @scroll="onScroll"
         >
+          <!-- 消息加载指示 -->
+          <div v-if="isLoading" class="ui-flex-center py-4 h-12 shrink-0">
+            <ProgressSpinner />
+          </div>
           <!-- 消息流容器 -->
-          <div class="flex flex-col gap-3 pb-4 pt-4 relative" style="overflow-anchor: auto">
-            <MsgBubble
-              v-for="(msg, index) in list"
-              :key="msg.message_id || index"
-              :msg="msg"
-              :selection-mode="messageStore.isMultiSelect"
-              :is-selected="messageStore.selectedIds.includes(msg.message_id)"
-              :force-markdown="markdownId.has(msg.message_id)"
-              :show-raw="rawJsonId.has(msg.message_id)"
-            />
-            <!-- 底部按钮检测 -->
+          <div
+            v-if="virtualizer.getVirtualItems().length > 0"
+            class="relative w-full"
+            :style="{ height: `${virtualizer.getTotalSize()}px`, 'overflow-anchor': 'auto' }"
+          >
+            <!-- 虚拟列表 -->
             <div
-              ref="bottomRef"
-              class="absolute bottom-0 left-0 w-full h-[256px] pointer-events-none opacity-0"
-            />
+              v-for="virtualRow in virtualizer.getVirtualItems()"
+              :key="list[virtualRow.index]?.message_id ?? virtualRow.index"
+              :ref="el => virtualizer.measureElement(el as HTMLElement)"
+              class="absolute top-0 left-0 w-full"
+              :data-index="virtualRow.index"
+              :style="{ transform: `translateY(${virtualRow.start}px)` }"
+            >
+              <MsgBubble
+                v-if="list[virtualRow.index]"
+                :msg="list[virtualRow.index]!"
+                :selection-mode="messageStore.isMultiSelect"
+                :is-selected="messageStore.selectedIds.includes(list[virtualRow.index]!.message_id)"
+                :force-markdown="markdownId.has(list[virtualRow.index]!.message_id)"
+                :show-raw="rawJsonId.has(list[virtualRow.index]!.message_id)"
+              />
+            </div>
           </div>
         </div>
         <!-- 回到底部按钮 -->
         <div
-          v-if="showScroll"
-          class="absolute bottom-25 right-5 cursor-pointer bg-primary text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center gap-1 select-none"
-          @click="scrollToBottom(true)"
+          v-if="showScrollBtn"
+          class="absolute bottom-25 right-5 cursor-pointer bg-primary text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center gap-1 select-none z-10"
+          @click="scrollToBottom()"
         >
           <div class="i-ri-arrow-down-double-line" />
           <span v-if="newMsgCount > 0" class="font-bold">{{ newMsgCount }}</span>
@@ -51,7 +63,7 @@
           ref="chatInputRef"
           :chat-id="id"
           :is-group="isGroup"
-          @send="scrollToBottom(true)"
+          @send="scrollToBottom()"
         />
         <!-- 右键菜单 -->
         <ContextMenu
@@ -101,9 +113,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, reactive, provide } from 'vue'
 import { useRoute } from 'vue-router'
-import { ContextMenu, useToast, Dialog, InputNumber, Button } from 'primevue'
-import { useIntersectionObserver } from '@vueuse/core'
-
+import { ContextMenu, useToast, Dialog, InputNumber, Button, ProgressSpinner } from 'primevue'
+import { useDebounceFn } from '@vueuse/core'
+import { useVirtualizer } from '@tanstack/vue-virtual'
 import { bot } from '@/api'
 import { useMessageStore, useSessionStore, useContactStore, useSettingStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
@@ -140,44 +152,65 @@ const banForm = reactive({ d: 0, h: 0, m: 10, s: 0 })
 
 // DOM 引用
 const scrollRef = ref<HTMLElement>() // 消息列表滚动容器
-const bottomRef = ref<HTMLElement>() // 底部按钮检测容器
 const chatInputRef = ref<InstanceType<typeof ChatInput>>() // 输入框组件引用
 
 // 滚动状态
-const showScroll = ref(false) // 显示回到底部按钮
+const isBottom = ref(true) // 是否位于底部
+const isLoading = ref(false) // 是否加载中
+const isFetching = ref(false) // 是否获取中
 const newMsgCount = ref(0) // 新消息数量
+const showScrollBtn = computed(() => !isBottom.value) // 是否显示底部按钮
 
-// 底部检测
-useIntersectionObserver(bottomRef, ([entry]) => {
-  if (!entry) return
-  const isNearBottom = entry.isIntersecting
-  showScroll.value = !isNearBottom
-  if (isNearBottom) newMsgCount.value = 0
-}, { root: scrollRef.value })
+// 虚拟滚动
+const virtualizer = useVirtualizer(computed(() => ({
+  getScrollElement: () => scrollRef.value || null,
+  count: list.value.length,
+  estimateSize: () => 120,
+  overscan: 10,
+})))
 
 // 滚动触底
-const scrollToBottom = async (smooth = true) => {
+const scrollToBottom = async () => {
   await nextTick()
-  if (scrollRef.value) {
-    const el = scrollRef.value
-    el.scrollTo({
-      top: el.scrollHeight,
-      behavior: smooth ? 'smooth' : 'instant'
-    })
-  }
+  if (scrollRef.value && list.value.length > 0) virtualizer.value.scrollToIndex(list.value.length - 1, { align: 'end', behavior: 'auto' })
 }
 
 // 滚动事件监听
-const onScroll = async (e: Event) => {
+const onScroll = useDebounceFn(async (e: Event) => {
   const el = e.target as HTMLElement
-  if (messageStore.isLoading || list.value.length === 0) return
-  if (el.scrollTop < 512 && id.value) await messageStore.fetchHistory(id.value)
-}
+  if (!el) return
+  // 更新底部状态
+  const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50
+  if (isAtBottom && !isBottom.value) newMsgCount.value = 0
+  isBottom.value = isAtBottom
+  // 加载历史消息
+  if (el.scrollTop < 50 && !isFetching.value && list.value.length > 0 && messageStore.hasMore) {
+      const oldScrollHeight = el.scrollHeight
+      const oldScrollTop = el.scrollTop
+      isFetching.value = true
+      const fetchedCount = await messageStore.fetchHistory(id.value)
+      if (fetchedCount > 0) {
+        await nextTick()
+        if (scrollRef.value) {
+          const newScrollHeight = scrollRef.value.scrollHeight
+          scrollRef.value.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight)
+        }
+      }
+      isFetching.value = false
+  }
+}, 100)
 
 // 生命周期监听
 watch(() => id.value, (newId) => {
   if (newId) {
-    messageStore.openSession(newId)
+    isLoading.value = true
+    newMsgCount.value = 0
+    messageStore.openSession(newId).then(() => {
+      nextTick(() => {
+        scrollToBottom()
+        isLoading.value = false
+      })
+    })
     markdownId.value.clear()
     rawJsonId.value.clear()
     if (isGroup.value) contactStore.fetchGroupMembers(Number(newId))
@@ -185,18 +218,13 @@ watch(() => id.value, (newId) => {
 }, { immediate: true })
 
 // 消息列表监听
-watch(() => list.value, async (newVal, oldVal) => {
-  const newLen = newVal.length
-  const oldLen = oldVal?.length || 0
-  if (newLen <= oldLen) return
-  if (oldLen === 0) return
-  const newLastId = newVal[newLen - 1]?.message_id
-  const oldLastId = oldVal?.[oldLen - 1]?.message_id
-  if (newLastId === oldLastId) return
-  const lastMsg = newVal[newLen - 1]
+watch(() => list.value.length, async (newLen, oldLen) => {
+  if (isLoading.value || isFetching.value) return
+  if (!oldLen || newLen <= oldLen) return
+  const lastMsg = list.value[newLen - 1]
   const isMe = lastMsg?.sender.user_id === settingStore.user?.user_id
-  if (isMe || !showScroll.value) {
-    await scrollToBottom(true)
+  if (isMe || isBottom.value) {
+    await scrollToBottom()
   } else {
     newMsgCount.value += (newLen - oldLen)
   }

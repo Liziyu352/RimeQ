@@ -1,5 +1,4 @@
 import { ref, shallowRef, computed } from 'vue'
-import { useStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { bot } from '@/api'
 import { database, type DBMessage } from './database'
@@ -8,6 +7,7 @@ import { useSettingStore } from './setting'
 import { useContactStore } from './contact'
 import { type Message, type Notice, PostType, SegType } from '@/types'
 import { formatDuration } from '@/utils/format'
+import Dexie from 'dexie'
 
 /**
  * 消息状态管理 Store
@@ -18,16 +18,12 @@ export const useMessageStore = defineStore('message', () => {
   const settingStore = useSettingStore()
   const contactStore = useContactStore()
 
-  /** 上次活跃时间 */
-  const lastActiveTime = useStorage('rimeq-last-active', Date.now())
   /** 当前激活的会话 ID */
   const activeId = ref('')
   /** 当前展示的消息列表 */
   const messages = shallowRef<DBMessage[]>([])
-  /** 是否正在加载消息 */
-  const isLoading = ref(false)
-  /** 是否已加载完历史消息 */
-  const isLoaded = ref(false)
+  /** 是否还有历史消息 */
+  const hasMore = ref(true)
   /** 是否开启多选模式 */
   const isMultiSelect = ref(false)
   /** 选中的消息 ID 集合 */
@@ -59,166 +55,125 @@ export const useMessageStore = defineStore('message', () => {
   }
 
   /**
-   * 生成统一的会话 ID
-   * @param targetId - 目标 ID
-   * @param type - 会话类型
-   */
-  const getSessionKey = (targetId: string, type: 'private' | 'group'): string => {
-    return type === 'group' ? `g_${targetId}` : `p_${targetId}`
-  }
-
-  /**
    * 标准化消息对象
    * @param msg - 原始消息对象
-   * @returns 标准化后的消息对象，包含 session_id 和 session_seq
+   * @returns 标准消息对象
    */
   const normalizeMessage = (msg: Message): DBMessage => {
-    const seqSource = Number(msg.real_seq || msg.message_seq || msg.message_id || 0)
-    const session_seq = (msg.time * 1000) + (Math.abs(seqSource) % 1000)
+    const msg_seq = Number(msg.real_seq || msg.message_seq || msg.message_id)
+    const session_index = (msg.time * 10000) + (Math.abs(msg_seq) % 10000)
     const targetId = msg.message_type === 'group'
       ? msg.group_id
       : (msg.user_id === settingStore.user?.user_id ? msg.target_id : msg.user_id)
     const prefix = msg.message_type === 'group' ? 'g_' : 'p_'
-    return { ...msg, session_seq, session_id: `${prefix}${targetId}`}
+    return { ...msg, session_index, session_id: `${prefix}${targetId}` }
   }
 
   /**
-   * 将新消息合并到当前视图
-   * @param newMessages - 新消息列表
+   * 加载本地消息
+   * @param sessionId 会话标识
+   * @param count 加载数量
+   * @param index (可选) 结束索引
    */
-  const mergeToView = (newMessages: DBMessage[]) => {
-    if (newMessages.length === 0) return
-    const currentIds = new Set(messages.value.map(m => m.message_id))
-    const toAdd = newMessages.filter(m => !currentIds.has(m.message_id))
-    if (toAdd.length > 0) {
-      const merged = [...messages.value, ...toAdd]
-      merged.sort((a, b) => a.session_seq - b.session_seq)
-      messages.value = merged
-      if (settingStore.config.debugMode) console.log('[Message] 消息排序结果:', messages.value)
-    }
-  }
-
-  /**
-   * 从本地数据库拉取历史消息
-   * @param id 会话ID
-   * @param beforeSeq 获取该序号之前的消息
-   * @param count 数量
-   */
-  const fetchFromLocal = async (id: string, beforeSeq: number, count = 50): Promise<DBMessage[]> => {
-    const type = getSessionType(id)
-    const sessionKey = getSessionKey(id, type)
-    const result = await database.messages
-      .where('[session_id+session_seq]')
-      .below([sessionKey, beforeSeq])
-      .and(item => item.session_id === sessionKey)
-      .reverse()
-      .limit(count)
-      .toArray()
-    if (settingStore.config.debugMode) console.log('[Message] 读取本地历史:', result)
-    return result
-  }
-
-  /**
-   * 从云端 API 拉取历史消息
-   * @param id 会话ID
-   * @param startSeq 起始序号
-   * @param count 数量
-   */
-  const fetchFromCloud = async (id: string, startSeq?: number, count = 50): Promise<DBMessage[]> => {
-    if (!settingStore.isConnected) return []
-    const type = getSessionType(id)
-    let res: { messages: Message[] }
+  async function loadMessage(sessionId: string, count: number, index?: number): Promise<DBMessage[]> {
     try {
-      res = await bot.getMsgHistory(type, Number(id), startSeq, count, true)
+      const collection = database.messages
+        .where('[session_id+session_index]')
+        .between(
+          [sessionId, Dexie.minKey],
+          [sessionId, index ?? Dexie.maxKey],
+          true,
+          false
+        )
+        .reverse()
+        .limit(count)
+      const list = await collection.toArray()
+      return list.reverse()
     } catch (e) {
-      console.error('[Message] 拉取消息失败:', e)
+      console.error('[Message] 读取本地消息失败:', e)
       return []
     }
-    const fetchedList = res.messages || []
-    if (settingStore.config.debugMode) console.log('[Message] 请求消息历史:', fetchedList)
-    if (fetchedList.length === 0) return []
-    const normalized = fetchedList.map(m => normalizeMessage(m))
-    await database.messages.bulkPut(normalized).catch(e => console.warn('[Message] 存储消息失败:', e))
-    return normalized
   }
 
   /**
-   * 切换并打开一个会话
+   * 拉取云端消息
+   * @param id 会话ID
+   * @param type 会话类型
+   * @param count 拉取数量
+   * @param startMsgId (可选) 起始消息 ID
+   */
+  async function fetchMessage(id: number, type: 'group' | 'private', count: number, startMsgId?: number): Promise<number> {
+    try {
+      const res = await bot.getMsgHistory(type, id, startMsgId, count, true)
+      const list = res.messages || []
+      if (list.length > 0) {
+        const normalized = list.map(normalizeMessage)
+        await database.messages.bulkPut(normalized)
+        return list.length
+      }
+    } catch (e) {
+      console.warn('[Message] 拉取云端消息失败:', e)
+    }
+    return 0
+  }
+
+  /**
+   * 打开新会话
    * @param id - 会话 ID
    */
   async function openSession(id: string): Promise<void> {
     if (activeId.value === id) return
     activeId.value = id
-    isLoading.value = true
-    isLoaded.value = false
+    hasMore.value = true
     setMultiSelect()
     setReplyTarget(null)
     sessionStore.clearUnread(id)
     messages.value = []
-    try {
-      const now = Date.now()
-      const timeDiff = now - lastActiveTime.value
-      const isColdStart = timeDiff > 300 * 1000
-      if (isColdStart) {
-        const cloudMsgs = await fetchFromCloud(id, 0, 50)
-        mergeToView(cloudMsgs)
-      } else {
-        const localMsgs = await fetchFromLocal(id, Number.MAX_SAFE_INTEGER, 50)
-        messages.value = localMsgs.reverse()
-        fetchFromCloud(id, 0, 50).then(cloudMsgs => {
-          mergeToView(cloudMsgs)
-        })
-      }
-      lastActiveTime.value = now
-    } catch (e) {
-      console.error('[Message] 打开会话失败:', e)
-    } finally {
-      isLoading.value = false
+
+    const type = getSessionType(id)
+    const sessionKey = type === 'group' ? `g_${id}` : `p_${id}`
+    const numId = Number(id)
+    const localMsgs = await loadMessage(sessionKey, 100)
+    // 加载消息
+    if (localMsgs.length > 0) {
+      messages.value = localMsgs
+      fetchMessage(numId, type, 100)
+    } else {
+      await fetchMessage(numId, type, 100)
+      const freshMsgs = await loadMessage(sessionKey, 100)
+      messages.value = freshMsgs
     }
   }
 
   /**
-   * 拉取历史消息
-   * @param id - 会话 ID (默认为当前激活会话)
-   * @returns 是否成功获取并合并了新数据
+   * 拉取消息历史
+   * @param id - 会话 ID
    */
-  async function fetchHistory(id: string = activeId.value): Promise<boolean> {
-    if (id !== activeId.value) return false
-    if (isLoading.value && messages.value.length > 0) return false
-    if (isLoaded.value) return false
-    isLoading.value = true
-    let hasNewData = false
-    try {
-      const oldestMsg = messages.value[0]
-      const currentSeq = oldestMsg ? oldestMsg.session_seq : Number.MAX_SAFE_INTEGER
-      let candidates = await fetchFromLocal(id, currentSeq, 50)
-      let isDiscontinuous = false
-      if (candidates.length === 0) {
-        isDiscontinuous = true
-      } else if (oldestMsg) {
-        const firstCandidate = candidates[0]
-        if (firstCandidate) {
-          const gap = currentSeq - firstCandidate.session_seq
-          if (gap > 300 * 1000) isDiscontinuous = true
-        }
-      }
-      if (isDiscontinuous && settingStore.isConnected) {
-        const apiCursor = oldestMsg ? oldestMsg.message_seq : undefined
-        const cloudData = await fetchFromCloud(id, apiCursor, 50)
-        if (cloudData.length > 0) candidates = cloudData
-      }
-      if (candidates.length > 0) {
-        mergeToView(candidates)
-        hasNewData = true
-      } else {
-        isLoaded.value = true
-      }
-    } catch (e) {
-      console.error(`[Message] 拉取消息 ${id} 历史失败:`, e)
-    } finally {
-      isLoading.value = false
+  async function fetchHistory(id: string = activeId.value): Promise<number> {
+    if (id !== activeId.value || !hasMore.value) return 0
+    if (messages.value.length === 0) return 0
+
+    const topMsg = messages.value[0]!
+    const topIndex = topMsg.session_index
+    const anchorMsg = messages.value.find(m => m.message_id > 0)
+    const topMsgId = anchorMsg ? anchorMsg.message_id : undefined
+    if (!topMsgId && messages.value.length > 0) return 0
+
+    const type = getSessionType(id)
+    const sessionKey = type === 'group' ? `g_${id}` : `p_${id}`
+    const numId = Number(id)
+    const localMessage = await loadMessage(sessionKey, 100, topIndex)
+    // 更新视图
+    if (localMessage.length > 0) {
+      const existingIds = new Set(messages.value.map(m => m.message_id))
+      const uniqueNew = localMessage.filter(m => !existingIds.has(m.message_id))
+      if (uniqueNew.length > 0) messages.value = [...uniqueNew, ...messages.value]
     }
-    return hasNewData
+    // 拉取云端
+    fetchMessage(numId, type, 100, topMsgId).then(count => {
+        if (count === 0 && localMessage.length === 0) hasMore.value = false
+    })
+    return localMessage.length
   }
 
   /**
@@ -232,10 +187,10 @@ export const useMessageStore = defineStore('message', () => {
       const activeSession = sessionStore.getSession(activeId.value)
       let activeKey = ''
       if (activeSession) {
-         activeKey = getSessionKey(activeId.value, activeSession.type)
+        activeKey = activeSession.type === 'group' ? `g_${activeId.value}` : `p_${activeId.value}`
       } else {
-         const type = rawEvent.message_type === 'group' ? 'group' : 'private'
-         activeKey = getSessionKey(activeId.value, type)
+        const type = rawEvent.message_type === 'group' ? 'group' : 'private'
+        activeKey = type === 'group' ? `g_${activeId.value}` : `p_${activeId.value}`
       }
       if (activeKey === processed.session_id) {
         if (!messages.value.some(m => m.message_id === processed.message_id)) {
@@ -243,7 +198,6 @@ export const useMessageStore = defineStore('message', () => {
         }
       }
     }
-    lastActiveTime.value = Date.now()
   }
 
   /**
@@ -322,7 +276,7 @@ export const useMessageStore = defineStore('message', () => {
           targetId = notice.group_id
           const userName = contactStore.getUserName(notice.user_id, notice.group_id)
           const honorMap: Record<string, string> = { talkative: '龙王', performer: '群聊之火', legend: '群聊炽焰', strong_newbie: '冒尖小春笋', emotion: '快乐源泉' }
-          text = `恭喜 ${userName} 获得了 “${honorMap[notice.honor_type] || '荣誉'}”`
+          text = `恭喜 ${userName} 获得了 “${honorMap[notice.honor_type]}” 荣誉`
         } else if (notice.sub_type === 'title') {
           targetId = notice.group_id
           const userName = contactStore.getUserName(notice.user_id, notice.group_id)
@@ -339,7 +293,7 @@ export const useMessageStore = defineStore('message', () => {
       post_type: PostType.Message,
       message_type: targetType,
       sub_type: 'normal',
-      message_id: -Math.floor(Math.random() * 1000000),
+      message_id: -Math.floor(Date.now() / 1000 + Math.random() * 100000),
       user_id: 10000,
       group_id: targetType === 'group' ? Number(targetId) : undefined,
       message: [{ type: SegType.Text, data: { text } }],
@@ -395,18 +349,18 @@ export const useMessageStore = defineStore('message', () => {
   async function recallMessage(msgId: number): Promise<void> {
     const dbMsg = await database.messages.where('message_id').equals(msgId).first()
     if (dbMsg) {
-        dbMsg.recalled = true
-        await database.messages.put(dbMsg)
+      dbMsg.recalled = true
+      await database.messages.put(dbMsg)
     }
     const idx = messages.value.findIndex(m => m.message_id === msgId)
     if (idx !== -1) {
-        const copy = [...messages.value]
-        const target = copy[idx]
-        if (target) {
-            const updated = { ...target, recalled: true }
-            copy[idx] = updated
-            messages.value = copy
-        }
+      const copy = [...messages.value]
+      const target = copy[idx]
+      if (target) {
+        const updated = { ...target, recalled: true }
+        copy[idx] = updated
+        messages.value = copy
+      }
     }
   }
 
@@ -440,8 +394,10 @@ export const useMessageStore = defineStore('message', () => {
     replyTarget.value = message
   }
 
-  return { activeId, messages, isLoading, isLoaded, forwardTargets,
+  return {
+    activeId, messages, forwardTargets, hasMore,
     isMultiSelect, selectedIds, selectedMessages, replyTarget,
     setMultiSelect, setReplyTarget, openSession, pushMessage,
-    fetchHistory, convertToMessage, updateMessage, recallMessage }
+    fetchHistory, convertToMessage, updateMessage, recallMessage
+  }
 })

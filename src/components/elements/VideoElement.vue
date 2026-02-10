@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full bg-black ui-flex-center group overflow-hidden rounded-lg min-h-[64px] min-w-[64px]">
+  <div class="relative w-full bg-black ui-flex-center group overflow-hidden rounded-lg min-h-[128px] min-w-[128px]">
     <video
       v-if="!videoFailed"
       :key="currentUrl"
@@ -7,7 +7,7 @@
       :poster="posterUrl"
       controls
       preload="metadata"
-      class="block w-full max-h-[400px] object-contain"
+      class="block w-full max-h-[256px] object-contain"
       referrerpolicy="no-referrer"
       @error="onError"
     />

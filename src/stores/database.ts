@@ -9,7 +9,7 @@ export interface DBMessage extends Message {
   /** 会话唯一标识 */
   session_id: string
   /** 会话排序序号 */
-  session_seq: number
+  session_index: number
   /** 是否被撤回 */
   recalled?: boolean
   /** 是否为精华 */
@@ -31,13 +31,13 @@ export interface DBMember extends GroupMemberInfo {
  * 消息持久化数据库
  */
 export class Database extends Dexie {
-  public messages!: Table<DBMessage, [string, number]>
+  public messages!: Table<DBMessage, number>
   public members!: Table<DBMember, [number, number]>
 
   constructor() {
     super('rimeq-databases')
     this.version(1).stores({
-      messages: '[session_id+session_seq], message_id',
+      messages: 'message_id, [session_id+session_index]',
       members: '[group_id+user_id], group_id'
     })
   }

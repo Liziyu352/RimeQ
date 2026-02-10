@@ -103,8 +103,8 @@ function noticeEvent(data: Notice) {
  * 负责将 OneBot 事件分发到各个 Store
  */
 export function dispatchEvent(data: OneBotEvent) {
-  const settingStore = useSettingStore()
-  if (settingStore.config.debugMode) console.log('[Dispatch] 原始事件:', data)
+  // const settingStore = useSettingStore()
+  // if (settingStore.config.debugMode) console.log('[Dispatch] 原始事件:', data)
   switch (data.post_type) {
     case 'message':
     case 'message_sent':
