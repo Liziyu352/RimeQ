@@ -14,7 +14,7 @@
       isMe ? 'flex-row-reverse' : 'flex-row',
       selectionMode && !isSelected ? 'opacity-50' : 'opacity-100'
     ]"
-    @contextmenu.prevent="chatCtx.onContextMenu($event, msg)"
+    @contextmenu.prevent="onContextMenu($event, msg)"
     @click="onBubbleClick"
   >
     <!-- 多选框 -->
@@ -31,7 +31,7 @@
       shape="circle"
       :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${msg.sender.user_id}`"
       class="size-10 shadow-sm border border-background-dim shrink-0 ui-ia bg-background-sub"
-      @dblclick="chatCtx.onPoke(msg.sender.user_id)"
+      @dblclick="onPoke(msg.sender.user_id)"
     />
     <!-- 内容 -->
     <div class="flex flex-col max-w-[75%] md:max-w-[65%] min-w-[60px]" :class="isMe ? 'items-end' : 'items-start'">
@@ -84,6 +84,8 @@
         <div class="text-[15px] text-foreground-main">
           <ElementRenderer
             :segments="msg.message"
+            :group-id="msg.group_id"
+            :on-insert-mention="onInsertMention"
           />
         </div>
         <!-- 多选遮罩 -->
@@ -124,13 +126,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, provide } from 'vue'
+import { computed } from 'vue'
 import { Avatar, Chip } from 'primevue'
 import { useSettingStore, useMessageStore, useContactStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
 import ElementRenderer from '@/components/ElementRenderer.vue'
 import { getElement } from '@/components/elements'
-import { ChatCtxKey, MsgCtxKey, type Message } from '@/types'
+import { type Message } from '@/types'
 
 const settingStore = useSettingStore()
 const messageStore = useMessageStore()
@@ -142,10 +144,11 @@ const props = defineProps<{
   isSelected?: boolean
   forceMarkdown?: boolean
   showRaw?: boolean
+  onContextMenu: (event: MouseEvent, msg: Message) => void
+  onPoke: (targetId: number) => void
+  onToggleSelect: (messageId: number) => void
+  onInsertMention: (id: string, name: string) => void
 }>()
-
-// 注入交互方法
-const chatCtx = inject(ChatCtxKey)!
 
 // UI 状态
 const isMe = computed(() => props.msg.sender.user_id === settingStore.user?.user_id) // 是否当前用户
@@ -161,12 +164,6 @@ const groupMember = computed(() => {
   }
   return props.msg.sender
 })
-
-provide(MsgCtxKey, computed(() => ({
-  groupId: props.msg.group_id,
-  messageId: props.msg.message_id,
-  isMe: isMe.value
-})))
 
 // 计算属性：合并文本内容
 const textContent = computed(() => {
@@ -199,6 +196,6 @@ const scrollToMsg = (id: string | null) => {
 
 // 气泡点击事件
 const onBubbleClick = () => {
-  if (props.selectionMode) chatCtx.onToggleSelect(props.msg.message_id)
+  if (props.selectionMode) props.onToggleSelect(props.msg.message_id)
 }
 </script>

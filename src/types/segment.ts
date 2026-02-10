@@ -118,7 +118,7 @@ export type FileSegment = SegmentBase<SegType.File, {
  */
 export type AtSegment = SegmentBase<SegType.At, {
   /** 目标的 QQ 号 */
-  qq: number | string;
+  qq: number | `all`;
   /** 显示名称 */
   name?: string;
 }>;
@@ -136,7 +136,7 @@ export type ReplySegment = SegmentBase<SegType.Reply, {
  */
 export type DiceSegment = SegmentBase<SegType.Dice, {
   /** 骰子结果 (1-6) */
-  result: number | string;
+  result: number;
 }>;
 
 /**
@@ -144,7 +144,7 @@ export type DiceSegment = SegmentBase<SegType.Dice, {
  */
 export type RpsSegment = SegmentBase<SegType.Rps, {
   /** 猜拳结果 (1: 石头 2: 剪刀 3: 布) */
-  result: number | string;
+  result: number;
 }>;
 
 /**
@@ -154,7 +154,7 @@ export type PokeSegment = SegmentBase<SegType.Poke, {
   /** 目标 QQ 号 (可选) */
   qq?: number;
   /** 类型 / ID */
-  id?: number | string;
+  id?: number;
   /** 类型名称 (NapCat/Lagrange) */
   type?: string;
 }>;
@@ -166,7 +166,7 @@ export type MusicSegment = SegmentBase<SegType.Music, {
   /** 音乐平台类型 (qq/163/xm/kugou/migu/kuwo/custom) */
   type: string;
   /** 音乐 ID (平台音乐) */
-  id?: number | string;
+  id?: number;
   /** 跳转 URL (自定义音乐) */
   url?: string;
   /** 音频 URL (自定义音乐) */
@@ -194,15 +194,15 @@ export type ForwardSegment = SegmentBase<SegType.Forward, {
  */
 export type NodeSegment = SegmentBase<SegType.Node, {
   /** 发送者 QQ 号 */
-  user_id: number | string;
+  user_id: number;
   /** 发送者昵称 */
   nickname: string;
   /** 消息内容 */
-  content: string | Segment[];
+  content: Segment[];
   /** 消息 ID (可选) */
-  id?: number | string;
+  id?: number;
   /** (兼容) */
-  uin?: number | string;
+  uin?: string;
   /** (兼容) */
   name?: string;
   /** 消息时间 (可选) */

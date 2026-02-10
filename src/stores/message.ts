@@ -43,18 +43,6 @@ export const useMessageStore = defineStore('message', () => {
   })
 
   /**
-   * 根据 ID 获取会话类型
-   * @param id - 会话 ID
-   * @returns 会话类型 ('group' | 'private')
-   */
-  const getSessionType = (id: string): 'group' | 'private' => {
-    const session = sessionStore.getSession(id)
-    if (session) return session.type
-    const isGroup = contactStore.checkIsGroup(id)
-    return isGroup ? 'group' : 'private'
-  }
-
-  /**
    * 标准化消息对象
    * @param msg - 原始消息对象
    * @returns 标准消息对象
@@ -130,7 +118,7 @@ export const useMessageStore = defineStore('message', () => {
     sessionStore.clearUnread(id)
     messages.value = []
 
-    const type = getSessionType(id)
+    const type = sessionStore.getSessionType(id)
     const sessionKey = type === 'group' ? `g_${id}` : `p_${id}`
     const numId = Number(id)
     const localMsgs = await loadMessage(sessionKey, 100)
@@ -159,7 +147,7 @@ export const useMessageStore = defineStore('message', () => {
     const topMsgId = anchorMsg ? anchorMsg.message_id : undefined
     if (!topMsgId && messages.value.length > 0) return 0
 
-    const type = getSessionType(id)
+    const type = sessionStore.getSessionType(id)
     const sessionKey = type === 'group' ? `g_${id}` : `p_${id}`
     const numId = Number(id)
     const localMessage = await loadMessage(sessionKey, 100, topIndex)
@@ -330,6 +318,7 @@ export const useMessageStore = defineStore('message', () => {
       updates.reactions = notice.likes
     }
     if (!messageId) return
+    // @ts-ignore 仅更新指定字段
     const updatedCount = await database.messages.where({ message_id: messageId }).modify(updates)
     // 更新视图
     if (updatedCount > 0) {

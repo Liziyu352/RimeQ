@@ -1,5 +1,3 @@
-import type { Gender, GroupRole } from './base'
-
 /**
  * 基础用户信息
  */
@@ -9,11 +7,11 @@ export interface UserInfo {
   /** 昵称 */
   nickname: string
   /** 性别 */
-  sex?: Gender | string
+  sex?: 'male' | 'female' | 'unknown'
   /** 年龄 */
   age?: number
   /** 等级 */
-  level?: number | string
+  level?: number
   /** QID */
   qid?: string
   /** 连续登录天数 (LLOneBot/NapCat) */
@@ -33,7 +31,7 @@ export interface SenderInfo extends UserInfo {
   /** 群名片 */
   card?: string
   /** 角色 */
-  role?: GroupRole | string
+  role?: 'owner' | 'admin' | 'member'
   /** 群号 (临时会话) */
   group_id?: number
   /** 专属头衔 */
@@ -270,15 +268,15 @@ export interface GroupAlbum {
   /** 相册描述 */
   desc: string;
   /** 所有者 QQ */
-  owner: number | string;
+  owner: number;
   /** 创建时间 */
-  create_time: number | string;
+  create_time: number;
   /** 最后上传时间 */
-  last_upload_time: number | string;
+  last_upload_time: number;
   /** 修改时间 */
-  modify_time?: number | string;
+  modify_time?: number;
   /** 图片/视频数量 */
-  upload_number: number | string;
+  upload_number: number;
   /** 权限类型 (LLOneBot) */
   type?: number;
   /** 封面信息 */
@@ -291,7 +289,7 @@ export interface GroupAlbum {
   };
   /** 创建者信息 */
   creator?: {
-    uin: string | number;
+    uin: string;
     nick: string;
     is_special?: boolean;
   };
@@ -312,14 +310,14 @@ export interface GroupAlbumMedia {
   /** 描述 */
   desc: string;
   /** 上传者 QQ */
-  uploader: string | number;
+  uploader: number;
   /** 上传者信息 */
   upload_user?: {
-    uin: string | number;
+    uin: string;
     nick: string;
   };
   /** 上传时间 */
-  upload_time: string | number;
+  upload_time: number;
   /** 是否为 GIF (LLOneBot) */
   is_gif?: boolean;
   /** 图片信息 */

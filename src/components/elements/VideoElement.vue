@@ -22,16 +22,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, inject } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { refreshUrl } from '@/utils/rkey'
-import { MsgCtxKey, type VideoSegment } from '@/types'
+import { type VideoSegment } from '@/types'
 
 // 定义组件属性
-const props = defineProps<{ segment: VideoSegment }>()
+const props = defineProps<{
+  segment: VideoSegment
+  groupId?: number
+}>()
 const videoFailed = ref(false)
-
-// 注入消息上下文
-const msgCtx = inject(MsgCtxKey)
 
 // 计算视频链接
 const initialUrl = computed(() => {
@@ -55,7 +55,7 @@ const currentUrl = ref(initialUrl.value)
 const onError = async () => {
   const url = currentUrl.value
   if (url.includes('multimedia.nt.qq.com.cn')) {
-    const type = msgCtx?.value.groupId ? 'group' : 'private'
+    const type = props.groupId ? 'group' : 'private'
     const newUrl = await refreshUrl(url, type, true)
     if (newUrl !== currentUrl.value) {
       currentUrl.value = newUrl

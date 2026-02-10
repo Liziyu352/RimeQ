@@ -8,17 +8,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { useContactStore } from '@/stores'
-import { ChatCtxKey, MsgCtxKey, type AtSegment } from '@/types'
+import { type AtSegment } from '@/types'
 
 // 组件属性定义
-const props = defineProps<{ segment: AtSegment }>()
+const props = defineProps<{
+  segment: AtSegment
+  groupId?: number | string
+  onInsertMention?: (id: string, name: string) => void
+}>()
 
 // 依赖注入
 const contactStore = useContactStore()
-const msgCtx = inject(MsgCtxKey)!
-const chatCtx = inject(ChatCtxKey)!
 
 // 计算属性：是否为 @全体成员
 const isAll = computed(() => props.segment.data.qq === 'all')
@@ -29,13 +31,13 @@ const displayName = computed(() => {
   const id = String(props.segment.data.qq)
   const name = props.segment.data.name
   if (name) return name
-  return contactStore.getUserName(id, msgCtx.value.groupId)
+  return contactStore.getUserName(id, props.groupId)
 })
 
 // 处理点击事件
 const handleClick = () => {
-  if (isAll.value) return
+  if (isAll.value || !props.onInsertMention) return
   const id = String(props.segment.data.qq)
-  chatCtx.onInsertMention(id, displayName.value)
+  props.onInsertMention(id, displayName.value)
 }
 </script>

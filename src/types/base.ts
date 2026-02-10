@@ -85,21 +85,3 @@ export enum SegType {
   /** 定位 (Lagrange) */
   Location = 'location'
 }
-
-/**
- * 性别
- */
-export enum Gender {
-  Male = 'male',
-  Female = 'female',
-  Unknown = 'unknown'
-}
-
-/**
- * 成员角色
- */
-export enum GroupRole {
-  Owner = 'owner',
-  Admin = 'admin',
-  Member = 'member'
-}

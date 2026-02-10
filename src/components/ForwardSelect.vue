@@ -141,12 +141,11 @@ watch(selectedItems, (newVal) => {
 // 初始化数据
 onMounted(() => {
   initialSnapshot.value = sessionStore.sessions.map(s => {
-    const isGroup = s.type === 'group' || contactStore.checkIsGroup(s.id)
     return {
       id: s.id,
-      name: isGroup ? contactStore.getGroupName(s.id, s.name) : contactStore.getUserName(s.id, undefined, s.name),
-      avatar: isGroup ? `https://p.qlogo.cn/gh/${s.id}/${s.id}/0` : `https://q1.qlogo.cn/g?b=qq&s=0&nk=${s.id}`,
-      type: isGroup ? 'group' : 'private'
+      name: s.type === 'group' ? contactStore.getGroupName(s.id, s.name) : contactStore.getUserName(s.id, undefined, s.name),
+      avatar: s.type === 'group' ? `https://p.qlogo.cn/gh/${s.id}/${s.id}/0` : `https://q1.qlogo.cn/g?b=qq&s=0&nk=${s.id}`,
+      type: s.type === 'group' ? 'group' : 'private'
     }
   })
   if (messageStore.forwardTargets.length > 0) {

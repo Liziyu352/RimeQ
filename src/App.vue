@@ -198,10 +198,7 @@ const userAvatar = computed(() => {
 // 数据计算：当前上下文
 const chatId = computed(() => route.params.id as string)
 const session = computed(() => sessionStore.getSession(chatId.value))
-const isGroup = computed(() => {
-  if (session.value) return session.value.type === 'group'
-  return contactStore.checkIsGroup(chatId.value)
-})
+const isGroup = computed(() => !!chatId.value && sessionStore.getSessionType(chatId.value) === 'group')
 const isContentMode = computed(() => route.path !== '/' && route.path !== '/contact')
 const showBackButton = computed(() => isMobile.value)
 

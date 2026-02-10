@@ -18,17 +18,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Image } from 'primevue'
 import { refreshUrl } from '@/utils/rkey'
-import { MsgCtxKey, type ImageSegment, type MFaceSegment } from '@/types'
+import { type ImageSegment, type MFaceSegment } from '@/types'
 
 // 定义组件属性
-const props = defineProps<{ segment: ImageSegment | MFaceSegment }>()
+const props = defineProps<{
+  segment: ImageSegment | MFaceSegment
+  groupId?: number
+}>()
 const imageFailed = ref(false)
-
-// 注入消息上下文
-const msgCtx = inject(MsgCtxKey)
 
 // 计算图片链接
 const initialUrl = computed(() => {
@@ -49,7 +49,7 @@ const currentUrl = ref(initialUrl.value)
 const onError = async () => {
   const url = currentUrl.value
   if (url.includes('multimedia.nt.qq.com.cn')) {
-    const type = msgCtx?.value.groupId ? 'group' : 'private'
+    const type = props.groupId ? 'group' : 'private'
     const newUrl = await refreshUrl(url, type, true)
     if (newUrl !== currentUrl.value) {
       currentUrl.value = newUrl

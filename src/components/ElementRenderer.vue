@@ -11,6 +11,8 @@
           v-for="(seg, j) in group.segments"
           :key="j"
           :segment="seg"
+          :group-id="props.groupId"
+          :on-insert-mention="props.onInsertMention"
         />
       </div>
       <!-- 块级元素组 -->
@@ -22,6 +24,8 @@
         <component
           :is="resolveComponent(group.segment)"
           :segment="group.segment"
+          :group-id="props.groupId"
+          :on-insert-mention="props.onInsertMention"
         />
       </div>
     </template>
@@ -35,7 +39,11 @@ import { QFace } from '@/utils/qface'
 import { useSettingStore } from '@/stores'
 import type { Segment, FaceSegment } from '@/types'
 
-const props = defineProps<{ segments: Segment[] }>()
+const props = defineProps<{
+  segments: Segment[]
+  groupId?: number
+  onInsertMention?: (id: string, name: string) => void
+}>()
 const settingStore = useSettingStore()
 
 // 决定组件类型

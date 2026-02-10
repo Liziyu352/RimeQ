@@ -49,6 +49,17 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
+   * 获取会话类型
+   * @param id - 目标会话的 ID
+   * @returns 会话类型 ('group' | 'private')
+   */
+  function getSessionType(id: string): 'group' | 'private' {
+    const session = getSession(id)
+    if (session) return session.type
+    return contactStore.checkIsGroup(id) ? 'group' : 'private'
+  }
+
+  /**
    * 更新或创建一个会话
    * 如果会话已存在，则更新其信息；否则，创建一个新的会话
    * @param id - 目标会话的 ID
@@ -108,5 +119,5 @@ export const useSessionStore = defineStore('session', () => {
     if (index > -1) sessions.value.splice(index, 1)
   }
 
-  return { sessions: sortedSessions, getSession, updateSession, clearUnread, removeSession }
+  return { sessions: sortedSessions, getSession, getSessionType, updateSession, clearUnread, removeSession }
 })

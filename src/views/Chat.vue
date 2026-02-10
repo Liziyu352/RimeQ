@@ -45,6 +45,10 @@
                 :is-selected="messageStore.selectedIds.includes(list[virtualRow.index]!.message_id)"
                 :force-markdown="markdownId.has(list[virtualRow.index]!.message_id)"
                 :show-raw="rawJsonId.has(list[virtualRow.index]!.message_id)"
+                :on-context-menu="onContextMenu"
+                :on-poke="onPoke"
+                :on-toggle-select="chatCtx.onToggleSelect"
+                :on-insert-mention="onInsertMention"
               />
             </div>
           </div>
@@ -111,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, reactive, provide } from 'vue'
+import { ref, computed, watch, nextTick, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import { ContextMenu, useToast, Dialog, InputNumber, Button, ProgressSpinner } from 'primevue'
 import { useDebounceFn } from '@vueuse/core'
@@ -119,7 +123,7 @@ import { useVirtualizer } from '@tanstack/vue-virtual'
 import { bot } from '@/api'
 import { useMessageStore, useSessionStore, useContactStore, useSettingStore } from '@/stores'
 import { getTextPreview } from '@/utils/format'
-import { ChatCtxKey, type Message } from '@/types'
+import { type Message } from '@/types'
 import MsgBubble from '@/components/MsgBubble.vue'
 import ChatInput from '@/components/ChatInput.vue'
 
@@ -247,9 +251,6 @@ const onContextMenu = (e: MouseEvent, msg: Message) => {
 
 // 定义交互方法
 const chatCtx = {
-  onInsertMention,
-  onPoke,
-  onContextMenu,
   onToggleSelect: (messageId: number) => {
     messageStore.setMultiSelect(messageId)
   },
@@ -258,9 +259,6 @@ const chatCtx = {
     chatInputRef.value?.focus()
   }
 }
-
-// 注入交互方法
-provide(ChatCtxKey, chatCtx)
 
 // 打开禁言弹窗
 const openBanDialog = (msg: Message) => {
