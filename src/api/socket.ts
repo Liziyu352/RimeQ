@@ -114,10 +114,9 @@ export class Socket {
    * @template T - 期望的响应数据类型
    * @param action - API 动作名称 (如 send_private_msg)
    * @param params - API 参数对象
-   * @param timeout - 超时时间(毫秒)，默认 60000ms
    * @returns Promise - 解析后的响应数据 (data 字段)
    */
-  public request<T = any>(action: string, params: Record<string, any> = {}, timeout = 60000): Promise<T> {
+  public request<T = any>(action: string, params: Record<string, any> = {}): Promise<T> {
     if (this.ws?.readyState !== WebSocket.OPEN) return Promise.reject(new Error('WebSocket Disconnected'))
 
     const echo = Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -126,7 +125,7 @@ export class Socket {
     return new Promise((resolve, reject) => {
       const timer = window.setTimeout(() => {
         if (this.pending.delete(echo)) reject(new Error(`${action} Timeout`))
-      }, timeout)
+      }, 60000)
 
       this.pending.set(echo, { resolve, reject, timer })
       this.ws!.send(payload)

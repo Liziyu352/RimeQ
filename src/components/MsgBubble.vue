@@ -177,18 +177,17 @@ const textContent = computed(() => {
 const replyDetail = computed(() => {
   const replySeg = props.msg.message.find(s => s.type === 'reply')
   if (!replySeg?.data?.id) return null
-  const idStr = String(replySeg.data.id)
-  const found = messageStore.messages.find(m => String(m.message_id) === idStr)
+  const found = messageStore.messages.find(m => m.message_id === Number(replySeg.data.id))
 
   return {
-    id: idStr,
+    id: Number(replySeg.data.id),
     sender: found?.sender.card || found?.sender.nickname || '未知用户',
     text: found ? getTextPreview(found.message, found.group_id) : '未知内容'
   }
 })
 
 // 引用消息跳转
-const scrollToMsg = (id: string | null) => {
+const scrollToMsg = (id: number | null) => {
   if (!id) return
   const el = document.getElementById(`msg-${id}`)
   el?.scrollIntoView({ behavior: 'smooth', block: 'center' })

@@ -92,7 +92,7 @@ const requests = computed(() => [...contactStore.requests].sort((a, b) => b.time
 const getRequest = (item: Request): string => {
   const userName = contactStore.getUserName(item.user_id, item.group_id, String(item.user_id))
   if (item.request_type === 'friend') return `${userName} 请求添加你为好友`
-  const groupName = contactStore.getGroupName(String(item.group_id), String(item.group_id))
+  const groupName = contactStore.getGroupName(item.group_id!, String(item.group_id))
   return item.sub_type === 'invite'
     ? `${userName} 邀请你加入 ${groupName}`
     : `${userName} 申请加入 ${groupName}`
@@ -116,7 +116,7 @@ const handleRequest = async (item: Request, approve: boolean) => {
     toast.add({ severity: approve ? 'success' : 'info', summary: approve ? '已通过' : '已拒绝', life: 3000 })
     contactStore.removeRequest(item)
   } catch (e) {
-    toast.add({ severity: 'error', summary: '操作失败', detail: String(e), life: 3000 })
+    toast.add({ severity: 'error', summary: '操作失败', detail: e, life: 3000 })
   }
 }
 </script>

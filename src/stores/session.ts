@@ -9,7 +9,7 @@ import { useSettingStore } from './setting'
  */
 export interface Session {
   /** 唯一标识 */
-  id: string
+  id: number
   /** 会话类型 */
   type: 'private' | 'group'
   /** 会话名称 (备用) */
@@ -44,7 +44,7 @@ export const useSessionStore = defineStore('session', () => {
    * @param id - 目标会话的 ID
    * @returns 匹配的会话对象，如果不存在则返回 `undefined`
    */
-  function getSession(id: string): Session | undefined {
+  function getSession(id: number): Session | undefined {
     return sessions.value.find(s => s.id === id)
   }
 
@@ -53,7 +53,7 @@ export const useSessionStore = defineStore('session', () => {
    * @param id - 目标会话的 ID
    * @returns 会话类型 ('group' | 'private')
    */
-  function getSessionType(id: string): 'group' | 'private' {
+  function getSessionType(id: number): 'group' | 'private' {
     const session = getSession(id)
     if (session) return session.type
     return contactStore.checkIsGroup(id) ? 'group' : 'private'
@@ -65,7 +65,7 @@ export const useSessionStore = defineStore('session', () => {
    * @param id - 目标会话的 ID
    * @param partial - 要更新或创建的会话的部分数据
    */
-  function updateSession(id: string, partial: Partial<Session>) {
+  function updateSession(id: number, partial: Partial<Session>) {
     const index = sessions.value.findIndex(s => s.id === id)
     if (index !== -1) {
       const current = sessions.value[index]
@@ -105,7 +105,7 @@ export const useSessionStore = defineStore('session', () => {
    * 清除指定会话的未读消息计数
    * @param id - 目标会话的 ID
    */
-  function clearUnread(id: string) {
+  function clearUnread(id: number) {
     const session = getSession(id)
     if (session) session.unread = 0
   }
@@ -114,7 +114,7 @@ export const useSessionStore = defineStore('session', () => {
    * 从列表中移除一个会话
    * @param id - 要移除的会话的 ID
    */
-  function removeSession(id: string) {
+  function removeSession(id: number) {
     const index = sessions.value.findIndex(s => s.id === id)
     if (index > -1) sessions.value.splice(index, 1)
   }

@@ -59,8 +59,7 @@ const isInlineSegment = (seg: Segment) => {
   if (seg.type === 'face') {
     if (!settingStore.config.renderSuperFace) return true
     if (props.segments.filter(s => s.type !== 'reply').length > 1) return true
-    const id = String((seg as FaceSegment).data.id)
-    const face = QFace.get(id)
+    const face = QFace.get((seg as FaceSegment).data.id)
     return face && (face.type === 'face' || face.type === 'emoji')
   }
   return false

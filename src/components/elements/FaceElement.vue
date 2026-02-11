@@ -18,7 +18,7 @@ const props = defineProps<{ segment: FaceSegment }>()
 
 // 计算元数据
 const face = computed(() => {
-  const id = String(props.segment.data.id)
+  const id = props.segment.data.id
   const info = QFace.get(id)
   if (!info) return { src: '', name: '[表情]' }
   return { src: info.assets?.dynamic || info.assets?.static, name: `[${info.name}]` }

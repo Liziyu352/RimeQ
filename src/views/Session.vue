@@ -98,10 +98,10 @@ const sessionStore = useSessionStore()
 const contactStore = useContactStore()
 
 // 判断当前会话是否激活
-const isActive = (id: string) => route.params.id === id
+const isActive = (id: number) => Number(route.params.id) === id
 
 // 点击会话跳转
-const handleSessionClick = (id: string) => {
+const handleSessionClick = (id: number) => {
   router.push(`/${id}`)
 }
 
@@ -110,9 +110,7 @@ const filteredSessions = computed(() => {
   let list = sessionStore.sessions
   if (keyword.value) {
     const k = keyword.value.toLowerCase().trim()
-    list = list.filter((s) =>
-      getSessionName(s).toLowerCase().includes(k) || s.id.includes(k)
-    )
+    list = list.filter((s) => getSessionName(s).toLowerCase().includes(k))
   }
   return list
 })
@@ -125,6 +123,6 @@ const getSessionName = (session: Session) => {
   } else {
     name = contactStore.getUserName(session.id)
   }
-  return name === session.id ? session.name : name
+  return name === String(session.id) ? session.name : name
 }
 </script>

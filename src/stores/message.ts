@@ -19,7 +19,7 @@ export const useMessageStore = defineStore('message', () => {
   const contactStore = useContactStore()
 
   /** 当前激活的会话 ID */
-  const activeId = ref('')
+  const activeId = ref<number>(0)
   /** 当前展示的消息列表 */
   const messages = shallowRef<DBMessage[]>([])
   /** 是否还有历史消息 */
@@ -29,7 +29,7 @@ export const useMessageStore = defineStore('message', () => {
   /** 选中的消息 ID 集合 */
   const selectedIds = ref<number[]>([])
   /** 转发目标 ID 列表 */
-  const forwardTargets = ref<string[]>([])
+  const forwardTargets = ref<number[]>([])
   /** 正在回复的目标消息 */
   const replyTarget = ref<Message | null>(null)
 
@@ -109,7 +109,7 @@ export const useMessageStore = defineStore('message', () => {
    * 打开新会话
    * @param id - 会话 ID
    */
-  async function openSession(id: string): Promise<void> {
+  async function openSession(id: number): Promise<void> {
     if (activeId.value === id) return
     activeId.value = id
     hasMore.value = true
@@ -137,7 +137,7 @@ export const useMessageStore = defineStore('message', () => {
    * 拉取消息历史
    * @param id - 会话 ID
    */
-  async function fetchHistory(id: string = activeId.value): Promise<number> {
+  async function fetchHistory(id: number = activeId.value): Promise<number> {
     if (id !== activeId.value || !hasMore.value) return 0
     if (messages.value.length === 0) return 0
 
@@ -194,7 +194,7 @@ export const useMessageStore = defineStore('message', () => {
    */
   function convertToMessage(notice: Notice) {
     let text = ''
-    let targetId: string | number = 0
+    let targetId: number = 0
     let targetType: 'group' | 'private' = 'group'
     switch (notice.notice_type) {
       case 'friend_add': {
@@ -292,11 +292,11 @@ export const useMessageStore = defineStore('message', () => {
     if (settingStore.config.debugMode) console.log('[Message] 消息事件转换:', systemMsg)
     // 推送消息并更新会话
     pushMessage(systemMsg)
-    sessionStore.updateSession(String(targetId), {
+    sessionStore.updateSession(targetId, {
       type: targetType,
       preview: text,
       time: notice.time * 1000,
-      unread: activeId.value === String(targetId) ? 0 : 1
+      unread: activeId.value === targetId ? 0 : 1
     })
   }
 

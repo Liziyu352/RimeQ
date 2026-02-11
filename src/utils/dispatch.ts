@@ -13,11 +13,11 @@ function messageEvent(data: Message) {
   // 判断消息类型
   const isGroupMsg = data.message_type === 'group'
   const selfId = settingStore.user?.user_id
-  let sessionId: string
+  let sessionId: number
   if (isGroupMsg) {
-    sessionId = String(data.group_id)
+    sessionId = data.group_id!
   } else {
-    sessionId = String(data.user_id === selfId ? (data).target_id : data.user_id)
+    sessionId = data.user_id === selfId ? data.target_id! : data.user_id
   }
   // 推送消息
   messageStore.pushMessage(data)

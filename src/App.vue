@@ -196,7 +196,7 @@ const userAvatar = computed(() => {
 })
 
 // 数据计算：当前上下文
-const chatId = computed(() => route.params.id as string)
+const chatId = computed(() => Number(route.params.id) || 0)
 const session = computed(() => sessionStore.getSession(chatId.value))
 const isGroup = computed(() => !!chatId.value && sessionStore.getSessionType(chatId.value) === 'group')
 const isContentMode = computed(() => route.path !== '/' && route.path !== '/contact')
@@ -212,7 +212,7 @@ const pageTitle = computed(() => {
     } else {
       name = contactStore.getUserName(chatId.value)
     }
-    return name !== chatId.value ? name : session.value?.name || chatId.value
+    return name !== String(chatId.value) ? name : session.value?.name || chatId.value
   }
   return route.meta.title
 })

@@ -138,7 +138,7 @@ const contactStore = useContactStore()
 const settingStore = useSettingStore()
 
 // 会话上下文
-const id = computed(() => (route.params.id as string) || '') // 当前会话 ID
+const id = computed(() => Number(route.params.id) || 0) // 当前会话 ID
 const session = computed(() => sessionStore.getSession(id.value)) // 当前会话对象
 const list = computed(() => {
   if (settingStore.config.enableAntiRecall) return messageStore.messages
@@ -217,7 +217,7 @@ watch(() => id.value, (newId) => {
     })
     markdownId.value.clear()
     rawJsonId.value.clear()
-    if (isGroup.value) contactStore.fetchGroupMembers(Number(newId))
+    if (isGroup.value) contactStore.fetchGroupMembers(newId)
   }
 }, { immediate: true })
 

@@ -289,7 +289,7 @@ export interface GroupAlbum {
   };
   /** 创建者信息 */
   creator?: {
-    uin: string;
+    uin: number;
     nick: string;
     is_special?: boolean;
   };
@@ -313,7 +313,7 @@ export interface GroupAlbumMedia {
   uploader: number;
   /** 上传者信息 */
   upload_user?: {
-    uin: string;
+    uin: number;
     nick: string;
   };
   /** 上传时间 */

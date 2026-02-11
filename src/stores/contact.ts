@@ -29,7 +29,7 @@ export const useContactStore = defineStore('contact', () => {
    */
   async function fetchContacts() {
     try {
-      groups.value = await bot.getGroupList() || []
+      groups.value = await bot.getGroupList()
     } catch (e) {
       console.error('[Contact] 获取群组列表失败', e)
       groups.value = []
@@ -138,7 +138,7 @@ export const useContactStore = defineStore('contact', () => {
         if (member) member.card = notice.card_new
         break
       case 'group_ban':
-        if (member) (member as any).shut_up_timestamp = notice.duration > 0 ? Date.now() / 1000 + notice.duration : 0
+        if (member) member.shut_up_end_time = notice.duration > 0 ? Date.now() / 1000 + notice.duration : 0
         break
       case 'notify':
         if (member && notice.sub_type === 'title') (member).title = notice.title
@@ -210,24 +210,22 @@ export const useContactStore = defineStore('contact', () => {
    * @param fallbackNick - 当本地无数据时，可提供的备用昵称
    * @returns 用户的显示名称
    */
-  function getUserName(userId: string | number, groupId?: string | number, fallbackNick?: string): string {
-    const uid = Number(userId)
-    const gid = groupId ? Number(groupId) : 0
-    if (gid && members.has(gid)) {
-      const member = members.get(gid)?.find(u => u.user_id === uid)
+  function getUserName(userId: number, groupId?: number, fallbackNick?: string): string {
+    if (groupId && members.has(groupId)) {
+      const member = members.get(groupId)?.find(u => u.user_id === userId)
       if (member) return member.card || member.nickname
     }
     for (const cat of friends.value) {
-      const f = cat.buddyList.find(u => u.user_id === uid)
+      const f = cat.buddyList.find(u => u.user_id === userId)
       if (f) return f.remark || f.nickname
     }
     for (const memberList of members.values()) {
-      const m = memberList.find(u => u.user_id === uid)
+      const m = memberList.find(u => u.user_id === userId)
       if (m) return m.card || m.nickname
     }
-    if (gid && !members.has(gid)) fetchGroupMembers(gid)
+    if (groupId && !members.has(groupId)) fetchGroupMembers(groupId)
     if (fallbackNick) return fallbackNick
-    return `用户(${uid})`
+    return `用户(${userId})`
   }
 
   /**
@@ -236,25 +234,23 @@ export const useContactStore = defineStore('contact', () => {
    * @param fallbackName - 当本地无数据时，可提供的备用群名
    * @returns 群组的显示名称
    */
-  function getGroupName(groupId: string | number, fallbackName?: string): string {
-    const id = String(groupId)
-    const group = groups.value.find(g => String(g.group_id) === id)
+  function getGroupName(groupId: number, fallbackName?: string): string {
+    const group = groups.value.find(g => g.group_id === groupId)
     if (group) return group.group_name
-    bot.getGroupInfo(Number(id))
+    bot.getGroupInfo(groupId)
       .then(res => {
-        if (!groups.value.some(g => String(g.group_id) === id)) groups.value.push(res)
+        if (!groups.value.some(g => g.group_id === groupId)) groups.value.push(res)
       }).catch(() => {})
     if (fallbackName) return fallbackName
-    return `群(${id})`
+    return `群(${groupId})`
   }
 
   /**
    * 判断指定 ID 是否为群组
    * @description 基于本地群组列表进行精确匹配
    */
-  function checkIsGroup(id: string | number): boolean {
-    const targetId = String(id)
-    return groups.value.some(g => String(g.group_id) === targetId)
+  function checkIsGroup(id: number): boolean {
+    return groups.value.some(g => g.group_id === id)
   }
 
   return { friends, groups, requests, notices, members,

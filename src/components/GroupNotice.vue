@@ -159,7 +159,7 @@ const form = reactive({ content: '', imgPreview: '', pinned: false, confirm: fal
 // 权限计算
 const myInfo = computed(() => contactStore.members.get(groupId.value)?.find(m => m.user_id === settingStore.user?.user_id))
 const canPublish = computed(() => ['owner', 'admin'].includes(myInfo.value?.role || ''))
-const canOperate = (item: any) => canPublish.value || String(item.sender_id) === String(settingStore.user?.user_id)
+const canOperate = (item: any) => canPublish.value || item.sender_id === settingStore.user?.user_id
 
 // 展开逻辑判断
 const shouldExpand = (item: any) => (item.image?.url) || (item.text?.length > 60) || (item.text?.split('\n').length > 3)

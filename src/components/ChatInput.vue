@@ -278,7 +278,7 @@
             :label="String(i)"
             severity="secondary" outlined
             class="!w-9 !h-9 !p-0 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all font-bold"
-            @click="postSegment([{ type: 'dice', data: { result: String(i) } }])"
+            @click="postSegment([{ type: 'dice', data: { result: i } }])"
           />
         </template>
         <!-- 猜拳 -->
@@ -288,7 +288,7 @@
             :key="opt.v"
             severity="secondary" outlined
             class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]"
-            @click="postSegment([{ type: 'rps', data: { result: String(opt.v) } }])"
+            @click="postSegment([{ type: 'rps', data: { result: opt.v } }])"
           >
             <div class="text-lg leading-none filter drop-shadow-sm">{{ opt.i }}</div>
             <span class="text-[10px] font-bold opacity-80">{{ opt.l }}</span>
@@ -315,7 +315,7 @@ import ForwardSelect from './ForwardSelect.vue'
 
 defineOptions({ name: 'ChatInput' })
 
-const props = defineProps<{ chatId: string; isGroup: boolean }>()
+const props = defineProps<{ chatId: number; isGroup: boolean }>()
 const emit = defineEmits<{ (e: 'send'): void }>()
 
 // 全局 Hooks
@@ -357,7 +357,7 @@ const isEmpty = computed(() => !editor.value || editor.value.isEmpty)
 
 // 编辑器初始化
 const { editor, focus, insertText, insertImage, insertMention, clear, getSegments } = useChatEditor({
-  currentId: computed(() => props.chatId),
+  currentId: computed(() => String(props.chatId)),
   isGroup: computed(() => props.isGroup),
   onSend: executeSend,
   onFile: (f) => {
@@ -386,7 +386,7 @@ async function toggleTab(id: string) {
 async function postSegment(segments: any[]) {
   gameDialog.visible = false
   try {
-    await bot.sendMsg(props.isGroup ? 'group' : 'private', Number(props.chatId), segments)
+    await bot.sendMsg(props.isGroup ? 'group' : 'private', props.chatId, segments)
     emit('send')
   } catch (e) {
     toast.add({ severity: 'error', summary: '发送失败', detail: String(e), life: 3000 })
@@ -403,7 +403,7 @@ function handleFace(item: any) {
   }
   const type = item.id === '358' ? 'dice' : item.id === '359' ? 'rps' : 'face'
   const data = (item.id === '358' || item.id === '359')
-    ? { result: String(Math.floor(Math.random() * (item.id === '358' ? 6 : 3)) + 1) } : { id: item.id }
+    ? { result: Math.floor(Math.random() * (item.id === '358' ? 6 : 3)) + 1 } : { id: item.id }
   postSegment([{ type, data }])
 }
 
@@ -440,7 +440,7 @@ async function handleUpload(type: 'img' | 'file', payload: Event | File) {
     try {
       const buffer = await file.arrayBuffer()
       const b64 = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
-      await bot.uploadFile(props.isGroup ? 'group' : 'private', Number(props.chatId), 'base64://' + b64, file.name);
+      await bot.uploadFile(props.isGroup ? 'group' : 'private', props.chatId, 'base64://' + b64, file.name);
       emit('send')
       toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
     } catch (err) {
@@ -495,10 +495,9 @@ const executeForward = async (mode: 'merge' | 'single') => {
       const nodes: Segment[] = targetMsgs.map((m) => ({
         type: 'node', data: { nickname: m.sender.nickname, user_id: m.sender.user_id, content: m.message }
       } as NodeSegment))
-      await Promise.all(targetIds.map(async (targetIdStr) => {
-        const targetId = Number(targetIdStr)
-        const session = sessionStore.getSession(targetIdStr)
-        const isGroup = session?.type === 'group' || contactStore.checkIsGroup(targetIdStr)
+      await Promise.all(targetIds.map(async (targetId) => {
+        const session = sessionStore.getSession(targetId)
+        const isGroup = session?.type === 'group' || contactStore.checkIsGroup(targetId)
         if (isGroup) await bot.sendGroupForwardMsg(targetId, nodes)
         else await bot.sendPrivateForwardMsg(targetId, nodes)
       }))

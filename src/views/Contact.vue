@@ -201,14 +201,14 @@ function filterList<T extends Record<string, any>>(list: T[], keyword: string | 
   if (!k) return list
   return list.filter(item =>
     fields.some(field =>
-      String(item[field] || '').toLowerCase().includes(k)
+      String(item[field]).toLowerCase().includes(k)
     )
   )
 }
 
 // 过滤分组列表
 const filteredCategories = computed(() => {
-  if (!(keyword.value || '').trim()) return contactStore.friends
+  if (!(keyword.value).trim()) return contactStore.friends
   return contactStore.friends
     .map(cat => ({ ...cat, buddyList: filterList(cat.buddyList, keyword.value, ['remark', 'nickname', 'user_id']) }))
     .filter(cat => cat.buddyList.length > 0)

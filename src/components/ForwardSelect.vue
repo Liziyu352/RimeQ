@@ -74,7 +74,7 @@ import { useMessageStore, useSessionStore, useContactStore } from '@/stores'
 
 // 转发目标接口
 interface ForwardItem {
-  id: string
+  id: number
   name: string
   avatar: string
   type: 'group' | 'private'
@@ -96,20 +96,20 @@ const selectedItems = ref<ForwardItem[]>([]) // 已选列表
 const contactPool = computed<ForwardItem[]>(() => {
   // 好友映射
   const friends = contactStore.friends.flatMap(c => c.buddyList.map(f => ({
-    id: String(f.user_id),
+    id: f.user_id,
     name: f.remark || f.nickname,
     avatar: `https://q1.qlogo.cn/g?b=qq&s=0&nk=${f.user_id}`,
     type: 'private' as const
   })))
   // 群组映射
   const groups = contactStore.groups.map(g => ({
-    id: String(g.group_id),
+    id: g.group_id,
     name: g.group_remark || g.group_name,
     avatar: `https://p.qlogo.cn/gh/${g.group_id}/${g.group_id}/0`,
     type: 'group' as const
   }))
   // 建表去重
-  const map = new Map<string, ForwardItem>()
+  const map = new Map<number, ForwardItem>()
   ;[...friends, ...groups].forEach(i => map.set(i.id, i))
   return Array.from(map.values())
 })
@@ -119,7 +119,7 @@ const displaySource = computed(() => {
   const selectedIds = new Set(selectedItems.value.map(i => i.id))
   const k = keyword.value.toLowerCase().trim()
   const base = k
-    ? contactPool.value.filter(i => i.name.toLowerCase().includes(k) || i.id.includes(k))
+    ? contactPool.value.filter(i => i.name.toLowerCase().includes(k))
     : initialSnapshot.value
   return base.filter(i => !selectedIds.has(i.id))
 })

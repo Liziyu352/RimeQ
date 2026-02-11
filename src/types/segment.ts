@@ -118,7 +118,7 @@ export type FileSegment = SegmentBase<SegType.File, {
  */
 export type AtSegment = SegmentBase<SegType.At, {
   /** 目标的 QQ 号 */
-  qq: number | `all`;
+  qq: string;
   /** 显示名称 */
   name?: string;
 }>;
@@ -166,7 +166,7 @@ export type MusicSegment = SegmentBase<SegType.Music, {
   /** 音乐平台类型 (qq/163/xm/kugou/migu/kuwo/custom) */
   type: string;
   /** 音乐 ID (平台音乐) */
-  id?: number;
+  id?: string;
   /** 跳转 URL (自定义音乐) */
   url?: string;
   /** 音频 URL (自定义音乐) */
@@ -202,7 +202,7 @@ export type NodeSegment = SegmentBase<SegType.Node, {
   /** 消息 ID (可选) */
   id?: number;
   /** (兼容) */
-  uin?: string;
+  uin?: number;
   /** (兼容) */
   name?: string;
   /** 消息时间 (可选) */

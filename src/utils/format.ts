@@ -65,7 +65,7 @@ export function formatDuration(seconds: number | string): string {
  * @param groupId - (可选) 所属群号，用于显示昵称
  * @returns 预览文本
  */
-export function getTextPreview(message: Segment[], groupId?: number | string): string {
+export function getTextPreview(message: Segment[], groupId?: number): string {
   const contactStore = useContactStore()
   let text = ''
   for (const seg of message) {
@@ -74,7 +74,7 @@ export function getTextPreview(message: Segment[], groupId?: number | string): s
         text += seg.data.text
         break
       case 'at':
-        text += `@${seg.data.qq === 'all' ? '全体成员' : contactStore.getUserName(seg.data.qq || '', groupId)} `
+        text += `@${seg.data.qq === 'all' ? '全体成员' : contactStore.getUserName(Number(seg.data.qq), groupId)} `
         break
       case 'image':
       case 'mface':
@@ -97,7 +97,7 @@ export function getTextPreview(message: Segment[], groupId?: number | string): s
         text += `[猜拳|${rps[String(seg.data.result)]}]`;
         break
       case 'face':
-        const face = QFace.get(String(seg.data.id))
+        const face = QFace.get(seg.data.id)
         text += face ? `[${face.name}]` : `[表情]`
         break
       case 'forward':

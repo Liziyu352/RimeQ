@@ -22,15 +22,15 @@ const meta = computed(() => {
   switch (type) {
     case 'dice': {
       const res = (data as DiceSegment['data']).result
-      return { name: `[骰子:${res}]`, url: QFace.resolveAsset('358', Number(res)) }
+      return { name: `[骰子:${res}]`, url: QFace.resolveAsset('358', res) }
     }
     case 'rps': {
       const rpsMap: Record<string, string> = { '1': '布', '2': '剪刀', '3': '石头' }
       const res = (data as RpsSegment['data']).result
-      return { name: `[猜拳|${rpsMap[String(res)]}]`, url: QFace.resolveAsset('359', Number(res)) }
+      return { name: `[猜拳|${rpsMap[String(res)]}]`, url: QFace.resolveAsset('359', res) }
     }
     case 'face': {
-      const id = String((data as FaceSegment['data']).id)
+      const id = (data as FaceSegment['data']).id
       const face = QFace.get(id)
       return { name: face ? `[${face.name}]` : '[表情]', url: face?.assets?.lottie || '' }
     }

@@ -32,7 +32,7 @@
             @click="openAlbum(album)"
           >
             <!-- 背景图 -->
-            <template v-if="Number(album.upload_number) > 0">
+            <template v-if="album.upload_number > 0">
               <img
                 :src="getAlbumCover(album)"
                 class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -52,7 +52,7 @@
                 <p v-if="album.desc" class="text-xs text-white/70 truncate shadow-sm m-0">{{ album.desc }}</p>
               </div>
               <div class="flex justify-between items-center text-[10px] text-white/80 font-mono">
-                <span>{{ formatTime(Number(album.last_upload_time) * 1000)}}</span>
+                <span>{{ formatTime(album.last_upload_time * 1000)}}</span>
                 <span>{{ album.upload_number }}</span>
               </div>
             </div>
@@ -121,7 +121,7 @@
             <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${activeMedia.uploader}`" shape="circle" class="!w-8 !h-8 border border-white/20" />
             <div class="flex flex-col min-w-0">
               <span class="text-xs font-bold truncate">{{ contactStore.getUserName(activeMedia.uploader) }}</span>
-              <span class="text-[10px] opacity-70 font-mono">{{ formatTime(Number(activeMedia.upload_time) * 1000) }}</span>
+              <span class="text-[10px] opacity-70 font-mono">{{ formatTime(activeMedia.upload_time * 1000) }}</span>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -305,9 +305,8 @@ const activeMedia = computed(() => ui.activeIndex >= 0 ? data.photos[ui.activeIn
 const canDeleteMedia = computed(() => {
   if (!activeMedia.value) return false
   const uid = settingStore.user?.user_id
-  const isUploader = String(activeMedia.value.uploader) === String(uid)
   const myInfo = contactStore.members.get(groupId.value)?.find(m => m.user_id === uid)
-  return isUploader || myInfo?.role === 'owner' || myInfo?.role === 'admin'
+  return activeMedia.value.uploader === uid || myInfo?.role === 'owner' || myInfo?.role === 'admin'
 })
 
 // 加载更多
@@ -358,9 +357,13 @@ const loadAlbums = async (force = false) => {
       ...item,
       album_id: String(item.album_id),
       name: item.name,
+      owner: Number(item.owner),
+      create_time: Number(item.create_time),
+      last_upload_time: Number(item.last_upload_time || item.create_time || 0),
+      modify_time: item.modify_time ? Number(item.modify_time) : undefined,
       upload_number: Number(item.upload_number || 0),
-      last_upload_time: Number(item.last_upload_time || item.create_time || 0)
-    })).sort((a: any, b: any) => b.last_upload_time - a.last_upload_time)
+      creator: item.creator ? { ...item.creator, uin: Number(item.creator.uin) } : undefined,
+    })).sort((a: GroupAlbum, b: GroupAlbum) => b.last_upload_time - a.last_upload_time)
   } catch (e) {
     toast.add({ severity: 'error', summary: '加载相册失败', detail: String(e), life: 3000 })
   } finally {
@@ -387,11 +390,12 @@ const loadPhotos = async (append = false) => {
     const rawList = Array.isArray(res) ? res : (res.media_list || [])
     const nextInfo = !Array.isArray(res) ? (res.next_attach_info || '') : ''
     const hasMore = !Array.isArray(res) ? (!!res.next_has_more) : false
-    const parsedPhotos = rawList.map((item: any) => ({
+    const parsedPhotos: GroupAlbumMedia[] = rawList.map((item: any) => ({
       ...item,
       type: item.type ?? 0,
       lloc: item.lloc,
-      uploader: item.uploader || item.upload_user?.uin,
+      uploader: Number(item.uploader || item.upload_user?.uin),
+      upload_user: item.upload_user ? { ...item.upload_user, uin: Number(item.upload_user.uin) } : undefined,
       upload_time: Number(item.upload_time || 0),
       like: {
         count: item.like?.count || item.like?.num || 0,

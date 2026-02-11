@@ -76,22 +76,22 @@ const meta = computed(() => {
   const metaData = obj.meta ? (Object.values(obj.meta)[0] as any) : null
   switch (true) {
     // 小程序
-    case obj.app?.includes('miniapp'):
+    case obj.app?.startsWith('com.tencent.miniapp_'):
       result.title = metaData?.desc || obj.prompt
-      result.desc = metaData?.host?.nick ? `由 ${metaData.host.nick} 分享` : ''
+      result.desc = metaData?.host?.nick
       result.preview = metaData?.preview
       result.icon = metaData?.icon
       result.url = metaData?.qqdocurl || metaData?.url
       result.source = metaData?.title
       break
-    // 合并转发
-    case obj.app === 'com.tencent.multimsg':
-      result.title = metaData?.summary || obj.prompt
-      result.desc = metaData?.news?.map((n: any) => n.text).join('\n')
-      result.preview = ''
-      result.icon = ''
-      result.url = ''
-      result.source = metaData?.source || obj.prompt
+    // 频道
+    case obj.app === 'com.tencent.forum':
+      result.title = metaData?.feed?.title?.contents?.[0]?.text_content?.text
+      result.desc = metaData?.poster?.nick
+      result.preview = metaData?.feed?.images?.[0]?.pic_url || metaData?.feed?.videos?.[0]?.cover?.pic_url
+      result.icon = metaData?.channel_info?.guild_icon
+      result.url = metaData?.jump_url
+      result.source = metaData?.channel_info?.guild_name
       break
     // 公告
     case obj.app === 'com.tencent.mannounce':
@@ -101,6 +101,24 @@ const meta = computed(() => {
       result.icon = ''
       result.url = `https://web.qun.qq.com/mannounce/index.html?_wv=1031&_bid=148#gc=${metaData.gc}&fid=${metaData.fid}`
       result.source = '群公告'
+      break
+    // 小程序
+    case obj.app === 'com.tencent.miniapp.lua':
+      result.title = metaData?.title || obj.prompt
+      result.desc = metaData?.source
+      result.preview = metaData?.preview
+      result.icon = metaData?.tagIcon
+      result.url = metaData?.pcJumpUrl || metaData?.jumpUrl
+      result.source = metaData?.tag
+      break
+    // 图文
+    case obj.app === 'com.tencent.tuwen.lua':
+      result.title = metaData?.title
+      result.desc = metaData?.desc || obj.prompt
+      result.preview = metaData?.preview
+      result.icon = metaData?.tagIcon
+      result.url = metaData?.jumpUrl
+      result.source = metaData?.tag
       break
     // 相册
     case obj.app === 'com.tencent.feed.lua':
@@ -120,15 +138,6 @@ const meta = computed(() => {
       result.url = metaData?.pcJumpUrl || metaData?.jumpUrl
       result.source = metaData?.tag
       break
-    // 图文（收藏）
-    case obj.app === 'com.tencent.tuwen.lua':
-      result.title = metaData?.title
-      result.desc = metaData?.desc || obj.prompt
-      result.preview = metaData?.preview
-      result.icon = metaData?.tagIcon
-      result.url = metaData?.jumpUrl
-      result.source = metaData?.tag
-      break
     // 音乐
     case obj.app === 'com.tencent.music.lua':
       result.title = metaData?.title || obj.prompt
@@ -138,6 +147,15 @@ const meta = computed(() => {
       result.url = metaData?.jumpUrl
       result.source = metaData?.tag
       result.audioUrl = metaData?.musicUrl
+      break
+    // 合并转发
+    case obj.app === 'com.tencent.multimsg':
+      result.title = metaData?.summary || obj.prompt
+      result.desc = metaData?.news?.map((n: any) => n.text).join('\n')
+      result.preview = ''
+      result.icon = ''
+      result.url = ''
+      result.source = metaData?.source || obj.prompt
       break
     // 邀请
     case obj.app === 'com.tencent.together':

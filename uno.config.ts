@@ -96,7 +96,7 @@ export default defineConfig({
     ['ui-anim-slide-out-right', 'animate-slide-out-right'],
     // 交互
     ['ui-ia', 'cursor-pointer select-none ui-trans ui-dur-fast'],
-    ['ui-ia-hover', 'ui-ia hover:ui-bg-background-dim'],
+    ['ui-ia-hover', 'ui-ia hover:bg-background-dim'],
     ['ui-ia-press', 'active:scale-95'],
     // 滚动条
     ['ui-scrollbar', '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'],

@@ -231,7 +231,7 @@ export type NotifyNotice =
       /** 群号 (群) */
       group_id?: number;
       /** 原始信息 */
-      raw_info?: string;
+      raw_info?: unknown[];
     })
   /**
    * 戳一戳撤回通知 (LLOneBot)
