@@ -38,7 +38,7 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
   /* 基础 */
   font-size: 14px;
   line-height: 1.6;
-  color: var(--text-main);
+  color: inherit;
   /* 清除间距 */
   > *:first-child { margin-top: 0; }
   > *:last-child { margin-bottom: 0; }
@@ -56,10 +56,10 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
     font-weight: 600;
     margin: 1em 0 0.5em;
     line-height: 1.3;
-    color: var(--text-main);
+    color: inherit;
   }
-  h1 { font-size: 1.4em; border-bottom: 1px solid var(--color-dim); padding-bottom: 0.3em; }
-  h2 { font-size: 1.25em; border-bottom: 1px solid var(--color-dim); padding-bottom: 0.3em; }
+  h1 { font-size: 1.4em; padding-bottom: 0.3em; }
+  h2 { font-size: 1.25em; padding-bottom: 0.3em; }
   h3 { font-size: 1.1em; }
   h4 { font-size: 1em; }
   /* 列表 */
@@ -74,9 +74,7 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
   blockquote {
     margin: 0.8em 0;
     padding: 0.4em 0.8em;
-    color: var(--text-sub);
-    background-color: var(--color-dim);
-    border-left: 3px solid var(--primary-soft);
+    opacity: 0.8;
     border-radius: 4px;
   }
   /* 行内代码 */
@@ -85,7 +83,6 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
     font-size: 0.9em;
     padding: 0.1em 0.3em;
     border-radius: 4px;
-    background-color: var(--color-dim);
     color: var(--primary-active);
   }
   /* 代码块 */
@@ -94,11 +91,9 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
     padding: 0.8em;
     overflow-x: auto;
     border-radius: 6px;
-    background-color: var(--color-dim);
-    border: 1px solid var(--color-sub);
     code {
-      background-color: transparent;
-      color: var(--text-sub);
+      color: inherit;
+      opacity: 0.8;
       padding: 0;
       white-space: pre;
     }
@@ -106,15 +101,12 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
   /* 表格 */
   table {
     width: 100%;
-    border-collapse: collapse;
     margin: 0.8em 0;
     font-size: 0.9em;
     th, td {
       padding: 0.4em 0.6em;
-      border: 1px solid var(--color-dim);
     }
     th {
-      background-color: var(--color-dim);
       font-weight: 600;
       text-align: left;
     }
@@ -123,7 +115,6 @@ const html = computed(() => DOMPurify.sanitize(md.render(props.segment.data.cont
   hr {
     height: 1px;
     border: none;
-    background-color: var(--color-dim);
     margin: 1.2em 0;
   }
   /* 图片 */

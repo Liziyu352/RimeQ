@@ -1,7 +1,7 @@
 <template>
-  <div class="ui-flex-col-full bg-background-sub relative select-none">
+  <div class="ui-flex-col-full bg-transparent relative select-none">
     <!-- 顶部导航栏 -->
-    <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
+    <header class="h-14 shrink-0 px-3 border-b border-white/5 flex items-center gap-3 z-30 bg-transparent backdrop-blur-md">
       <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
       <div class="flex-1 min-w-0 flex items-center gap-2">
         <span class="font-bold text-base text-foreground-main truncate">群精华</span>
@@ -9,20 +9,20 @@
       </div>
     </header>
     <!-- 列表区域 -->
-    <div class="flex-1 min-h-0 bg-background-sub relative w-full overflow-hidden">
+    <div class="flex-1 min-h-0 bg-transparent relative w-full overflow-hidden">
       <!-- 加载中 -->
       <div v-if="loading" class="h-full ui-flex-center">
         <ProgressSpinner />
       </div>
       <div v-else-if="items.length > 0" class="size-full overflow-y-auto ui-scrollbar">
         <div v-for="item in items" :key="item.message_id" class="w-full px-3 py-2">
-          <div class="relative bg-background-main border border-background-dim/50 rounded-xl shadow-sm group hover:shadow-md ui-trans flex flex-col overflow-hidden">
+          <div class="relative bg-background-sub/20 backdrop-blur-md border border-white/10 rounded-xl shadow-sm group hover:shadow-md ui-trans flex flex-col overflow-hidden">
             <div class="flex items-center gap-3 p-3 pb-2">
               <!-- 头像 -->
               <Avatar
                 :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`"
                 shape="circle"
-                class="!w-8 !h-8 bg-background-dim shrink-0 cursor-pointer border border-background-dim"
+                class="!w-8 !h-8 bg-background-sub/30 shrink-0 cursor-pointer border border-white/10"
                 @click.stop="router.push(`/${item.sender_id}`)"
               />
               <!-- 昵称 -->
@@ -35,7 +35,7 @@
                   v-tooltip.left="'删除'"
                   icon="i-ri-delete-bin-line"
                   text rounded severity="danger"
-                  class="!w-8 !h-8 !bg-background-main shadow-sm border border-red-100 dark:border-red-900/30 hover:!bg-red-50 dark:hover:!bg-red-900/50"
+                  class="!w-8 !h-8 !bg-background-sub/80 shadow-sm border border-red-200/20 hover:!bg-red-500/10"
                   @click.stop="handleDelete(item)"
                 />
               </div>
@@ -49,7 +49,7 @@
               </div>
             </div>
             <!-- 消息内容 -->
-            <div class="text-sm text-foreground-main/90">
+            <div class="text-sm text-foreground-main">
               <ElementRenderer
                 :segments="item.content"
                 :group-id="groupId"

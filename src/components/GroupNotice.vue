@@ -1,7 +1,7 @@
 <template>
-  <div class="ui-flex-col-full bg-background-sub relative select-none">
+  <div class="ui-flex-col-full bg-transparent relative select-none">
     <!-- 顶部导航栏 -->
-    <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
+    <header class="h-14 shrink-0 px-3 border-b border-white/5 flex items-center gap-3 z-30 bg-transparent backdrop-blur-md">
       <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="router.back()" />
       <div class="flex-1 min-w-0 flex items-center gap-2">
         <span class="font-bold text-base text-foreground-main truncate">群公告</span>
@@ -10,7 +10,7 @@
       <Button v-if="canPublish" v-tooltip.bottom="'新公告'" icon="i-ri-add-line" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-primary" @click="openDialog()" />
     </header>
     <!-- 公告列表区域 -->
-    <div class="flex-1 overflow-y-auto ui-scrollbar p-3 relative bg-background-sub">
+    <div class="flex-1 overflow-y-auto ui-scrollbar p-3 relative bg-transparent">
       <!-- 空状态 -->
       <div v-if="!notices.length" class="h-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-2">
         <div class="i-ri-notification-off-line text-4xl" />
@@ -21,11 +21,11 @@
         <div
           v-for="item in notices"
           :key="item.id"
-          class="group relative bg-background-main border border-background-dim/50 rounded-xl p-3 shadow-sm hover:shadow-md ui-trans"
+          class="group relative bg-background-sub/30 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md ui-trans"
         >
           <!-- 头部信息 -->
           <div class="flex items-center gap-2 mb-2 relative z-10 h-6">
-            <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`" shape="circle" class="!w-6 !h-6 bg-background-dim border border-background-dim shadow-sm shrink-0" />
+            <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${item.sender_id}`" shape="circle" class="!w-6 !h-6 bg-background-sub/50 border border-white/10 shadow-sm shrink-0" />
             <div class="flex items-center gap-1.5 min-w-0 mr-auto">
               <span class="font-bold text-sm text-foreground-main truncate max-w-[100px] sm:max-w-[180px]">{{ contactStore.getUserName(item.sender_id, groupId) }}</span>
             </div>
@@ -43,10 +43,10 @@
               class="relative overflow-hidden transition-all duration-500 ease-in-out"
               :class="isExpanded(item.id) ? '' : 'max-h-[7.5rem]'"
             >
-              <div class="text-sm text-foreground-main/90 whitespace-pre-wrap leading-5 tracking-wide break-words select-text">
+              <div class="text-sm text-foreground-main whitespace-pre-wrap leading-5 tracking-wide break-words select-text">
                 {{ item.text }}
               </div>
-              <div v-if="item.image?.url" class="mt-3 rounded-lg overflow-hidden bg-background-dim/30 border border-background-dim/30 w-fit max-w-full">
+              <div v-if="item.image?.url" class="mt-3 rounded-lg overflow-hidden bg-background-sub/10 border border-white/10 w-fit max-w-full">
                  <Image
                     :src="item.image.url"
                     preview
@@ -61,11 +61,11 @@
             <div
               v-if="shouldExpand(item)"
               class="absolute inset-x-0 bottom-0 z-10 flex justify-center items-end transition-all duration-300 pointer-events-none"
-              :class="isExpanded(item.id) ? 'h-8' : 'h-20 bg-gradient-to-t from-background-main from-10% to-transparent'"
+              :class="isExpanded(item.id) ? 'h-8' : 'h-20 bg-gradient-to-t from-background-sub/40 from-10% to-transparent'"
             >
               <!-- 控制按钮 -->
               <div
-                class="pointer-events-auto cursor-pointer w-7 h-7 rounded-full bg-background-dim/90 hover:bg-primary hover:text-white text-foreground-dim flex items-center justify-center transition-all shadow-sm backdrop-blur-sm active:scale-95 mb-0.5 border border-transparent hover:border-primary/20 opacity-0 group-hover:opacity-100"
+                class="pointer-events-auto cursor-pointer w-7 h-7 rounded-full bg-background-sub/80 hover:bg-primary hover:text-white text-foreground-sub flex items-center justify-center transition-all shadow-sm backdrop-blur-sm active:scale-95 mb-0.5 border border-transparent hover:border-primary/20 opacity-0 group-hover:opacity-100"
                 @click.stop="toggleExpand(item.id)"
               >
                 <div

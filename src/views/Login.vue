@@ -1,11 +1,11 @@
 <template>
   <!-- 登录页容器 -->
-  <div class="min-h-screen w-full ui-flex-center p-4 ui-trans ui-dur-normal">
+  <div class="min-h-screen w-full ui-flex-center p-4 ui-trans">
     <!-- 登录卡片 -->
-    <div class="w-full max-w-md bg-background-sub rounded-2xl shadow-xl overflow-hidden p-8 md:p-10 border border-background-dim ui-trans ui-dur-normal">
+    <div class="w-full max-w-md bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 rounded-3xl shadow-xl overflow-hidden p-8 md:p-10 border border-white/10 ui-trans">
       <!-- 顶部 Logo 区域 -->
       <div class="ui-flex-y mb-8">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-4 text-primary">
+        <div class="w-16 h-16 rounded-2xl bg-background-sub/30 backdrop-blur-md shadow-lg border border-white/10 ui-flex-center mb-4 text-primary">
           <div class="i-ri-chat-smile-2-fill text-4xl drop-shadow-md" />
         </div>
         <h1 class="text-2xl font-bold text-foreground-main tracking-wide">RimeQ</h1>
@@ -14,17 +14,17 @@
       <div class="flex flex-col gap-6">
         <!-- 地址输入框 -->
         <IconField>
-          <InputIcon class="i-ri-server-line z-10 text-foreground-dim" />
+          <InputIcon class="i-ri-server-line z-10 text-foreground-sub" />
           <InputText
             v-model="form.connectAddress"
             placeholder="ws://"
             :disabled="loading"
-            class="w-full pl-10 h-10 text-sm !bg-background-dim !border-transparent !rounded-lg ui-trans ui-dur-normal focus:outline-none"
+            class="w-full pl-10 h-10 text-sm !bg-background-sub/30 !border-transparent !rounded-lg ui-trans focus:outline-none placeholder:text-foreground-dim text-foreground-main focus:!bg-background-sub/50 focus:!border-primary/30 focus:shadow-sm"
           />
         </IconField>
         <!-- 密钥输入框 -->
         <IconField>
-          <InputIcon class="i-ri-key-2-line z-10 text-foreground-dim" />
+          <InputIcon class="i-ri-key-2-line z-10 text-foreground-sub" />
           <Password
             v-model="form.accessToken"
             placeholder="Token"
@@ -33,7 +33,7 @@
             fluid
             :disabled="loading"
             class="w-full"
-            input-class="w-full pl-10 h-10 text-sm !bg-background-dim !border-transparent !rounded-lg ui-trans ui-dur-normal focus:outline-none"
+            input-class="w-full pl-10 h-10 text-sm !bg-background-sub/30 !border-transparent !rounded-lg ui-trans focus:outline-none placeholder:text-foreground-dim text-foreground-main focus:!bg-background-sub/50 focus:!border-primary/30 focus:shadow-sm"
             @keydown.enter="!loading && handleLogin()"
           />
         </IconField>
@@ -41,11 +41,11 @@
         <div class="ui-flex-between px-1">
           <div class="ui-flex-x gap-2">
             <Checkbox v-model="form.rememberToken" binary input-id="remember" size="small" :disabled="loading" />
-            <label for="remember" class="text-xs text-foreground-sub ui-ia-hover">记住密码</label>
+            <label for="remember" class="text-xs text-foreground-sub ui-ia-hover cursor-pointer">记住密码</label>
           </div>
           <div class="ui-flex-x gap-2">
             <Checkbox v-model="form.autoConnect" binary input-id="auto" size="small" :disabled="loading" />
-            <label for="auto" class="text-xs text-foreground-sub ui-ia-hover">自动连接</label>
+            <label for="auto" class="text-xs text-foreground-sub ui-ia-hover cursor-pointer">自动连接</label>
           </div>
         </div>
         <!-- 登录按钮 -->
@@ -53,7 +53,7 @@
           :label="loading ? '登录中...' : '登录'"
           :loading="loading"
           :icon="loading ? 'i-ri-loader-4-line animate-spin' : ''"
-          class="w-full font-bold h-10 shadow-lg shadow-primary/20 hover:shadow-primary/30 ui-trans ui-dur-normal text-primary-content text-sm"
+          class="w-full font-bold h-10 shadow-lg shadow-primary/20 hover:shadow-primary/30 ui-trans text-primary-content text-sm !border-none"
           @click="handleLogin()"
         />
       </div>

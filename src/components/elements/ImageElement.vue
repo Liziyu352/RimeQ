@@ -1,16 +1,16 @@
 <template>
-  <div class="relative w-full group select-none min-h-[128px] min-w-[128px] bg-background-dim/5 flex flex-col overflow-hidden">
+  <div class="relative w-full group select-none min-h-32 min-w-32 flex flex-col overflow-hidden rounded-lg">
     <Image
       v-if="!imageFailed"
       :src="currentUrl"
       preview
-      image-class="block w-full h-auto max-h-[256px] max-w-[256px] object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
+      image-class="block w-full h-auto max-w-64 max-h-64 object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
       class="size-full ui-flex-center"
       referrerpolicy="no-referrer"
       loading="lazy"
       @error="onError"
     />
-    <div v-else class="size-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-1 p-4">
+    <div v-else class="ui-flex-y size-full opacity-50 gap-1 p-4">
       <div class="i-ri-image-line text-4xl" />
       <span class="text-xs">图片加载失败</span>
     </div>

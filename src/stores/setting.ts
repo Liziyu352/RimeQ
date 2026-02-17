@@ -89,11 +89,11 @@ export const useSettingStore = defineStore('setting', () => {
   }
 
   /**
-   * 生成主题变量
+   * 生成主题色变量
    * @param hex - 主题色 Hex
    * @param isDark - 是否深色模式
    */
-  function generateThemeVars(hex: string, isDark: boolean) {
+  function generatePrimaryVars(hex: string, isDark: boolean) {
     // Hex 转 RGB
     let c = hex.substring(1)
     if (c.length === 3) c = c.split('').map(i => i + i).join('')
@@ -120,19 +120,10 @@ export const useSettingStore = defineStore('setting', () => {
     const L = Math.round(l * 100)
 
     return {
-      // 品牌色
       '--primary-color': `hsl(${h}, ${s}%, ${L}%)`,
       '--primary-hover': `hsl(${h}, ${Math.min(s + 5, 100)}%, ${isDark ? Math.min(L + 10, 90) : Math.max(L - 10, 15)}%)`,
       '--primary-active': `hsl(${h}, ${Math.min(s + 10, 100)}%, ${isDark ? Math.min(L + 20, 95) : Math.max(L - 20, 10)}%)`,
       '--primary-content': ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#000000' : '#ffffff',
-      // 背景色
-      '--color-main': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 3%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 99%)`,
-      '--color-sub': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 6%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 96%)`,
-      '--color-dim': isDark ? `hsl(${h}, ${Math.round(s * 0.2)}%, 9%)` : `hsl(${h}, ${Math.round(s * 0.2)}%, 93%)`,
-      // 文本色
-      '--text-main': isDark ? 'hsla(0, 0%, 100%, 0.9)' : 'hsla(0, 0%, 0%, 0.9)',
-      '--text-sub': isDark ? 'hsla(0, 0%, 100%, 0.6)' : 'hsla(0, 0%, 0%, 0.6)',
-      '--text-dim': isDark ? 'hsla(0, 0%, 100%, 0.3)' : 'hsla(0, 0%, 0%, 0.3)',
     }
   }
 
@@ -153,9 +144,9 @@ export const useSettingStore = defineStore('setting', () => {
       document.head.appendChild(styleEl)
     }
     styleEl.textContent = config.value.customCSS || ''
-    // 生成变量
-    const vars = generateThemeVars(config.value.themeColor, isDark)
-    Object.entries(vars).forEach(([key, val]) => root.style.setProperty(key, val))
+    // 注入 Var
+    const primaryVars = generatePrimaryVars(config.value.themeColor, isDark)
+    Object.entries(primaryVars).forEach(([key, val]) => root.style.setProperty(key, val))
   }
 
   watch(

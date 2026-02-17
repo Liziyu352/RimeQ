@@ -1,10 +1,8 @@
 <template>
-  <div
-    class="relative flex items-center gap-2 p-1 w-40 max-w-sm ui-trans select-none group"
-  >
+  <div class="ui-flex-x gap-2 p-1 w-40 max-w-sm ui-trans select-none">
     <!-- 播放图标 -->
     <div
-      class="size-8 ui-flex-center shrink-0 ui-trans text-primary cursor-pointer"
+      class="size-8 ui-flex-center shrink-0 ui-ia text-primary"
       @click="togglePlay"
     >
       <div v-if="isLoading" class="i-ri-loader-4-line animate-spin text-lg" />
@@ -14,7 +12,7 @@
     <!-- 进度条 -->
     <div
       ref="progressTrackRef"
-      class="flex-1 min-w-0 h-1 bg-background-dim rounded-full overflow-hidden cursor-pointer"
+      class="flex-1 min-w-0 h-1 bg-background-sub/50 rounded-full overflow-hidden cursor-pointer"
       @mousedown="ScrubStart"
     >
       <div
@@ -23,7 +21,7 @@
       />
     </div>
     <!-- 时长 -->
-    <span class="text-xs font-mono text-foreground-dim w-10 text-center">
+    <span class="text-xs font-mono opacity-60 w-10 text-center">
       {{ audioFailed ? '--:--' : formattedDuration }}
     </span>
     <!-- Audio 元素 -->

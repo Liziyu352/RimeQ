@@ -16,6 +16,28 @@ export default defineConfig({
     transformerDirectives(),
     transformerVariantGroup(),
   ],
+  preflights: [
+    {
+      getCSS: () => `
+        :root {
+          --c-bg-main: 241, 245, 249; /* slate-100 */
+          --c-bg-sub: 255, 255, 255;   /* white */
+          --c-bg-dim: 248, 250, 252;   /* slate-50 */
+          --c-text-main: 30, 41, 59;   /* slate-800 */
+          --c-text-sub: 100, 116, 139; /* slate-500 */
+          --c-text-dim: 148, 163, 184; /* slate-400 */
+        }
+        .dark {
+          --c-bg-main: 15, 23, 42;     /* slate-900 */
+          --c-bg-sub: 30, 41, 59;      /* slate-800 */
+          --c-bg-dim: 51, 65, 85;      /* slate-700 */
+          --c-text-main: 241, 245, 249; /* slate-100 */
+          --c-text-sub: 148, 163, 184;  /* slate-400 */
+          --c-text-dim: 100, 116, 139;  /* slate-500 */
+        }
+      `
+    }
+  ],
   theme: {
     breakpoints: {
       sm: '640px',
@@ -24,24 +46,24 @@ export default defineConfig({
       xl: '1280px',
     },
     colors: {
-      // 品牌色
+      // 主题色
       primary: {
-        DEFAULT: 'var(--primary-color)', // 主色
-        hover: 'var(--primary-hover)', // 悬停
-        active: 'var(--primary-active)', // 激活
-        content: 'var(--primary-content)', // 内容
+        DEFAULT: 'var(--primary-color)',
+        hover: 'var(--primary-hover)',
+        active: 'var(--primary-active)',
+        content: 'var(--primary-content)',
       },
       // 背景色
       background: {
-        main: 'var(--color-main)', // 主背景
-        sub: 'var(--color-sub)', // 次背景
-        dim: 'var(--color-dim)', // 辅助背景
+        main: 'rgba(var(--c-bg-main), <alpha-value>)',
+        sub: 'rgba(var(--c-bg-sub), <alpha-value>)',
+        dim: 'rgba(var(--c-bg-dim), <alpha-value>)',
       },
-      // 文字色
+      // 前景色
       foreground: {
-        main: 'var(--text-main)', // 主要文本
-        sub: 'var(--text-sub)', // 次要文本
-        dim: 'var(--text-dim)', // 提示文本
+        main: 'rgba(var(--c-text-main), <alpha-value>)',
+        sub: 'rgba(var(--c-text-sub), <alpha-value>)',
+        dim: 'rgba(var(--c-text-dim), <alpha-value>)',
       },
     },
     animation: {
@@ -74,30 +96,8 @@ export default defineConfig({
     ['ui-abs-full', 'absolute inset-0'],
     ['ui-abs-center', 'absolute inset-0 m-auto'],
     // 动画
-    ['ui-trans', 'transition-all ease-[cubic-bezier(0.4,0,0.2,1)]'],
-    ['ui-dur-fast', 'duration-150'],
-    ['ui-dur-normal', 'duration-300'],
-    ['ui-dur-slow', 'duration-500'],
-    // 淡入淡出
-    ['ui-anim-fade-in', 'animate-fade-in'],
-    ['ui-anim-fade-out', 'animate-fade-out'],
-    // 缩放显隐
-    ['ui-anim-scale-in', 'animate-scale-in'],
-    ['ui-anim-scale-out', 'animate-scale-out'],
-    // 垂直滑动
-    ['ui-anim-slide-in-up', 'animate-slide-in-up'],
-    ['ui-anim-slide-in-down', 'animate-slide-in-down'],
-    ['ui-anim-slide-out-up', 'animate-slide-out-up'],
-    ['ui-anim-slide-out-down', 'animate-slide-out-down'],
-    // 水平滑动
-    ['ui-anim-slide-in-left', 'animate-slide-in-left'],
-    ['ui-anim-slide-in-right', 'animate-slide-in-right'],
-    ['ui-anim-slide-out-left', 'animate-slide-out-left'],
-    ['ui-anim-slide-out-right', 'animate-slide-out-right'],
-    // 交互
-    ['ui-ia', 'cursor-pointer select-none ui-trans ui-dur-fast'],
-    ['ui-ia-hover', 'ui-ia hover:bg-background-dim'],
-    ['ui-ia-press', 'active:scale-95'],
+    ['ui-trans', 'transition-all ease-[cubic-bezier(0.4,0,0.2,1)] duration-200'],
+    ['ui-ia', 'cursor-pointer select-none ui-trans'],
     // 滚动条
     ['ui-scrollbar', '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'],
   ]

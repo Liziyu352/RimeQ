@@ -1,7 +1,7 @@
 <template>
-  <div class="ui-flex-col-full bg-background-sub relative">
+  <div class="ui-flex-col-full bg-transparent relative">
     <!-- 顶部导航栏 -->
-    <header class="shrink-0 flex flex-col border-b border-background-dim/50 bg-background-sub/95 backdrop-blur z-10">
+    <header class="shrink-0 flex flex-col border-b border-white/5 bg-transparent z-10">
       <div class="h-14 px-3 flex items-center gap-3">
         <Button
           v-tooltip.bottom="'返回'"
@@ -14,7 +14,7 @@
         <div class="flex-1 max-w-sm">
           <IconField class="w-full">
             <InputIcon class="i-ri-search-line text-foreground-sub text-xs" />
-            <InputText v-model="keyword" placeholder="搜索文件..." class="w-full !h-8 !text-xs !bg-background-dim/50 focus:!bg-background-dim !border-transparent focus:!border-primary/50 !rounded-lg !pl-8 ui-trans" />
+            <InputText v-model="keyword" placeholder="搜索文件..." class="w-full !h-8 !text-xs !bg-background-sub/30 focus:!bg-background-sub/50 !border-transparent !rounded-lg !pl-8 ui-trans placeholder:text-foreground-dim" />
           </IconField>
         </div>
         <!-- 操作按钮组 -->
@@ -25,15 +25,15 @@
         </div>
       </div>
       <!-- 面包屑导航与容量指示 -->
-      <div class="relative h-8 flex items-center border-t border-background-dim/30 bg-background-dim/10 overflow-hidden select-none">
+      <div class="relative h-8 flex items-center border-t border-white/5 bg-background-sub/10 overflow-hidden select-none">
         <!-- 容量条 -->
         <div
-          class="absolute inset-y-0 left-0 bg-primary/10 transition-all duration-500 ease-out pointer-events-none z-0"
+          class="absolute inset-y-0 left-0 bg-primary/5 transition-all duration-500 ease-out pointer-events-none z-0"
           :style="{ width: Math.min((spaceInfo.used / (spaceInfo.total || 1)) * 100, 100) + '%' }"
         />
         <!-- 容量文字 -->
         <div class="absolute right-3 top-0 bottom-0 flex items-center z-0 pointer-events-none">
-          <span class="text-[10px] font-mono text-foreground-dim/40 italic">
+          <span class="text-[10px] font-mono text-foreground-dim italic">
             {{ formatFileSize(spaceInfo.used) }} / {{ formatFileSize(spaceInfo.total) }}
           </span>
         </div>
@@ -41,7 +41,7 @@
         <div class="relative z-10 flex-1 overflow-x-auto ui-scrollbar whitespace-nowrap mask-linear-fade flex items-center text-xs px-3">
           <div
             class="py-0.5 cursor-pointer hover:text-primary ui-trans shrink-0 flex items-center font-bold"
-            :class="!pathStack.length ? 'text-primary' : 'text-foreground-dim'"
+            :class="!pathStack.length ? 'text-primary' : 'text-foreground-sub'"
             @click="handleNavigation('jump', -1)"
           >
             <span class="leading-none">根</span>
@@ -50,7 +50,7 @@
             <span class="opacity-30 font-mono mx-1 text-foreground-dim">/</span>
             <div
               class="py-0.5 cursor-pointer hover:text-primary ui-trans shrink-0 flex items-center"
-              :class="index === pathStack.length - 1 ? 'text-foreground-main font-bold' : 'text-foreground-dim'"
+              :class="index === pathStack.length - 1 ? 'text-foreground-main font-bold' : 'text-foreground-sub'"
               @click="handleNavigation('jump', index)"
             >
               <span class="truncate max-w-[120px]">{{ folder.name }}</span>
@@ -76,8 +76,8 @@
           <div class="h-[46px] py-[1px]">
             <div
               :key="item.id"
-              class="group ui-flex-x gap-2 px-2 py-1.5 rounded-lg cursor-pointer ui-trans hover:bg-background-dim/40 border border-transparent hover:border-background-dim/30 active:scale-[0.99] relative overflow-hidden"
-              :class="{ '!bg-primary/20 !border-primary/20': selectedFiles.has(item.id) && isBatchMode }"
+              class="group ui-flex-x gap-2 px-2 py-1.5 rounded-lg cursor-pointer ui-trans hover:bg-background-sub/30 border border-transparent active:scale-[0.99] relative overflow-hidden"
+              :class="{ '!bg-primary/10': selectedFiles.has(item.id) && isBatchMode }"
               @click.stop="handleItemClick(item)"
               @contextmenu.prevent="!isBatchMode && ((menuTarget = item), menu.show($event))"
             >
@@ -90,14 +90,14 @@
                 <div class="text-sm text-foreground-main truncate group-hover:text-primary ui-trans font-medium pr-1">
                   {{ item.name }}
                 </div>
-                <div class="text-[10px] text-foreground-sub/70 flex items-center gap-1.5 font-mono leading-none min-w-0">
+                <div class="text-[10px] text-foreground-sub/80 flex items-center gap-1.5 font-mono leading-none min-w-0">
                   <span class="shrink-0">{{ item.type === 'folder' ? `${item.count}项` : item.size }}</span>
                   <template v-if="item.uploader">
-                    <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
+                    <span class="w-px h-2 bg-background-dim shrink-0" />
                     <span class="truncate">{{ item.uploader }}</span>
                   </template>
                   <template v-if="item.expire_time">
-                    <span class="w-px h-2 bg-foreground-dim/30 shrink-0" />
+                    <span class="w-px h-2 bg-background-dim shrink-0" />
                     <span class="shrink-0">
                       {{ Math.ceil((item.expire_time * 1000 - Date.now()) / 86400000) }}天
                     </span>
@@ -106,7 +106,7 @@
               </div>
               <!-- 悬浮操作按钮 -->
               <div class="absolute right-0 top-0 bottom-0 flex items-center px-2 opacity-0 group-hover:opacity-100 ui-trans z-10">
-                <Button icon="i-ri-more-2-fill" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-foreground-main hover:!bg-background-sub shadow-sm border border-transparent hover:border-background-dim" @click.stop="(menuTarget = item), menu.show($event)"/>
+                <Button icon="i-ri-more-2-fill" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-foreground-main hover:!bg-background-sub/50 shadow-sm border border-transparent" @click.stop="(menuTarget = item), menu.show($event)"/>
               </div>
             </div>
           </div>
@@ -120,7 +120,7 @@
       enter-from-class="translate-y-full opacity-0"
       leave-to-class="translate-y-full opacity-0"
     >
-      <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-main border border-background-dim shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3" @click.stop>
+      <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-sub/80 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3" @click.stop>
         <div class="ui-flex-x gap-1">
           <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
             <span>已选 {{ selectedFiles.size }} 项</span>
@@ -140,7 +140,7 @@
     <!-- 输入弹窗 -->
     <Dialog v-model:visible="inputDialog.visible" modal :header="inputDialog.mode === 'create' ? '新建文件夹' : '重命名'" :style="{ width: '20rem' }">
       <div class="flex flex-col gap-3">
-        <InputText v-model="inputDialog.value" class="w-full !text-sm" autofocus @keyup.enter="handleInputSubmit" />
+        <InputText v-model="inputDialog.value" class="w-full !text-sm !bg-background-sub/50 !border-transparent !rounded-lg" autofocus @keyup.enter="handleInputSubmit" />
         <div class="flex justify-end gap-2">
           <Button label="取消" text severity="secondary" size="small" @click="inputDialog.visible = false" />
           <Button label="确定" size="small" :loading="inputDialog.loading" @click="handleInputSubmit" />
@@ -149,7 +149,7 @@
     </Dialog>
     <!-- 移动弹窗 -->
     <Dialog v-model:visible="moveDialog.visible" modal header="移动到" :style="{ width: '22rem' }">
-      <div class="flex flex-col h-[300px]">
+        <div class="flex flex-col h-[300px]">
         <div class="flex items-center gap-1 text-xs text-foreground-sub mb-2 overflow-x-auto ui-scrollbar whitespace-nowrap px-1">
           <span
             class="cursor-pointer hover:text-primary"
@@ -165,12 +165,12 @@
             >{{ f.name }}</span>
           </template>
         </div>
-        <div class="flex-1 border border-background-dim rounded-lg overflow-y-auto ui-scrollbar p-1">
+        <div class="flex-1 border border-white/10 bg-background-sub/20 rounded-lg overflow-y-auto ui-scrollbar p-1">
           <div class="flex flex-col gap-1">
             <div
               v-for="folder in moveDialog.folders"
               :key="folder.id"
-              class="ui-flex-x gap-2 p-2 rounded hover:bg-background-dim/30 cursor-pointer text-sm"
+              class="ui-flex-x gap-2 p-2 rounded hover:bg-background-sub/30 cursor-pointer text-sm"
               @click="handleNavigation('enter', folder, true)"
             >
               <div class="i-ri-folder-3-fill text-yellow-500" />

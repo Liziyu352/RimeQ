@@ -1,7 +1,7 @@
 <template>
   <div
     v-show="isVisible"
-    class="bg-background-sub/80 backdrop-blur-xl rounded-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden flex flex-col z-50 w-fit min-w-[220px] max-w-[320px] p-1.5 select-none transition-all duration-200 ease-out"
+    class="bg-background-sub/80 backdrop-blur-xl rounded-xl shadow-xl border border-border-main/30 overflow-hidden flex flex-col z-50 w-fit min-w-[220px] max-w-[320px] p-1.5 select-none transition-all duration-200 ease-out"
   >
     <div
       v-if="sortedItems.length"
@@ -13,7 +13,7 @@
         :key="item.id"
         ref="itemRefs"
         class="group relative w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors duration-100 outline-none border-none ring-0 shrink-0"
-        :class="index === selectedIndex ? 'bg-primary shadow-sm' : 'hover:bg-background-dim/50 bg-transparent'"
+        :class="index === selectedIndex ? 'bg-primary shadow-sm' : 'hover:bg-background-sub/50 bg-transparent'"
         @click="selectItem(index)"
         @mousemove="onHover(index)"
       >
@@ -21,7 +21,7 @@
         <div class="relative shrink-0">
           <img
             :src="item.avatar"
-            class="w-8 h-8 rounded-full bg-background-dim object-cover shadow-sm transition-transform duration-200"
+            class="w-8 h-8 rounded-full bg-background-sub/50 object-cover shadow-sm transition-transform duration-200"
             :class="index === selectedIndex ? 'ring-2 ring-white/30' : ''"
             loading="lazy"
             alt="avatar"
@@ -41,8 +41,8 @@
                 class="px-1 rounded-[4px] text-[9px] font-bold leading-none border h-3.5 flex items-center"
                 :class="[
                   index === selectedIndex ? 'bg-primary-content/20 text-primary-content border-primary-content/20' : '',
-                  item.role === 'owner' && index !== selectedIndex ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' : '',
-                  item.role === 'admin' && index !== selectedIndex ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' : ''
+                  item.role === 'owner' && index !== selectedIndex ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' : '',
+                  item.role === 'admin' && index !== selectedIndex ? 'bg-green-500/10 text-green-600 border-green-500/20' : ''
                 ]"
               >
                 {{ item.role === 'owner' ? '群主' : '管理' }}

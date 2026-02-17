@@ -1,9 +1,9 @@
 <template>
-  <div class="w-full max-w-[384px] text-xs overflow-hidden first:rounded-t-lg last:rounded-b-lg -mb-px last:mb-0 relative">
-    <div class="grid grid-cols-[1.5rem_minmax(2rem,5rem)_1fr]">
+  <div class="max-w-96 text-xs overflow-hidden first:rounded-t-lg last:rounded-b-lg -mb-px last:mb-0 relative backdrop-blur-sm">
+    <div class="grid grid-cols-[1.5rem_minmax(2rem,5rem)_16rem]">
       <!-- 类型标识 -->
       <div
-        class="row-span-full ui-flex-center font-bold text-foreground-dim/80 tracking-wider [writing-mode:vertical-lr] rotate-180"
+        class="row-span-full ui-flex-center font-bold tracking-wider [writing-mode:vertical-lr] rotate-180 opacity-40"
         :style="{ gridRow: `span ${Math.max(items.length, 1)}` }"
       >
         {{ segment.type.toUpperCase() }}
@@ -11,14 +11,14 @@
       <template v-for="item in items" :key="item.key">
         <!-- Key 列 -->
         <div
-          class="p-1 font-mono text-foreground-sub flex items-center truncate"
+          class="p-1 font-mono flex items-center truncate opacity-60"
           :title="item.key"
         >
           {{ item.key }}
         </div>
         <!-- Value 列 -->
         <div
-          class="p-1 font-mono text-foreground-main break-all cursor-pointer"
+          class="p-1 font-mono break-all cursor-pointer transition-colors opacity-90"
           @click="copy(item.fullValue)"
         >
           <span v-html="item.displayValue" />

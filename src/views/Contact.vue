@@ -11,7 +11,7 @@
           :class="[
             route.path === '/request'
               ? 'bg-primary text-primary shadow-sm border-transparent'
-              : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
+              : 'bg-background-sub/30 backdrop-blur border-border-main/20 text-foreground-sub hover:bg-background-sub/50 hover:text-foreground-main'
           ]"
           @click="router.push('/request')"
         >
@@ -35,7 +35,7 @@
           :class="[
             route.path === '/request'
               ? 'bg-primary text-primary shadow-sm border-transparent'
-              : 'bg-background-dim/30 border-background-dim/20 text-foreground-sub hover:bg-background-dim/50 hover:text-foreground-main'
+              : 'bg-background-sub/30 backdrop-blur border-border-main/20 text-foreground-sub hover:bg-background-sub/50 hover:text-foreground-main'
           ]"
           @click="router.push('/request')"
         >
@@ -44,7 +44,7 @@
             :class="[
               route.path === '/request'
                 ? 'bg-primary text-primary'
-                : 'bg-background-sub text-primary'
+                : 'bg-background-sub/50 text-primary'
             ]"
           >
             <div class="i-ri-notification-3-fill text-lg" />
@@ -53,13 +53,13 @@
           <Badge v-if="noticeCount > 0" :value="noticeCount" severity="danger" />
           <div
             class="i-ri-arrow-right-s-line transition-all"
-            :class="route.path === '/request' ? 'text-primary/70' : 'text-foreground-sub/50 group-hover:text-foreground-main/70'"
+            :class="route.path === '/request' ? 'text-primary/70' : 'text-foreground-dim group-hover:text-foreground-sub'"
           />
         </div>
       </div>
       <!-- 好友/群组 切换 -->
       <div
-        class="flex select-none bg-background-dim/30 p-1 rounded-2xl transition-all border border-background-dim/20 flex-row md:flex-col md:gap-1 xl:flex-row"
+        class="flex select-none bg-background-sub/30 backdrop-blur p-1 rounded-2xl transition-all border border-border-main/20 flex-row md:flex-col md:gap-1 xl:flex-row"
       >
         <div
           v-for="tab in tabs"
@@ -67,8 +67,8 @@
           class="flex-1 ui-flex-center font-bold rounded-xl cursor-pointer ui-trans ui-dur-fast py-1.5 text-sm md:text-xs xl:text-sm"
           :class="[
             currentTab === tab.key
-              ? 'bg-background-sub text-primary shadow-sm'
-              : 'text-foreground-sub hover:text-foreground-main hover:bg-background-sub/50',
+              ? 'bg-background-sub/70 text-primary shadow-sm'
+              : 'text-foreground-sub hover:text-foreground-main hover:bg-background-sub/40',
           ]"
           @click="currentTab = tab.key"
         >
@@ -88,7 +88,7 @@
             class="!border-none"
           >
             <AccordionHeader
-              class="!p-2 !bg-transparent hover:!bg-background-dim/30 !border-none !rounded-2xl transition-colors group !flex items-center gap-2"
+              class="!p-2 !bg-transparent hover:!bg-background-sub/20 !border-none !rounded-2xl transition-colors group !flex items-center gap-2"
             >
               <div class="flex items-center gap-2 flex-1 min-w-0">
                 <span class="text-xs font-bold text-foreground-sub group-hover:text-foreground-main truncate">
@@ -106,19 +106,19 @@
                 <div
                   v-for="friend in cat.buddyList"
                   :key="friend.user_id"
-                  class="ui-flex-x gap-3 p-2 rounded-xl cursor-pointer hover:bg-background-dim/50 ui-trans group/item"
+                  class="ui-flex-x gap-3 p-2 rounded-xl cursor-pointer hover:bg-background-sub/30 ui-trans group/item"
                   @click="router.push(`/${friend.user_id}`)"
                 >
                   <Avatar
                     shape="circle"
                     :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${friend.user_id}`"
-                    class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
+                    class="w-9 h-9 shrink-0 bg-background-sub/50 border border-border-main/40 shadow-sm"
                   />
                   <div class="ui-flex-truncate">
                     <div class="text-sm font-medium text-foreground-main truncate group-hover/item:text-primary transition-colors">
                       {{ friend.remark || friend.nickname }}
                     </div>
-                    <div class="text-[10px] text-foreground-sub font-mono opacity-50">{{ friend.user_id }}</div>
+                    <div class="text-[10px] text-foreground-dim font-mono opacity-50">{{ friend.user_id }}</div>
                   </div>
                 </div>
               </div>
@@ -131,19 +131,19 @@
         <VirtualScroller :items="filteredGroups" :item-size="50" class="size-full ui-scrollbar" :pt="{ content: { class: '!w-full' } }" >
           <template #item="{ item: group }">
             <div
-              class="ui-flex-x gap-3 p-2 rounded-2xl group relative ui-ia-hover md:justify-center xl:justify-start"
+              class="ui-flex-x gap-3 p-2 rounded-2xl group relative hover:bg-background-sub/30 ui-trans ui-dur-fast md:justify-center xl:justify-start cursor-pointer"
               @click="router.push(`/${group.group_id}`)"
             >
               <Avatar
                 shape="circle"
                 :image="`https://p.qlogo.cn/gh/${group.group_id}/${group.group_id}/0`"
-                class="w-9 h-9 shrink-0 bg-background-dim border border-background-dim/50 shadow-sm"
+                class="w-9 h-9 shrink-0 bg-background-sub/50 border border-border-main/40 shadow-sm"
               />
               <div class="ui-flex-truncate block md:hidden xl:block">
                 <div class="text-sm font-medium text-foreground-main truncate group-hover:text-primary transition-colors">
                   {{ group.group_remark ? `${group.group_remark} (${group.group_name})` : group.group_name }}
                 </div>
-                <div class="text-[11px] text-foreground-sub truncate font-mono opacity-60 flex items-center gap-1.5">
+                <div class="text-[11px] text-foreground-dim truncate font-mono opacity-60 flex items-center gap-1.5">
                   <span>{{ group.group_id }}</span>
                   <Badge :value="`${group.member_count}/${group.max_member_count}`" severity="secondary" class="!text-[9px] !h-3.5 !bg-transparent !px-0" />
                 </div>

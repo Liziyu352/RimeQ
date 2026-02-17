@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full max-w-sm">
+  <div class="w-full">
     <div
-      class="flex flex-col h-full bg-background-sub overflow-hidden ui-trans group"
+      class="flex flex-col h-full backdrop-blur-md overflow-hidden ui-trans rounded-xl"
       :class="{ 'cursor-pointer': !!url }"
       @click="jump"
     >
@@ -20,17 +20,17 @@
       </div>
       <!-- 核心信息 -->
       <div class="flex flex-col flex-1 p-3 gap-1">
-        <span class="font-bold text-sm text-foreground-main line-clamp-2 leading-snug">
+        <span class="font-bold text-sm line-clamp-2 leading-snug">
           {{ title }}
         </span>
-        <span v-if="desc" class="text-xs text-foreground-sub line-clamp-3 leading-normal">
+        <span v-if="desc" class="text-xs opacity-60 line-clamp-3 leading-normal">
           {{ desc }}
         </span>
       </div>
       <!-- 底部信息 -->
-      <div class="ui-flex-x gap-2 px-3 py-2 border-t border-background-dim/30">
-        <div v-if="source" class="i-ri-link-m text-xs text-foreground-dim" />
-        <span class="text-[10px] text-foreground-dim truncate">{{ source }}</span>
+      <div class="ui-flex-x gap-2 px-3 py-2 bg-foreground-main/5">
+        <div v-if="source" class="i-ri-link-m text-xs opacity-40" />
+        <span class="text-[10px] opacity-40 truncate">{{ source }}</span>
       </div>
     </div>
   </div>

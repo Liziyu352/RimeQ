@@ -1,30 +1,30 @@
 <template>
-  <div class="w-72 flex flex-col bg-background-sub overflow-hidden border border-background-dim/50 rounded-xl select-text ui-trans ui-dur-normal shadow-sm">
+  <div class="max-w-96 flex flex-col backdrop-blur-md overflow-hidden rounded-xl select-text ui-trans ui-dur-normal">
     <!-- 标题 -->
     <div
-      class="px-4 py-2.5 bg-background-dim/10 border-b border-background-dim/30 cursor-pointer flex items-center justify-between group hover:bg-background-dim/20 transition-colors select-none"
+      class="px-4 py-2.5 ui-flex-between ui-ia bg-foreground-main/5"
       @click="toggleExpand"
     >
-      <div class="text-xs font-bold text-foreground-main flex items-center">
+      <div class="text-xs font-bold ui-flex-x">
         <span>聊天记录</span>
-        <span v-if="count" class="text-[10px] font-normal text-foreground-dim bg-background-dim/30 px-1.5">{{ count }}条</span>
+        <span v-if="count" class="text-[10px] font-normal opacity-60 px-1.5 rounded-sm ml-2">{{ count }}条</span>
       </div>
     </div>
     <!-- 内容 -->
-    <div class="bg-background-sub relative">
+    <div class="relative">
       <!-- 详细列表 -->
-      <div v-if="isExpanded" class="max-h-[320px] overflow-y-auto ui-scrollbar p-3 flex flex-col gap-3">
+      <div v-if="isExpanded" class="max-h-80 overflow-y-auto ui-scrollbar p-3 flex flex-col gap-3">
         <div v-for="msg in fullMessages" :key="msg.message_id" class="flex gap-2.5 items-start">
           <Avatar
             shape="circle"
             :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${msg.sender.user_id}`"
-            class="size-8 border border-background-dim shrink-0 bg-background-sub"
+            class="size-8 shrink-0"
           />
           <div class="flex-1 min-w-0 flex flex-col gap-0.5">
-            <div class="flex items-baseline justify-between leading-none">
-              <span class="text-xs font-bold text-foreground-sub">{{ msg.sender.card || msg.sender.nickname }}</span>
+            <div class="ui-flex-between items-baseline leading-none">
+              <span class="text-xs font-bold opacity-80">{{ msg.sender.card || msg.sender.nickname }}</span>
             </div>
-            <div class="text-sm text-foreground-main break-words leading-relaxed">
+            <div class="text-sm break-words leading-relaxed">
               <ElementRenderer :segments="msg.message" />
             </div>
           </div>
@@ -33,12 +33,12 @@
       <!-- 预览列表 -->
       <div v-else class="p-3 flex flex-col gap-1">
         <template v-if="previewList.length > 0">
-          <div v-for="(line, i) in previewList" :key="i" class="text-xs flex gap-2 items-center text-foreground-sub/80">
-            <span class="font-medium shrink-0 text-foreground-main max-w-[5em] truncate">{{ line.name }}:</span>
+          <div v-for="(line, i) in previewList" :key="i" class="text-xs ui-flex-x gap-2 opacity-80">
+            <span class="font-medium shrink-0 max-w-[5em] truncate">{{ line.name }}:</span>
             <span class="opacity-80 flex-1 min-w-0 truncate">{{ line.text }}</span>
           </div>
         </template>
-        <div v-else class="text-xs text-foreground-dim italic">点击查看详情</div>
+        <div v-else class="text-xs opacity-40 italic">点击查看详情</div>
       </div>
     </div>
   </div>

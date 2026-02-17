@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full bg-black ui-flex-center group overflow-hidden rounded-lg min-h-[128px] min-w-[128px]">
+  <div class="relative w-full ui-flex-center overflow-hidden rounded-lg min-h-32 min-w-32 group">
     <video
       v-if="!videoFailed"
       :key="currentUrl"
@@ -7,16 +7,16 @@
       :poster="posterUrl"
       controls
       preload="metadata"
-      class="block w-full max-h-[256px] object-contain"
+      class="block w-full max-h-64 object-contain"
       referrerpolicy="no-referrer"
       @error="onError"
     />
-    <div v-else class="size-full ui-flex-center flex-col text-foreground-dim opacity-50 gap-1 p-4">
+    <div v-else class="ui-flex-y size-full opacity-50 gap-1 p-4">
       <div class="i-ri-vidicon-line text-4xl" />
       <span class="text-xs">视频加载失败</span>
     </div>
-    <div v-if="!videoFailed" class="absolute inset-0 ui-flex-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-black/10">
-      <div class="i-ri-play-circle-line text-4xl text-white/80 drop-shadow-md" />
+    <div v-if="!videoFailed" class="absolute inset-0 ui-flex-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+      <div class="i-ri-play-circle-line text-4xl" />
     </div>
   </div>
 </template>

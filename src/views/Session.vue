@@ -12,8 +12,8 @@
               class="group relative rounded-xl cursor-pointer select-none overflow-hidden ui-trans ui-dur-normal p-2.5 md:p-2 xl:p-2.5"
               :class="[
                 isActive(session.id)
-                  ? 'bg-primary text-primary-content shadow-md shadow-primary/20'
-                  : 'hover:bg-background-dim/50 bg-transparent text-foreground-main'
+                  ? 'bg-primary/90 text-primary-content shadow-lg shadow-primary/20 backdrop-blur-md'
+                  : 'hover:bg-background-sub/30 bg-transparent text-foreground-main'
               ]"
               @click="handleSessionClick(session.id)"
             >
@@ -28,7 +28,7 @@
                     :class="[
                       isActive(session.id)
                         ? 'ring-0 bg-transparent'
-                        : 'border border-background-dim/30 bg-background-sub'
+                        : 'border border-border-main/30 bg-background-sub/50 shadow-sm'
                     ]"
                   />
                   <!-- 未读角标 -->

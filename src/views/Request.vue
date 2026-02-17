@@ -7,14 +7,14 @@
         <div
           v-for="item in requests"
           :key="item.flag"
-          class="group relative bg-background-sub hover:bg-background-dim/40 rounded-2xl p-3 shadow-sm border border-transparent hover:border-background-dim/50 ui-trans ui-dur-fast flex items-center gap-4 overflow-hidden"
+          class="group relative bg-background-sub/30 backdrop-blur hover:bg-background-sub/50 rounded-2xl p-3 shadow-sm border border-white/10 ui-trans flex items-center gap-4 overflow-hidden"
         >
           <!-- 头像 -->
           <div class="shrink-0">
             <Avatar
               :image="getAvatar(item)"
               shape="circle"
-              class="!w-12 !h-12 border border-background-dim bg-background-dim shadow-sm"
+              class="!w-12 !h-12 border border-white/10 bg-background-sub/50 shadow-sm"
             />
           </div>
           <!-- 文本信息 -->
@@ -23,7 +23,7 @@
                {{ getRequest(item) }}
             </div>
             <!-- 验证消息 -->
-            <div v-if="item.comment" class="text-xs text-foreground-sub truncate flex items-center gap-1.5 bg-background-dim/30 w-fit px-2 py-0.5 rounded-lg">
+            <div v-if="item.comment" class="text-xs text-foreground-sub truncate flex items-center gap-1.5 bg-background-sub/20 w-fit px-2 py-0.5 rounded-lg">
               <div class="i-ri-chat-quote-line shrink-0 text-[10px] opacity-70" />
               <span>{{ item.comment }}</span>
             </div>
@@ -31,31 +31,31 @@
           <!-- 右侧选项 -->
           <div class="shrink-0 flex items-center gap-4">
              <!-- 按钮组 -->
-             <div class="flex items-center gap-2 md:opacity-0 md:translate-x-4 md:group-hover:opacity-100 md:group-hover:translate-x-0 ui-trans ui-dur-fast">
+             <div class="flex items-center gap-2 md:opacity-0 md:translate-x-4 md:group-hover:opacity-100 md:group-hover:translate-x-0 ui-trans">
                <Button
                   v-tooltip.top="'通过'"
                   icon="i-ri-check-line"
                   rounded
-                  class="!w-9 !h-9 !p-0 !text-green-600 !bg-background-main hover:!bg-green-50 !border !border-background-dim shadow-sm transition-all"
+                  class="!w-9 !h-9 !p-0 !text-green-600 !bg-background-sub/60 hover:!bg-green-50/50 !border !border-white/10 shadow-sm transition-all"
                   @click="handleRequest(item, true)"
                />
                <Button
                   v-tooltip.top="'拒绝'"
                   icon="i-ri-close-line"
                   rounded
-                  class="!w-9 !h-9 !p-0 !text-red-500 !bg-background-main hover:!bg-red-50 !border !border-background-dim shadow-sm transition-all"
+                  class="!w-9 !h-9 !p-0 !text-red-500 !bg-background-sub/60 hover:!bg-red-50/50 !border !border-white/10 shadow-sm transition-all"
                   @click="handleRequest(item, false)"
                />
                <Button
                   v-tooltip.top="'忽略'"
                   icon="i-ri-eye-off-line"
                   rounded
-                  class="!w-9 !h-9 !p-0 !text-foreground-sub !bg-background-main hover:!bg-background-dim !border !border-background-dim shadow-sm transition-all"
+                  class="!w-9 !h-9 !p-0 !text-foreground-sub !bg-background-sub/60 hover:!bg-background-sub/80 !border !border-white/10 shadow-sm transition-all"
                   @click="contactStore.removeRequest(item)"
                />
              </div>
              <!-- 时间 -->
-             <div class="text-xs font-bold text-foreground-dim/60 font-mono whitespace-nowrap min-w-[40px] text-right hidden sm:block">
+             <div class="text-xs font-bold text-foreground-dim font-mono whitespace-nowrap min-w-[40px] text-right hidden sm:block">
                 {{ formatTime(item.time * 1000) }}
              </div>
           </div>
@@ -63,7 +63,7 @@
       </div>
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center py-32 text-foreground-dim select-none opacity-60">
-        <div class="w-24 h-24 rounded-3xl bg-background-dim/30 ui-flex-center mb-6">
+        <div class="w-24 h-24 rounded-3xl bg-background-sub/20 backdrop-blur ui-flex-center mb-6 border border-white/5">
            <div class="i-ri-notification-off-line text-4xl" />
         </div>
         <span class="text-base font-bold">暂无消息</span>

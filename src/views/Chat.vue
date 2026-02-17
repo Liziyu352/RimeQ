@@ -4,10 +4,10 @@
     <main class="ui-flex-col-full min-w-0 relative">
       <!-- 空状态 -->
       <div v-if="!id" class="ui-flex-y size-full text-foreground-dim select-none pb-20">
-        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 ui-flex-center shadow-lg mb-6 text-primary">
-          <div class="i-ri-chat-smile-2-fill text-5xl drop-shadow-md" />
+        <div class="w-24 h-24 rounded-3xl bg-background-sub/40 backdrop-blur-md shadow-lg ui-flex-center mb-6 text-primary border border-border-main/20">
+          <div class="i-ri-chat-smile-2-fill text-5xl drop-shadow-sm" />
         </div>
-        <h2 class="text-xl font-bold text-foreground-main mb-2 tracking-wide">RimeQ</h2>
+        <h2 class="text-xl font-bold text-foreground-sub mb-2 tracking-wide">RimeQ</h2>
         <p class="text-xs opacity-60">选择联系人开始聊天</p>
       </div>
       <!-- 活跃会话区域 -->
@@ -56,7 +56,7 @@
         <!-- 回到底部按钮 -->
         <div
           v-if="showScrollBtn"
-          class="absolute bottom-25 right-5 cursor-pointer bg-primary text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center gap-1 select-none z-10"
+          class="absolute bottom-25 right-5 cursor-pointer bg-primary/90 backdrop-blur text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 ui-trans ui-flex-x gap-1 select-none z-10 border border-border-main/20"
           @click="scrollToBottom()"
         >
           <div class="i-ri-arrow-down-double-line" />
@@ -73,21 +73,16 @@
         <ContextMenu
           ref="contextMenu"
           :model="menuItems"
-          :pt="{ root: { class: '!min-w-[128px] w-auto' } }"
+          :pt="{ root: { class: '!min-w-[128px] w-auto !bg-background-sub/80 !backdrop-blur-xl !border !border-border-main/30 !shadow-xl' } }"
         >
           <template #item="{ item, props }">
             <a
               v-bind="props.action"
-              class="flex items-center gap-3 px-2 py-1.5 rounded-lg cursor-pointer select-none transition-colors group"
+              class="ui-flex-x gap-3 px-2 py-1.5 rounded-lg cursor-pointer select-none transition-colors group"
               :class="item.class || 'text-foreground-main hover:bg-primary/10 hover:text-primary'"
             >
-              <span
-                v-if="item.icon"
-                :class="[item.icon, 'text-base opacity-80 shrink-0 group-hover:opacity-100']"
-              />
-              <span class="whitespace-nowrap text-sm font-medium flex-1">
-                {{ item.label }}
-              </span>
+              <span v-if="item.icon" :class="[item.icon, 'text-base opacity-80 shrink-0 group-hover:opacity-100']" />
+              <span class="whitespace-nowrap text-sm font-medium flex-1">{{ item.label }}</span>
               <span v-if="item.items" class="i-ri-arrow-right-s-line text-base opacity-50 ml-auto" />
             </a>
           </template>
@@ -95,14 +90,12 @@
         <!-- 禁言设置弹窗 -->
         <Dialog v-model:visible="banDialog.visible" modal header="禁言时长" :style="{ width: '22rem' }">
           <div class="flex flex-col gap-4 py-2">
-            <!-- 时间选择器 -->
-            <div class="flex items-center justify-between gap-2">
-              <InputNumber v-model="banForm.d" :min="0" :max="30" show-buttons button-layout="vertical" suffix=" 天" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
-              <InputNumber v-model="banForm.h" :min="0" :max="23" show-buttons button-layout="vertical" suffix=" 时" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
-              <InputNumber v-model="banForm.m" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 分" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
-              <InputNumber v-model="banForm.s" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 秒" input-class="!text-center !text-sm !p-1 w-full" class="flex-1" />
+            <div class="ui-flex-between gap-2">
+              <InputNumber v-model="banForm.d" :min="0" :max="30" show-buttons button-layout="vertical" suffix=" 天" input-class="!text-center !text-sm !p-1 w-full !bg-background-dim/50" class="flex-1" />
+              <InputNumber v-model="banForm.h" :min="0" :max="23" show-buttons button-layout="vertical" suffix=" 时" input-class="!text-center !text-sm !p-1 w-full !bg-background-dim/50" class="flex-1" />
+              <InputNumber v-model="banForm.m" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 分" input-class="!text-center !text-sm !p-1 w-full !bg-background-dim/50" class="flex-1" />
+              <InputNumber v-model="banForm.s" :min="0" :max="59" show-buttons button-layout="vertical" suffix=" 秒" input-class="!text-center !text-sm !p-1 w-full !bg-background-dim/50" class="flex-1" />
             </div>
-            <!-- 操作按钮 -->
             <div class="flex gap-2">
                <Button label="解除" severity="success" outlined class="flex-1 !text-xs" @click="executeBan(0)" />
                <Button label="禁言" class="flex-1 !text-xs" :disabled="(banForm.d * 86400 + banForm.h * 3600 + banForm.m * 60 + banForm.s) === 0" @click="executeBan()" />

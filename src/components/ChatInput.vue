@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex flex-col shrink-0 z-20 bg-background-sub border-t border-background-dim ui-trans">
+  <div class="relative flex flex-col shrink-0 z-20 bg-transparent border-t border-border/10">
     <!-- 表情面板 -->
     <transition
       enter-active-class="ui-trans duration-200 ease-out"
@@ -8,34 +8,32 @@
       leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
     >
       <div v-if="activeTab" ref="panelRef" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
-        <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
+        <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
           <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
             <div class="flex flex-col gap-1">
-              <!-- 普通表情列表 -->
+              <!-- 普通表情 -->
               <template v-if="activeTab === 'face'">
                 <div class="grid grid-cols-8 gap-1">
                   <div
                     v-for="item in QFace.getList('face')"
                     :key="item.id"
-                    class="aspect-square rounded cursor-pointer ui-trans hover:bg-background-dim"
+                    class="aspect-square rounded cursor-pointer ui-trans hover:bg-background-sub/50"
                     :title="item.name"
                     @click="insertImage(item.assets.static); focus()"
                   >
                     <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
                   </div>
                 </div>
-                <!-- 分隔线 -->
-                <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
                   <div class="h-px bg-background-dim flex-1" />
                   <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">Emoji</span>
                   <div class="h-px bg-background-dim flex-1" />
                 </div>
-                <!-- Emoji -->
                 <div class="grid grid-cols-8 gap-1">
                   <div
                     v-for="item in QFace.getList('emoji')"
                     :key="item.id"
-                    class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-dim"
+                    class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-sub/50"
                     :title="item.name"
                     @click="insertText(item.id); focus()"
                   >
@@ -43,15 +41,11 @@
                   </div>
                 </div>
               </template>
-              <!-- 超级表情列表 -->
+              <!-- 超级表情 -->
               <template v-else-if="activeTab === 'super'">
-                <template
-                  v-for="group in [{ id: 0, name: '特殊' }, { id: 1, name: '黄脸' }, { id: 2, name: '旺旺' },
-                    { id: 3, name: '喜花妮' }, { id: 4, name: '黄脸' }, { id: 5, name: '企鹅' }, { id: 6, name: '噗噗星人' }]"
-                  :key="group.id"
-                >
+                <template v-for="group in superFaceGroups" :key="group.id">
                   <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
-                    <div class="flex items-center gap-1 px-1 py-1 opacity-60">
+                    <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
                       <div class="h-px bg-background-dim flex-1" />
                       <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
                       <div class="h-px bg-background-dim flex-1" />
@@ -60,35 +54,26 @@
                       <div
                         v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
                         :key="item.id"
-                        class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim"
+                        class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50"
                         :title="item.name"
                         @mouseenter="loadLottie(item.id, item.assets.lottie)"
                         @mouseleave="unloadLottie(item.id)"
                         @click="handleFace(item)"
                       >
-                        <img
-                          v-show="hoveringId !== item.id"
-                          :src="item.assets.static"
-                          class="size-full object-contain pointer-events-none"
-                          loading="lazy"
-                        />
-                        <div
-                          v-show="hoveringId === item.id"
-                          :ref="el => lottieRefs.set(item.id, el as HTMLElement)"
-                          class="size-full pointer-events-none"
-                        />
+                        <img v-show="hoveringId !== item.id" :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+                        <div v-show="hoveringId === item.id" :ref="el => lottieRefs.set(item.id, el as HTMLElement)" class="size-full pointer-events-none" />
                       </div>
                     </div>
                   </div>
                 </template>
               </template>
-              <!-- 收藏表情列表 -->
+              <!-- 收藏表情 -->
               <template v-else-if="activeTab === 'collection'">
                 <div v-if="collections.length" class="grid grid-cols-5 gap-1">
                   <div
                     v-for="(url, idx) in collections"
                     :key="idx"
-                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim overflow-hidden"
+                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
                     @click="insertImage(url); focus()"
                   >
                     <img :src="url" class="size-full object-contain pointer-events-none" loading="lazy" referrerpolicy="no-referrer" />
@@ -99,13 +84,13 @@
                   <span class="text-xs">暂无收藏</span>
                 </div>
               </template>
-              <!-- 本地表情列表 -->
+              <!-- 本地表情 -->
               <template v-else-if="activeTab === 'local'">
                 <div v-if="localFiles.length" class="grid grid-cols-5 gap-1">
                   <div
                     v-for="(item, idx) in localFiles"
                     :key="idx"
-                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-dim overflow-hidden"
+                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
                     :title="item.file.name"
                     @click="handleUpload('img', item.file)"
                   >
@@ -126,49 +111,31 @@
       leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom"
     >
       <div v-if="isForwarding && isMultiSelect" class="absolute bottom-full left-0 right-0 mx-auto w-[550px] h-[520px] mb-2">
-        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-xl border backdrop-blur bg-background-sub/95 border-background-dim">
+        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
            <ForwardSelect/>
         </div>
       </div>
     </transition>
     <!-- 工具栏 -->
-    <div ref="toolbarRef" class="ui-flex-between px-3 pt-1.5 pb-1 gap-2 select-none">
-      <!-- 左侧功能按钮 -->
-      <div class="ui-flex-x gap-1">
-        <!-- 表情面板 -->
+    <div ref="toolbarRef" class="ui-flex-between px-3 pt-2 pb-1 gap-2 select-none">
+      <!-- 左侧按钮 -->
+      <div class="ui-flex-x gap-1.5">
         <Button
-          v-for="btn in [
-            { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: '普通表情' },
-            { id: 'super', icon: 'i-ri-user-smile-line text-lg', tip: '超级表情' },
-            { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' },
-            { id: 'local', icon: 'i-ri-folder-image-line text-lg', tip: '本地表情' }
-          ]"
+          v-for="btn in leftButtons"
           :key="btn.id"
           v-tooltip.top="btn.tip"
           :icon="btn.icon"
           rounded text
-          class="!w-7 !h-7 !border-none ui-trans ui-ia-press"
-          :class="activeTab === btn.id ? '!bg-primary !text-primary-content shadow-sm' : '!text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main'"
+          class="!w-8 !h-8 !p-0 !border-none ui-trans hover:!bg-background-sub/50 active:scale-95"
+          :class="activeTab === btn.id ? '!bg-primary !text-primary-content shadow-sm' : '!text-foreground-sub hover:!text-foreground-main'"
           @click="toggleTab(btn.id)"
         />
-        <!-- 图片上传 -->
-        <Button
-          icon="i-ri-image-line text-lg"
-          rounded text
-          class="!w-7 !h-7 !border-none !text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main ui-trans ui-ia-press"
-          @click="imgInput?.click()"
-        />
-        <!-- 文件上传 -->
-        <Button
-          icon="i-ri-file-line text-lg"
-          rounded text
-          class="!w-7 !h-7 !border-none !text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main ui-trans ui-ia-press"
-          @click="fileInput?.click()"
-        />
+        <div class="w-px h-4 bg-border mx-1 opacity-50"></div>
+        <Button icon="i-ri-image-line text-lg" rounded text class="!w-8 !h-8 !p-0 !border-none !text-foreground-sub hover:!bg-background-sub/50 hover:!text-foreground-main ui-trans active:scale-95" @click="imgInput?.click()" />
+        <Button icon="i-ri-file-line text-lg" rounded text class="!w-8 !h-8 !p-0 !border-none !text-foreground-sub hover:!bg-background-sub/50 hover:!text-foreground-main ui-trans active:scale-95" @click="fileInput?.click()" />
       </div>
-      <!-- 右侧辅助按钮 -->
+      <!-- 右侧按钮 -->
       <div class="ui-flex-x gap-2">
-        <!-- 多选模式指示 -->
         <transition enter-active-class="ui-trans" leave-active-class="ui-trans" enter-from-class="opacity-0 scale-90" leave-to-class="opacity-0 scale-90">
           <div v-if="isMultiSelect" class="ui-flex-x gap-2 max-w-[200px]">
             <div
@@ -180,36 +147,28 @@
               <span>已选 {{ messageStore.selectedIds.length }}</span>
               <div :class="isForwarding ? 'i-ri-arrow-down-s-line' : 'i-ri-arrow-up-s-line'" class="text-xs opacity-80" />
             </div>
-            <Button
-              v-tooltip.top="'退出多选'"
-              icon="i-ri-close-line text-lg"
-              text rounded
-              class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-primary hover:!bg-background-dim"
-              @click="messageStore.setMultiSelect(); isForwarding = false"
-            />
+            <Button v-tooltip.top="'退出'" icon="i-ri-close-line text-lg" text rounded class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-primary hover:!bg-background-sub/30" @click="messageStore.setMultiSelect(); isForwarding = false" />
           </div>
         </transition>
-        <!-- 展开 / 收起按钮 -->
         <Button
           :icon="isExpanded ? 'i-ri-contract-up-down-line text-lg' : 'i-ri-expand-up-down-line text-lg'"
           text rounded
-          class="!w-7 !h-7 shrink-0 ui-trans ui-ia-press"
-          :class="isExpanded ? '!text-primary !bg-primary/10' : '!text-foreground-sub hover:!bg-background-dim hover:!text-foreground-main'"
+          class="!w-8 !h-8 !p-0 shrink-0 ui-trans active:scale-95"
+          :class="isExpanded ? '!text-primary !bg-primary/10' : '!text-foreground-sub hover:!bg-background-sub/50 hover:!text-foreground-main'"
           @click="isExpanded = !isExpanded"
         />
       </div>
     </div>
-    <!-- 输入框容器 -->
+    <!-- 输入框 -->
     <div class="px-3 pb-3">
       <div
-        class="relative w-full flex flex-col rounded-2xl border border-transparent overflow-hidden ui-trans bg-background-dim/30 focus-within:bg-background-dim/20 focus-within:border-primary/30 focus-within:shadow-[0_0_0_2px_var(--primary-soft)]"
-        :class="isExpanded ? 'h-[50vh]' : 'h-auto min-h-[42px] max-h-[140px]'"
+        class="relative w-full flex flex-col rounded-2xl overflow-hidden ui-trans bg-background-sub/20 border border-transparent focus-within:bg-background-sub/80 focus-within:shadow-[0_0_0_2px_var(--primary-active)] focus-within:border-primary/20"
+        :class="isExpanded ? 'h-[50vh]' : 'h-auto min-h-[48px] max-h-[160px]'"
         @click="focus"
         @keydown.backspace="!editor?.getText() && messageStore.replyTarget && messageStore.setReplyTarget(null)"
       >
-        <!-- 回复预览指示 -->
         <transition enter-active-class="ui-trans ui-dur-fast" leave-active-class="ui-trans ui-dur-fast" enter-from-class="opacity-0 -translate-y-2 h-0 m-0" leave-to-class="opacity-0 -translate-y-2 h-0 m-0">
-          <div v-if="messageStore.replyTarget" class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border border-background-dim bg-background-sub/50 ui-flex-between shrink-0 select-none">
+          <div v-if="messageStore.replyTarget" class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border border-border/10 bg-background-sub/40 ui-flex-between shrink-0 select-none">
             <div class="ui-flex-x gap-2 overflow-hidden pr-2 text-xs">
               <div class="w-1 h-3 rounded-full bg-primary shrink-0" />
               <div class="ui-flex-truncate">
@@ -221,75 +180,30 @@
             <div class="i-ri-close-line text-sm cursor-pointer text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
           </div>
         </transition>
-        <!-- Tiptap 编辑器 -->
         <editor-content
           :editor="editor"
-          class="chat-editor flex-1 w-full px-4 py-2 pr-12 text-sm leading-6 text-foreground-main caret-primary ui-scrollbar overflow-y-auto flex flex-col justify-center"
+          class="chat-editor flex-1 w-full px-4 py-3 pr-12 text-sm leading-6 text-foreground-main caret-primary ui-scrollbar overflow-y-auto flex flex-col justify-center placeholder:text-foreground-dim"
         />
-        <!-- 发送 / 转发按钮 -->
-        <div class="absolute bottom-1 right-1 z-10">
+        <!-- 发送按钮 -->
+        <div class="absolute bottom-1.5 right-1.5 z-10">
           <div v-if="isMultiSelect" class="flex items-center gap-2">
-            <Button
-              v-tooltip.top="'逐条转发'"
-              icon="i-ri-chat-forward-line text-lg"
-              rounded
-              class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
-              :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
-              :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length"
-              @click.stop="executeForward('single')"
-            />
-            <Button
-              v-tooltip.top="'合并转发'"
-              icon="i-ri-share-forward-fill text-lg"
-              rounded
-              class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
-              :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
-              :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length"
-              @click.stop="executeForward('merge')"
-            />
+            <Button v-tooltip.top="'逐条转发'" icon="i-ri-chat-forward-line text-lg" rounded class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95" :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/30'" :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length" @click.stop="executeForward('single')" />
+            <Button v-tooltip.top="'合并转发'" icon="i-ri-share-forward-fill text-lg" rounded class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95" :class="(!messageStore.selectedIds.length || !messageStore.forwardTargets.length) ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/30'" :disabled="!messageStore.selectedIds.length || !messageStore.forwardTargets.length" @click.stop="executeForward('merge')" />
           </div>
-          <Button
-            v-else
-            icon="i-ri-send-plane-fill text-lg"
-            rounded
-            class="!w-8 !h-8 !border-none shadow-sm ui-trans active:scale-95"
-            :class="isEmpty ? '!bg-background-dim !text-foreground-dim cursor-not-allowed' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/20'"
-            :disabled="isEmpty"
-            @click.stop="executeSend"
-          />
+          <Button v-else icon="i-ri-send-plane-fill text-lg" rounded class="!w-9 !h-9 !border-none shadow-sm ui-trans active:scale-95 transition-all" :class="isEmpty ? '!bg-background-dim !text-foreground-dim cursor-not-allowed opacity-50' : '!bg-primary !text-primary-content hover:!bg-primary-hover shadow-primary/30'" :disabled="isEmpty" @click.stop="executeSend" />
         </div>
       </div>
     </div>
-    <!-- 文件输入（隐藏） -->
     <input ref="imgInput" type="file" accept="image/*" class="hidden" @change="e => handleUpload('img', e)">
     <input ref="fileInput" type="file" class="hidden" @change="e => handleUpload('file', e)">
-    <!-- 表情结果选择弹窗 -->
-    <Dialog
-      v-model:visible="gameDialog.visible"
-      modal dismissable-mask
-      :header="'选择结果'"
-      :style="{ width: 'auto' }"
-    >
-      <div class="flex gap-2 justify-center">
-        <!-- 骰子 -->
+    <!-- 表情弹窗 -->
+    <Dialog v-model:visible="gameDialog.visible" modal dismissable-mask :header="'选择结果'" :style="{ width: 'auto' }">
+        <div class="flex gap-2 justify-center">
         <template v-if="gameDialog.type === 'dice'">
-          <Button
-            v-for="i in 6" :key="i"
-            :label="String(i)"
-            severity="secondary" outlined
-            class="!w-9 !h-9 !p-0 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all font-bold"
-            @click="postSegment([{ type: 'dice', data: { result: i } }])"
-          />
+          <Button v-for="i in 6" :key="i" :label="String(i)" severity="secondary" outlined class="!w-9 !h-9 !p-0 !rounded-xl !border-border hover:!border-primary hover:!bg-primary/5 transition-all font-bold" @click="postSegment([{ type: 'dice', data: { result: i } }])" />
         </template>
-        <!-- 猜拳 -->
         <template v-else>
-           <Button
-            v-for="opt in [{v:1, l:'布', i:'🖐'}, {v:2, l:'剪刀', i:'✌'}, {v:3, l:'石头', i:'✊'}]"
-            :key="opt.v"
-            severity="secondary" outlined
-            class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-background-dim hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]"
-            @click="postSegment([{ type: 'rps', data: { result: opt.v } }])"
-          >
+           <Button v-for="opt in [{v:1, l:'布', i:'🖐'}, {v:2, l:'剪刀', i:'✌'}, {v:3, l:'石头', i:'✊'}]" :key="opt.v" severity="secondary" outlined class="!px-2.5 !py-1.5 !h-auto flex-col gap-0.5 !rounded-xl !border-border hover:!border-primary hover:!bg-primary/5 transition-all min-w-[3.5rem]" @click="postSegment([{ type: 'rps', data: { result: opt.v } }])">
             <div class="text-lg leading-none filter drop-shadow-sm">{{ opt.i }}</div>
             <span class="text-[10px] font-bold opacity-80">{{ opt.l }}</span>
           </Button>
@@ -346,14 +260,24 @@ const lottieRefs = new Map<string, HTMLElement>()
 const lottieCache = new Map<string, any>()
 const loadingSet = new Set<string>()
 
-// 点击外部关闭
-onClickOutside(panelRef, () => activeTab.value = null, {
-  ignore: [toolbarRef]
-})
+  // 点击外部关闭
+onClickOutside(panelRef, () => activeTab.value = null, { ignore: [toolbarRef] })
 
 // 计算属性
 const isMultiSelect = computed(() => messageStore.isMultiSelect)
 const isEmpty = computed(() => !editor.value || editor.value.isEmpty)
+
+const superFaceGroups = [
+  { id: 0, name: '特殊' }, { id: 1, name: '黄脸' }, { id: 2, name: '旺旺' },
+  { id: 3, name: '喜花妮' }, { id: 4, name: '黄脸' }, { id: 5, name: '企鹅' }, { id: 6, name: '噗噗星人' }
+]
+
+const leftButtons = [
+  { id: 'face', icon: 'i-ri-emotion-line text-lg', tip: '普通表情' },
+  { id: 'super', icon: 'i-ri-user-smile-line text-lg', tip: '超级表情' },
+  { id: 'collection', icon: 'i-ri-star-smile-line text-lg', tip: '收藏表情' },
+  { id: 'local', icon: 'i-ri-folder-image-line text-lg', tip: '本地表情' }
+]
 
 // 编辑器初始化
 const { editor, focus, insertText, insertImage, insertMention, clear, getSegments } = useChatEditor({

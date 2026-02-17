@@ -1,6 +1,6 @@
 <template>
   <span
-    class="text-primary font-medium hover:underline cursor-pointer select-none"
+    class="text-primary font-medium hover:underline ui-ia"
     @click.stop="handleClick"
   >
     @{{ displayName }}

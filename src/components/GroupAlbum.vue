@@ -1,7 +1,7 @@
 <template>
-  <div class="ui-flex-col-full bg-background-sub relative select-none">
+  <div class="ui-flex-col-full bg-transparent relative select-none">
     <!-- 顶部导航 -->
-    <header class="h-14 shrink-0 px-3 border-b border-background-dim/50 flex items-center gap-3 z-30 bg-background-sub/95 backdrop-blur">
+    <header class="h-14 shrink-0 px-3 border-b border-white/5 flex items-center gap-3 z-30 bg-transparent backdrop-blur-md">
       <Button v-tooltip.bottom="'返回'" icon="i-ri-arrow-left-s-line" text rounded class="!w-8 !h-8 !text-foreground-sub shrink-0" @click="goBack" />
       <!-- 标题 -->
       <div class="flex-1 min-w-0 flex items-center gap-2">
@@ -12,13 +12,13 @@
       </div>
       <!-- 操作按钮 -->
       <div class="flex gap-1">
-        <Button v-if="data.current && backendType === 'LLOneBot'" v-tooltip.bottom="'删除相册'" icon="i-ri-delete-bin-line" text rounded severity="danger" class="!w-8 !h-8 !text-red-500 hover:!bg-red-50" @click="handleDelete('album', data.current!)" />
+        <Button v-if="data.current && backendType === 'LLOneBot'" v-tooltip.bottom="'删除相册'" icon="i-ri-delete-bin-line" text rounded severity="danger" class="!w-8 !h-8 !text-red-500 hover:!bg-red-500/10" @click="handleDelete('album', data.current!)" />
         <Button v-if="!data.current && backendType === 'LLOneBot'" v-tooltip.bottom="'新建相册'" icon="i-ri-folder-add-line" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-primary" @click="ui.showCreate = true" />
         <Button v-if="data.current" v-tooltip.bottom="'上传'" icon="i-ri-upload-2-line" text rounded class="!w-8 !h-8 !text-foreground-sub hover:!text-primary" @click="fileInput?.click()" />
       </div>
     </header>
     <!-- 内容区域 -->
-    <div class="flex-1 min-h-0 relative bg-background-sub">
+    <div class="flex-1 min-h-0 relative bg-transparent">
       <!-- 相册列表 -->
       <div v-if="!data.current" class="h-full overflow-y-auto ui-scrollbar p-3">
         <div v-if="ui.loading && !data.albums.length" class="h-full ui-flex-center">
@@ -28,25 +28,25 @@
           <div
             v-for="album in data.albums"
             :key="album.album_id"
-            class="group relative h-36 rounded-2xl overflow-hidden cursor-pointer border border-background-dim/30 shadow-sm"
+            class="group relative h-36 rounded-2xl overflow-hidden cursor-pointer border border-white/10 shadow-sm bg-background-sub/20"
             @click="openAlbum(album)"
           >
             <!-- 背景图 -->
             <template v-if="album.upload_number > 0">
               <img
                 :src="getAlbumCover(album)"
-                class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80"
                 referrerpolicy="no-referrer"
                 loading="lazy"
               />
             </template>
             <template v-else>
-              <div class="absolute inset-0 size-full bg-background-dim ui-flex-center">
+              <div class="absolute inset-0 size-full bg-background-sub/10 ui-flex-center">
                 <div class="i-ri-gallery-line text-4xl text-foreground-dim opacity-50" />
               </div>
             </template>
             <!-- 信息 -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3">
               <div class="mb-1">
                 <span class="text-white font-bold text-base truncate shadow-sm">{{ album.name }}</span>
                 <p v-if="album.desc" class="text-xs text-white/70 truncate shadow-sm m-0">{{ album.desc }}</p>
@@ -65,16 +65,13 @@
         </div>
       </div>
       <!-- 图片列表 -->
-      <div
-        v-else
-        class="h-full overflow-y-auto ui-scrollbar p-0.5"
-      >
+      <div v-else class="h-full overflow-y-auto ui-scrollbar p-0.5">
         <template v-if="data.photos.length">
            <div class="grid grid-cols-3 gap-0.5">
              <div
                v-for="(item, idx) in data.photos"
                :key="item.lloc"
-               class="aspect-square relative cursor-pointer bg-background-dim overflow-hidden group rounded-md"
+               class="aspect-square relative cursor-pointer bg-background-sub/10 overflow-hidden group"
                @click="ui.activeIndex = idx"
              >
                <!-- 缩略图 -->
@@ -112,7 +109,7 @@
     >
       <div
         v-if="activeMedia"
-        class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col"
+        class="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col"
         @click.self="closeViewer"
       >
         <!-- 顶部栏 -->
@@ -235,8 +232,8 @@
     <!-- 新建相册弹窗 -->
     <Dialog v-model:visible="ui.showCreate" modal header="新建相册" :style="{ width: '18rem' }">
       <div class="flex flex-col gap-3 pt-1">
-        <InputText v-model="form.name" placeholder="名称" class="w-full !text-sm" autofocus />
-        <InputText v-model="form.desc" placeholder="描述" class="w-full !text-sm" />
+        <InputText v-model="form.name" placeholder="名称" class="w-full !text-sm !bg-background-sub/50 !border-transparent !rounded-lg" autofocus />
+        <InputText v-model="form.desc" placeholder="描述" class="w-full !text-sm !bg-background-sub/50 !border-transparent !rounded-lg" />
         <div class="flex justify-end gap-2 mt-2">
           <Button label="取消" text severity="secondary" size="small" @click="ui.showCreate = false" />
           <Button label="创建" size="small" :disabled="!form.name" @click="createAlbum" />

@@ -1,46 +1,42 @@
+================ START FILE: C:\Users\YisRime\RimeQ\src\App.vue ================
 <template>
   <!-- 根容器 -->
   <div
-    class="ui-flex-col-full overflow-hidden select-none text-foreground-main font-sans ui-trans ui-dur-normal p-2 gap-2"
+    class="ui-flex-col-full overflow-hidden select-none text-foreground-main font-sans ui-trans p-2 gap-2 bg-background-main"
     :style="rootStyle"
   >
     <!-- 背景遮罩 -->
     <div
       v-if="settingStore.config.backgroundImg"
-      class="ui-abs-full bg-background-main/90 dark:bg-background-main/80 backdrop-blur-sm -z-10"
+      class="ui-abs-full bg-background-main/40 backdrop-blur-sm -z-10"
       :style="`backdrop-filter: blur(${settingStore.config.backgroundBlur}px);`"
     />
     <!-- 布局容器 -->
-    <div
-      class="flex flex-1 overflow-hidden relative gap-0 md:gap-2"
-    >
+    <div class="flex flex-1 overflow-hidden relative gap-0 md:gap-3">
       <!-- 左侧导航栏 -->
       <aside
-        class="flex flex-col shrink-0 bg-background-sub shadow-sm border border-background-dim/50 ui-trans ui-dur-normal z-30 overflow-hidden relative rounded-2xl w-full md:w-[72px] xl:w-80"
+        class="flex flex-col shrink-0 bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 shadow-lg border border-white/10 ui-trans z-30 overflow-hidden relative rounded-2xl w-full md:w-[72px] xl:w-80"
         :class="[isMobile && isContentMode ? '!w-0 !opacity-0 !border-none' : '']"
       >
         <!-- 侧边栏 -->
-        <header
-          class="h-16 shrink-0 relative flex items-center border-b border-background-dim/30 transition-colors w-full md:w-[72px] xl:w-full"
-        >
-          <!-- 头像与状态 -->
+        <header class="h-16 shrink-0 relative ui-flex-x border-b border-border/20 transition-colors w-full md:w-[72px] xl:w-full">
           <div class="w-[72px] h-full shrink-0 ui-flex-center">
             <div class="relative group cursor-pointer" @click="showMenu = !showMenu">
               <Avatar
                 :image="userAvatar"
                 shape="circle"
-                class="shrink-0 ring-2 ring-transparent group-hover:ring-primary/50 ui-trans ui-dur-fast w-10 h-10 bg-background-dim"
+                class="shrink-0 ring-2 ring-white/20 group-hover:ring-primary/50 ui-trans w-10 h-10 bg-background-sub/50"
               />
               <Badge
-                class="absolute bottom-0 right-0 !w-3 !h-3 !min-w-0 border-2 border-background-sub ui-trans ui-dur-fast"
+                class="absolute bottom-0 right-0 !w-3.5 !h-3.5 !min-w-0 border-2 border-background-sub ui-trans"
                 :severity="settingStore.isLogged ? 'success' : 'secondary'"
               />
             </div>
           </div>
-          <!-- 菜单与搜索 (平板模式隐藏) -->
+          <!-- 菜单与搜索 -->
           <div class="ui-flex-truncate ui-flex-x gap-2 pr-3 flex md:hidden xl:flex">
             <div
-              class="ui-flex-x justify-start gap-1 shrink-0 ui-trans ui-dur-normal overflow-hidden"
+              class="ui-flex-x justify-start gap-1 shrink-0 ui-trans overflow-hidden"
               :class="showMenu ? 'w-[108px] opacity-100' : 'w-0 opacity-0'"
             >
               <Button
@@ -49,8 +45,8 @@
                 v-tooltip.bottom="btn.label"
                 :icon="btn.icon"
                 text rounded severity="secondary"
-                class="w-8 h-8 p-0 ui-trans ui-dur-normal"
-                :class="route.path === btn.path ? 'bg-primary text-primary-content shadow-sm' : 'text-foreground-sub hover:bg-primary/10 hover:text-primary'"
+                class="!w-8 !h-8 !p-0 ui-trans"
+                :class="route.path === btn.path ? '!bg-primary !text-primary-content shadow-sm' : 'text-foreground-sub hover:!bg-primary/10 hover:!text-primary'"
                 @click="router.push(btn.path)"
               />
             </div>
@@ -59,16 +55,15 @@
               <InputText
                 v-model="searchKeyword"
                 placeholder="搜索"
-                class="w-full h-9 text-sm !bg-background-dim !border-transparent focus:border-primary/50 !rounded-lg pl-9 ui-trans ui-dur-normal"
-                :pt="{ root: { class: 'ui-trans ui-dur-normal' } }"
+                class="w-full !h-9 text-sm !bg-background-dim/50 !border-transparent focus:!bg-background-sub/80 !rounded-lg !pl-9 ui-trans placeholder:text-foreground-dim text-foreground-main"
               />
             </IconField>
           </div>
         </header>
-        <!-- 垂直菜单 (仅平板模式显示) -->
+        <!-- 垂直菜单 (平板模式) -->
         <div
-          class="flex-col items-center gap-2 bg-background-sub/50 backdrop-blur-sm z-20 w-full ui-trans ui-dur-normal overflow-hidden hidden md:flex xl:hidden"
-          :class="showMenu ? 'max-h-[200px] opacity-100 py-3 border-b border-background-dim/30' : 'max-h-0 opacity-0 py-0 border-none'"
+          class="flex-col items-center gap-2 bg-transparent z-20 w-full ui-trans overflow-hidden hidden md:flex xl:hidden"
+          :class="showMenu ? 'max-h-[200px] opacity-100 py-3' : 'max-h-0 opacity-0 py-0'"
         >
           <Button
             v-for="btn in navButtons"
@@ -76,36 +71,32 @@
             v-tooltip.right="btn.label"
             :icon="btn.icon"
             text rounded severity="secondary"
-            class="w-9 h-9 p-0 ui-trans ui-dur-normal"
-            :class="route.path === btn.path ? 'bg-primary text-primary-content shadow-sm' : 'text-foreground-sub hover:bg-primary/10 hover:text-primary'"
+            class="!w-10 !h-10 !p-0 ui-trans"
+            :class="route.path === btn.path ? '!bg-primary !text-primary-content shadow-md' : 'text-foreground-sub hover:!bg-primary/10 hover:!text-primary'"
             @click="router.push(btn.path)"
           />
         </div>
         <!-- 导航列表 -->
-        <div class="flex-1 overflow-hidden relative bg-background-sub w-full ui-trans ui-dur-normal">
+        <div class="flex-1 overflow-hidden relative w-full ui-trans">
           <div class="size-full relative min-w-[320px] md:min-w-[72px] xl:min-w-[320px]">
-            <router-view v-slot="{ Component }" name="nav">
-              <keep-alive>
-                <component :is="Component" />
-              </keep-alive>
-            </router-view>
+            <router-view name="nav" />
           </div>
         </div>
       </aside>
-      <!-- 中间主内容区 -->
+      <!-- 主内容区 -->
       <main
-        class="flex-1 min-w-0 flex flex-col overflow-hidden bg-background-sub shadow-sm border border-background-dim/50 relative z-20 ui-trans ui-dur-normal rounded-2xl"
+        class="ui-flex-truncate flex flex-col overflow-hidden bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 shadow-lg border border-white/10 relative z-20 ui-trans rounded-2xl"
         :class="[isMobile && !isContentMode ? '!w-0 !min-w-0 !flex-none !opacity-0 !border-none' : '']"
       >
         <!-- 标题栏 -->
         <header
           v-if="pageTitle"
-          class="h-16 shrink-0 border-b border-background-dim/50 bg-background-sub/95 backdrop-blur ui-flex-between px-4 z-20 select-none ui-trans ui-dur-normal"
+          class="h-16 shrink-0 border-b border-border/10 bg-transparent ui-flex-between px-4 z-20 select-none ui-trans"
         >
-          <div class="flex items-center gap-3 h-full overflow-hidden">
+          <div class="ui-flex-x gap-3 h-full overflow-hidden">
             <div
               v-if="showBackButton"
-              class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-dim/50 text-foreground-main bg-background-dim/30 shrink-0"
+              class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-sub/50 text-foreground-main bg-background-sub/20 shrink-0"
               @click="handleBack"
             >
               <div class="i-ri-arrow-left-s-line text-lg" />
@@ -113,15 +104,11 @@
             <span class="font-bold text-lg text-foreground-main truncate">{{ pageTitle }}</span>
           </div>
           <!-- 群组快捷入口 -->
-          <div v-if="isGroup" class="flex items-center gap-1 text-foreground-dim">
-             <Button v-tooltip.bottom="'群精华'" icon="i-ri-star-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/essence`)" />
-             <Button v-tooltip.bottom="'群公告'" icon="i-ri-megaphone-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/notice`)" />
-             <Button v-tooltip.bottom="'群相册'" icon="i-ri-gallery-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/album`)" />
-             <Button v-tooltip.bottom="'群文件'" icon="i-ri-folder-open-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/file`)" />
-             <Button v-tooltip.bottom="'群信息'" icon="i-ri-profile-line" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary" @click="router.push(`/${chatId}/info`)" />
+          <div v-if="isGroup" class="ui-flex-x gap-1 text-foreground-sub">
+             <Button v-for="act in groupActions" :key="act.path" :icon="act.icon" v-tooltip.bottom="act.label" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary hover:!bg-background-sub/50" @click="router.push(`/${chatId}/${act.path}`)" />
           </div>
         </header>
-        <!-- 内容路由视图 -->
+        <!-- 路由视图 -->
         <div class="ui-flex-col-full relative overflow-hidden ui-flex-truncate">
           <router-view v-slot="{ Component }">
             <keep-alive :include="['ChatView', 'SettingsView', 'ContactView']">
@@ -130,25 +117,22 @@
           </router-view>
         </div>
       </main>
-      <!-- 右侧扩展侧边栏 -->
+      <!-- 右侧侧边栏 -->
       <router-view v-slot="{ Component }" name="sidebar">
         <Transition
-          enter-active-class="transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
-          leave-active-class="transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
+          enter-active-class="ui-trans duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
+          leave-active-class="ui-trans duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
           enter-from-class="translate-x-full md:translate-x-0 md:w-0 md:opacity-0"
           leave-to-class="translate-x-full md:translate-x-0 md:w-0 md:opacity-0"
         >
           <aside
             v-if="Component"
-            class="bg-background-sub z-[60] overflow-hidden flex flex-col border border-background-dim/50 shadow-xl ui-trans ui-dur-normal rounded-2xl absolute inset-y-0 right-0 w-full md:static md:w-[320px] md:shadow-sm md:z-0"
+            class="bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 z-[60] overflow-hidden flex flex-col border border-white/10 shadow-xl ui-trans rounded-2xl absolute inset-y-0 right-0 w-full md:static md:w-[320px] md:shadow-lg md:z-0"
           >
-            <div class="size-full md:w-[320px] flex-shrink-0 ui-trans ui-dur-normal">
-              <component :is="Component" class="size-full" />
-            </div>
+            <component :is="Component" class="size-full" />
           </aside>
         </Transition>
       </router-view>
-
     </div>
     <!-- 全局组件 -->
     <Toast position="top-left" />
@@ -184,9 +168,7 @@ provide(SearchKey, searchKeyword)
 // 样式计算：根背景
 const rootStyle = computed(() => {
   const bg = settingStore.config.backgroundImg
-  return bg
-    ? { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
-    : { backgroundColor: 'var(--color-main)' }
+  return bg ? { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' } : {}
 })
 
 // 数据计算：当前用户信息
@@ -222,6 +204,14 @@ const navButtons = [
   { label: '会话', path: '/', icon: 'i-ri-message-3-line text-xl' },
   { label: '好友', path: '/contact', icon: 'i-ri-contacts-book-line text-xl' },
   { label: '设置', path: '/settings', icon: 'i-ri-settings-3-line text-xl' }
+]
+
+const groupActions = [
+  { label: '群精华', path: 'essence', icon: 'i-ri-star-line' },
+  { label: '群公告', path: 'notice', icon: 'i-ri-megaphone-line' },
+  { label: '群相册', path: 'album', icon: 'i-ri-gallery-line' },
+  { label: '群文件', path: 'file', icon: 'i-ri-folder-open-line' },
+  { label: '群信息', path: 'info', icon: 'i-ri-profile-line' },
 ]
 
 // 交互方法：返回处理

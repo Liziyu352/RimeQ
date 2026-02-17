@@ -1,45 +1,45 @@
 <template>
-  <div class="w-full max-w-sm">
+  <div class="w-full">
     <div
-      class="flex flex-col h-full bg-background-sub overflow-hidden ui-trans group"
+      class="flex flex-col h-full backdrop-blur-md overflow-hidden ui-trans rounded-xl"
       :class="{ 'cursor-pointer': !!url }"
     >
       <!-- 顶部信息 -->
-      <div v-if="source" class="ui-flex-x gap-2 px-3 py-2 bg-background-dim/20">
+      <div v-if="source" class="ui-flex-x gap-2 px-3 py-2 bg-foreground-main/5">
         <div v-if="icon" class="size-4 rounded-full overflow-hidden shrink-0">
           <img :src="icon" class="size-full object-cover" referrerpolicy="no-referrer" />
         </div>
-        <span class="text-[10px] text-foreground-dim truncate">{{ source }}</span>
+        <span class="text-[10px] opacity-60 truncate">{{ source }}</span>
       </div>
       <div class="flex items-start p-3 gap-3">
         <!-- 预览图 -->
-        <div class="relative w-16 h-16 shrink-0 bg-background-dim/20 rounded-xl overflow-hidden group/image">
+        <div class="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden group/image">
           <Image
             v-if="!imageFailed"
             :src="preview"
             preview
-            image-class="size-full object-cover cursor-pointer group-hover:opacity-90"
+            image-class="size-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
             referrerpolicy="no-referrer"
             @error="imageFailed = true"
           />
           <!-- 播放按钮 -->
           <div
             v-if="audioUrl"
-            class="absolute inset-0 bg-black/30 ui-flex-center opacity-0 group-hover/image:opacity-100 transition-opacity cursor-pointer backdrop-blur-[1px]"
+            class="absolute inset-0 ui-flex-center opacity-0 group-hover/image:opacity-100 transition-opacity cursor-pointer backdrop-blur-[1px]"
             @click.stop="togglePlay"
           >
             <div
-              class="text-white drop-shadow-md text-2xl transition-transform active:scale-90"
+              class="text-2xl transition-transform active:scale-90"
               :class="isPlaying ? 'i-ri-pause-circle-fill' : 'i-ri-play-circle-fill'"
             />
           </div>
         </div>
         <!-- 文字信息 -->
         <div class="flex-1 min-w-0" @click="jump">
-          <span class="font-bold text-sm text-foreground-main line-clamp-3 leading-snug">
+          <span class="font-bold text-sm line-clamp-3 leading-snug">
             {{ title }}
           </span>
-          <span v-if="desc" class="text-xs text-foreground-sub line-clamp-2 leading-normal mt-1 block whitespace-pre-wrap">
+          <span v-if="desc" class="text-xs opacity-60 line-clamp-2 leading-normal mt-1 block whitespace-pre-wrap">
             {{ desc }}
           </span>
         </div>
