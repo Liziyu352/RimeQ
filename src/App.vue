@@ -1,4 +1,3 @@
-================ START FILE: C:\Users\YisRime\RimeQ\src\App.vue ================
 <template>
   <!-- 根容器 -->
   <div
@@ -88,26 +87,6 @@
         class="ui-flex-truncate flex flex-col overflow-hidden bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 shadow-lg border border-white/10 relative z-20 ui-trans rounded-2xl"
         :class="[isMobile && !isContentMode ? '!w-0 !min-w-0 !flex-none !opacity-0 !border-none' : '']"
       >
-        <!-- 标题栏 -->
-        <header
-          v-if="pageTitle"
-          class="h-16 shrink-0 border-b border-border/10 bg-transparent ui-flex-between px-4 z-20 select-none ui-trans"
-        >
-          <div class="ui-flex-x gap-3 h-full overflow-hidden">
-            <div
-              v-if="showBackButton"
-              class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-sub/50 text-foreground-main bg-background-sub/20 shrink-0"
-              @click="handleBack"
-            >
-              <div class="i-ri-arrow-left-s-line text-lg" />
-            </div>
-            <span class="font-bold text-lg text-foreground-main truncate">{{ pageTitle }}</span>
-          </div>
-          <!-- 群组快捷入口 -->
-          <div v-if="isGroup" class="ui-flex-x gap-1 text-foreground-sub">
-             <Button v-for="act in groupActions" :key="act.path" :icon="act.icon" v-tooltip.bottom="act.label" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary hover:!bg-background-sub/50" @click="router.push(`/${chatId}/${act.path}`)" />
-          </div>
-        </header>
         <!-- 路由视图 -->
         <div class="ui-flex-col-full relative overflow-hidden ui-flex-truncate">
           <router-view v-slot="{ Component }">
@@ -145,14 +124,12 @@ import { ref, computed, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Avatar, IconField, InputIcon, InputText, Button } from 'primevue'
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
-import { useSettingStore, useSessionStore, useContactStore } from '@/stores'
+import { useSettingStore } from '@/stores'
 import { SearchKey } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
 const settingStore = useSettingStore()
-const sessionStore = useSessionStore()
-const contactStore = useContactStore()
 
 // 响应式断点
 const breakpoints = useBreakpoints(breakpointsTailwind)
@@ -178,26 +155,7 @@ const userAvatar = computed(() => {
 })
 
 // 数据计算：当前上下文
-const chatId = computed(() => Number(route.params.id) || 0)
-const session = computed(() => sessionStore.getSession(chatId.value))
-const isGroup = computed(() => !!chatId.value && sessionStore.getSessionType(chatId.value) === 'group')
 const isContentMode = computed(() => route.path !== '/' && route.path !== '/contact')
-const showBackButton = computed(() => isMobile.value)
-
-// 数据计算：页面标题
-const pageTitle = computed(() => {
-  if (route.name === 'Login') return ''
-  if (chatId.value) {
-    let name: string
-    if (isGroup.value) {
-      name = contactStore.getGroupName(chatId.value)
-    } else {
-      name = contactStore.getUserName(chatId.value)
-    }
-    return name !== String(chatId.value) ? name : session.value?.name || chatId.value
-  }
-  return route.meta.title
-})
 
 // 静态配置：导航菜单
 const navButtons = [
@@ -205,20 +163,6 @@ const navButtons = [
   { label: '好友', path: '/contact', icon: 'i-ri-contacts-book-line text-xl' },
   { label: '设置', path: '/settings', icon: 'i-ri-settings-3-line text-xl' }
 ]
-
-const groupActions = [
-  { label: '群精华', path: 'essence', icon: 'i-ri-star-line' },
-  { label: '群公告', path: 'notice', icon: 'i-ri-megaphone-line' },
-  { label: '群相册', path: 'album', icon: 'i-ri-gallery-line' },
-  { label: '群文件', path: 'file', icon: 'i-ri-folder-open-line' },
-  { label: '群信息', path: 'info', icon: 'i-ri-profile-line' },
-]
-
-// 交互方法：返回处理
-const handleBack = () => {
-  if (window.history.length > 1) router.back()
-  else router.push('/')
-}
 </script>
 
 <style lang="scss">

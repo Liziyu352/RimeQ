@@ -100,29 +100,13 @@ export const useSettingStore = defineStore('setting', () => {
     const r = parseInt(c.substring(0, 2), 16)
     const g = parseInt(c.substring(2, 4), 16)
     const b = parseInt(c.substring(4, 6), 16)
-    // RGB 转 HSL
-    const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255
-    const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm)
-    let h = 0, s = 0
-    const l = (max + min) / 2
-
-    if (max !== min) {
-      const d = max - min
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-      switch (max) {
-        case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break
-        case gNorm: h = (bNorm - rNorm) / d + 2; break
-        case bNorm: h = (rNorm - gNorm) / d + 4; break
-      }
-      h = Math.round(h * 60)
-    }
-    s = Math.round(s * 100)
-    const L = Math.round(l * 100)
+    // 微调
+    const offset = isDark ? 20 : -20
 
     return {
-      '--primary-color': `hsl(${h}, ${s}%, ${L}%)`,
-      '--primary-hover': `hsl(${h}, ${Math.min(s + 5, 100)}%, ${isDark ? Math.min(L + 10, 90) : Math.max(L - 10, 15)}%)`,
-      '--primary-active': `hsl(${h}, ${Math.min(s + 10, 100)}%, ${isDark ? Math.min(L + 20, 95) : Math.max(L - 20, 10)}%)`,
+      '--primary-color': `${r}, ${g}, ${b}`,
+      '--primary-hover': `${Math.max(0, Math.min(255, r + offset))}, ${Math.max(0, Math.min(255, g + offset))}, ${Math.max(0, Math.min(255, b + offset))}`,
+      '--primary-active': `${Math.max(0, Math.min(255, r + offset * 2))}, ${Math.max(0, Math.min(255, g + offset * 2))}, ${Math.max(0, Math.min(255, b + offset * 2))}`,
       '--primary-content': ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128 ? '#000000' : '#ffffff',
     }
   }

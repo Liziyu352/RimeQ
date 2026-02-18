@@ -1,15 +1,31 @@
 <template>
   <div class="ui-flex-col-full">
+    <!-- 标题栏 -->
+    <header class="h-16 shrink-0 border-b border-border/10 bg-transparent ui-flex-between px-4 z-20 select-none ui-trans">
+      <div class="ui-flex-x gap-3 h-full overflow-hidden">
+        <div
+          v-if="isMobile"
+          class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-sub/50 text-foreground-main bg-background-sub/20 shrink-0"
+          @click="router.back()"
+        >
+          <div class="i-ri-arrow-left-s-line text-lg" />
+        </div>
+        <span class="font-bold text-lg text-foreground-main truncate mr-4">设置</span>
+      </div>
+      <!-- 核心 Tabs -->
+      <Tabs v-model:value="activeTab" class="h-full">
+        <TabList class="!bg-transparent !border-none h-full p-0 flex items-center">
+          <Tab v-for="tab in tabs" :key="tab.key" :value="tab.key" class="!px-3 !py-0 h-10 !bg-transparent !border-none ui-flex-x gap-1.5 transition-all text-foreground-sub hover:text-primary">
+            <div :class="[tab.icon, activeTab === tab.key ? 'text-primary' : '']" />
+            <span class="text-xs font-bold" :class="activeTab === tab.key ? 'text-primary' : ''">{{ tab.label }}</span>
+          </Tab>
+        </TabList>
+      </Tabs>
+    </header>
     <!-- 主体设置滚动区 -->
     <div class="flex-1 overflow-y-auto ui-scrollbar">
       <div class="mx-auto p-4 md:p-6 flex flex-col gap-6">
-        <!-- 核心 Tabs -->
         <Tabs v-model:value="activeTab">
-          <TabList class="!bg-transparent p-1 flex justify-center w-fit mx-auto mb-6">
-            <Tab v-for="tab in tabs" :key="tab.key" :value="tab.key" class="px-6 py-1.5 text-sm font-bold ui-flex-x gap-2">
-              <div :class="tab.icon" /> <span>{{ tab.label }}</span>
-            </Tab>
-          </TabList>
           <TabPanels class="!bg-transparent p-0">
             <!-- 用户面板 -->
             <TabPanel value="user" class="p-0 flex flex-col gap-6">
@@ -226,6 +242,7 @@
 import { ref, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Tabs, TabList, Tab, TabPanels, TabPanel, ToggleSwitch, InputGroup, InputText, Textarea, Slider, Button, useToast, useConfirm } from 'primevue'
+import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { bot } from '@/api'
 import { useSettingStore } from '@/stores'
 
@@ -235,6 +252,8 @@ const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
 const settingStore = useSettingStore()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isMobile = breakpoints.smaller('md')
 
 // UI 状态
 const activeTab = ref('user')

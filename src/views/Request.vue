@@ -1,5 +1,16 @@
 <template>
   <div class="ui-flex-col-full bg-transparent overflow-hidden">
+    <!-- 标题栏 -->
+    <header class="h-16 shrink-0 border-b border-border/10 bg-transparent ui-flex-x px-4 z-20 select-none ui-trans">
+      <div
+        v-if="isMobile"
+        class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-sub/50 text-foreground-main bg-background-sub/20 shrink-0 mr-3"
+        @click="router.back()"
+      >
+        <div class="i-ri-arrow-left-s-line text-lg" />
+      </div>
+      <span class="font-bold text-lg text-foreground-main truncate">验证消息</span>
+    </header>
     <!-- 滚动容器 -->
     <div class="flex-1 overflow-y-auto ui-scrollbar p-3 scroll-smooth">
       <!-- 请求列表 -->
@@ -74,7 +85,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useToast, Avatar, Button } from 'primevue'
+import { useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { bot } from '@/api'
 import { useContactStore } from '@/stores'
 import { formatTime } from '@/utils/format'
@@ -82,8 +95,11 @@ import type { Request } from '@/types'
 
 defineOptions({ name: 'RequestView' })
 
+const router = useRouter()
 const toast = useToast()
 const contactStore = useContactStore()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isMobile = breakpoints.smaller('md')
 
 // 排序列表
 const requests = computed(() => [...contactStore.requests].sort((a, b) => b.time - a.time))

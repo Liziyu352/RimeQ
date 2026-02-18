@@ -12,6 +12,23 @@
       </div>
       <!-- 活跃会话区域 -->
       <div v-else class="ui-flex-col-full relative">
+        <!-- 标题栏 -->
+        <header class="h-16 shrink-0 border-b border-border/10 bg-transparent ui-flex-between px-4 z-20 select-none ui-trans">
+          <div class="ui-flex-x gap-3 h-full overflow-hidden">
+            <div
+              v-if="isMobile"
+              class="w-8 h-8 rounded-full ui-flex-center ui-ia hover:bg-background-sub/50 text-foreground-main bg-background-sub/20 shrink-0"
+              @click="handleBack"
+            >
+              <div class="i-ri-arrow-left-s-line text-lg" />
+            </div>
+            <span class="font-bold text-lg text-foreground-main truncate">{{ pageTitle }}</span>
+          </div>
+          <!-- 群组快捷入口 -->
+          <div v-if="isGroup" class="ui-flex-x gap-1 text-foreground-sub">
+             <Button v-for="act in groupActions" :key="act.path" :icon="act.icon" v-tooltip.bottom="act.label" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary hover:!bg-background-sub/50" @click="router.push(`/${id}/${act.path}`)" />
+          </div>
+        </header>
         <!-- 消息列表滚动区 -->
         <div
           id="msgPan"
@@ -109,9 +126,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, reactive } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ContextMenu, useToast, Dialog, InputNumber, Button, ProgressSpinner } from 'primevue'
-import { useDebounceFn } from '@vueuse/core'
+import { useDebounceFn, useBreakpoints, breakpointsTailwind } from '@vueuse/core'
 import { useVirtualizer } from '@tanstack/vue-virtual'
 import { bot } from '@/api'
 import { useMessageStore, useSessionStore, useContactStore, useSettingStore } from '@/stores'
@@ -124,11 +141,14 @@ defineOptions({ name: 'ChatView' })
 
 // 全局实例
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 const messageStore = useMessageStore()
 const sessionStore = useSessionStore()
 const contactStore = useContactStore()
 const settingStore = useSettingStore()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const isMobile = breakpoints.smaller('md')
 
 // 会话上下文
 const id = computed(() => Number(route.params.id) || 0) // 当前会话 ID
@@ -138,6 +158,33 @@ const list = computed(() => {
   return messageStore.messages.filter(msg => !(msg as any).recalled)
 }) // 当前会话消息列表
 const isGroup = computed(() => !!id.value && (session.value?.type === 'group' || contactStore.checkIsGroup(id.value))) // 当前会话是否为群聊
+
+// 页面标题计算
+const pageTitle = computed(() => {
+  if (id.value) {
+    let name: string
+    if (isGroup.value) {
+      name = contactStore.getGroupName(id.value)
+    } else {
+      name = contactStore.getUserName(id.value)
+    }
+    return name !== String(id.value) ? name : session.value?.name || id.value
+  }
+  return route.meta.title
+})
+
+const handleBack = () => {
+  if (window.history.length > 1) router.back()
+  else router.push('/')
+}
+
+const groupActions = [
+  { label: '群精华', path: 'essence', icon: 'i-ri-star-line' },
+  { label: '群公告', path: 'notice', icon: 'i-ri-megaphone-line' },
+  { label: '群相册', path: 'album', icon: 'i-ri-gallery-line' },
+  { label: '群文件', path: 'file', icon: 'i-ri-folder-open-line' },
+  { label: '群信息', path: 'info', icon: 'i-ri-profile-line' },
+]
 
 // UI 状态
 const contextMenu = ref() // 右键菜单实例

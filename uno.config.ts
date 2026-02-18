@@ -20,18 +20,18 @@ export default defineConfig({
     {
       getCSS: () => `
         :root {
-          --c-bg-main: 241, 245, 249; /* slate-100 */
-          --c-bg-sub: 255, 255, 255;   /* white */
-          --c-bg-dim: 248, 250, 252;   /* slate-50 */
-          --c-text-main: 30, 41, 59;   /* slate-800 */
-          --c-text-sub: 100, 116, 139; /* slate-500 */
-          --c-text-dim: 148, 163, 184; /* slate-400 */
+          --c-bg-main: 248, 250, 252;   /* slate-50 */
+          --c-bg-sub: 241, 245, 249;    /* slate-100 */
+          --c-bg-dim: 226, 232, 240;    /* slate-200 */
+          --c-text-main: 15, 23, 42;    /* slate-900 */
+          --c-text-sub: 71, 85, 105;    /* slate-600 */
+          --c-text-dim: 148, 163, 184;  /* slate-400 */
         }
         .dark {
-          --c-bg-main: 15, 23, 42;     /* slate-900 */
-          --c-bg-sub: 30, 41, 59;      /* slate-800 */
-          --c-bg-dim: 51, 65, 85;      /* slate-700 */
-          --c-text-main: 241, 245, 249; /* slate-100 */
+          --c-bg-main: 15, 23, 42;      /* slate-900 */
+          --c-bg-sub: 30, 41, 59;       /* slate-800 */
+          --c-bg-dim: 51, 65, 85;       /* slate-700 */
+          --c-text-main: 248, 250, 252; /* slate-50 */
           --c-text-sub: 148, 163, 184;  /* slate-400 */
           --c-text-dim: 100, 116, 139;  /* slate-500 */
         }
@@ -48,9 +48,9 @@ export default defineConfig({
     colors: {
       // 主题色
       primary: {
-        DEFAULT: 'var(--primary-color)',
-        hover: 'var(--primary-hover)',
-        active: 'var(--primary-active)',
+        DEFAULT: 'rgba(var(--primary-color), <alpha-value>)',
+        hover: 'rgba(var(--primary-hover), <alpha-value>)',
+        active: 'rgba(var(--primary-active), <alpha-value>)',
         content: 'var(--primary-content)',
       },
       // 背景色
@@ -98,6 +98,7 @@ export default defineConfig({
     // 动画
     ['ui-trans', 'transition-all ease-[cubic-bezier(0.4,0,0.2,1)] duration-200'],
     ['ui-ia', 'cursor-pointer select-none ui-trans'],
+    ['ui-hover', 'hover:bg-background-sub/50 ui-trans'],
     // 滚动条
     ['ui-scrollbar', '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'],
   ]
