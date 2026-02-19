@@ -1,121 +1,122 @@
 <template>
   <div class="relative flex flex-col shrink-0 z-20 bg-transparent border-t border-border/10">
     <!-- 表情面板 -->
-    <transition
-      enter-active-class="ui-trans duration-200 ease-out"
-      leave-active-class="ui-trans duration-150 ease-in"
-      enter-from-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
-      leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom-left"
+    <div
+      v-if="activeTab"
+      ref="panelRef"
+      class="absolute bottom-full left-0 mb-2 ml-2 z-50 origin-bottom-left"
+      v-motion
+      :initial="{ opacity: 0, y: 20, scale: 0.95 }"
+      :enter="{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+      :leave="{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 150 } }"
     >
-      <div v-if="activeTab" ref="panelRef" class="absolute bottom-full left-0 mb-2 ml-2 z-50">
-        <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
-          <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
-            <div class="flex flex-col gap-1">
-              <!-- 普通表情 -->
-              <template v-if="activeTab === 'face'">
-                <div class="grid grid-cols-8 gap-1">
-                  <div
-                    v-for="item in QFace.getList('face')"
-                    :key="item.id"
-                    class="aspect-square rounded cursor-pointer ui-trans hover:bg-background-sub/50"
-                    :title="item.name"
-                    @click="insertImage(item.assets.static); focus()"
-                  >
-                    <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+      <div class="w-80 h-64 flex flex-col overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
+        <div class="flex-1 overflow-y-auto ui-scrollbar p-2">
+          <div class="flex flex-col gap-1">
+            <!-- 普通表情 -->
+            <template v-if="activeTab === 'face'">
+              <div class="grid grid-cols-8 gap-1">
+                <div
+                  v-for="item in QFace.getList('face')"
+                  :key="item.id"
+                  class="aspect-square rounded cursor-pointer ui-trans hover:bg-background-sub/50"
+                  :title="item.name"
+                  @click="insertImage(item.assets.static); focus()"
+                >
+                  <img :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+                </div>
+              </div>
+              <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
+                <div class="h-px bg-background-dim flex-1" />
+                <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">Emoji</span>
+                <div class="h-px bg-background-dim flex-1" />
+              </div>
+              <div class="grid grid-cols-8 gap-1">
+                <div
+                  v-for="item in QFace.getList('emoji')"
+                  :key="item.id"
+                  class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-sub/50"
+                  :title="item.name"
+                  @click="insertText(item.id); focus()"
+                >
+                  {{ item.id }}
+                </div>
+              </div>
+            </template>
+            <!-- 超级表情 -->
+            <template v-else-if="activeTab === 'super'">
+              <template v-for="group in superFaceGroups" :key="group.id">
+                <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
+                  <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
+                    <div class="h-px bg-background-dim flex-1" />
+                    <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
+                    <div class="h-px bg-background-dim flex-1" />
                   </div>
-                </div>
-                <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
-                  <div class="h-px bg-background-dim flex-1" />
-                  <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">Emoji</span>
-                  <div class="h-px bg-background-dim flex-1" />
-                </div>
-                <div class="grid grid-cols-8 gap-1">
-                  <div
-                    v-for="item in QFace.getList('emoji')"
-                    :key="item.id"
-                    class="aspect-square rounded ui-flex-center text-xl cursor-pointer ui-trans hover:bg-background-sub/50"
-                    :title="item.name"
-                    @click="insertText(item.id); focus()"
-                  >
-                    {{ item.id }}
-                  </div>
-                </div>
-              </template>
-              <!-- 超级表情 -->
-              <template v-else-if="activeTab === 'super'">
-                <template v-for="group in superFaceGroups" :key="group.id">
-                  <div v-if="QFace.getList('super').some(i => i.packId === group.id)" class="flex flex-col gap-1">
-                    <div class="ui-flex-x gap-1 px-1 py-1 opacity-60">
-                      <div class="h-px bg-background-dim flex-1" />
-                      <span class="text-[10px] text-foreground-dim font-bold uppercase tracking-wider">{{ group.name }}</span>
-                      <div class="h-px bg-background-dim flex-1" />
-                    </div>
-                    <div class="grid grid-cols-5 gap-1">
-                      <div
-                        v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
-                        :key="item.id"
-                        class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50"
-                        :title="item.name"
-                        @mouseenter="loadLottie(item.id, item.assets.lottie)"
-                        @mouseleave="unloadLottie(item.id)"
-                        @click="handleFace(item)"
-                      >
-                        <img v-show="hoveringId !== item.id" :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
-                        <div v-show="hoveringId === item.id" :ref="el => lottieRefs.set(item.id, el as HTMLElement)" class="size-full pointer-events-none" />
-                      </div>
+                  <div class="grid grid-cols-5 gap-1">
+                    <div
+                      v-for="item in QFace.getList('super').filter(i => i.packId === group.id)"
+                      :key="item.id"
+                      class="relative aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50"
+                      :title="item.name"
+                      @mouseenter="loadLottie(item.id, item.assets.lottie)"
+                      @mouseleave="unloadLottie(item.id)"
+                      @click="handleFace(item)"
+                    >
+                      <img v-show="hoveringId !== item.id" :src="item.assets.static" class="size-full object-contain pointer-events-none" loading="lazy" />
+                      <div v-show="hoveringId === item.id" :ref="el => lottieRefs.set(item.id, el as HTMLElement)" class="size-full pointer-events-none" />
                     </div>
                   </div>
-                </template>
-              </template>
-              <!-- 收藏表情 -->
-              <template v-else-if="activeTab === 'collection'">
-                <div v-if="collections.length" class="grid grid-cols-5 gap-1">
-                  <div
-                    v-for="(url, idx) in collections"
-                    :key="idx"
-                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
-                    @click="insertImage(url); focus()"
-                  >
-                    <img :src="url" class="size-full object-contain pointer-events-none" loading="lazy" referrerpolicy="no-referrer" />
-                  </div>
-                </div>
-                <div v-else class="h-56 ui-flex-y gap-2 text-foreground-dim opacity-60">
-                  <div class="i-ri-star-smile-line text-4xl" />
-                  <span class="text-xs">暂无收藏</span>
                 </div>
               </template>
-              <!-- 本地表情 -->
-              <template v-else-if="activeTab === 'local'">
-                <div v-if="localFiles.length" class="grid grid-cols-5 gap-1">
-                  <div
-                    v-for="(item, idx) in localFiles"
-                    :key="idx"
-                    class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
-                    :title="item.file.name"
-                    @click="handleUpload('img', item.file)"
-                  >
-                    <img :src="item.url" class="size-full object-contain pointer-events-none" loading="lazy" />
-                  </div>
+            </template>
+            <!-- 收藏表情 -->
+            <template v-else-if="activeTab === 'collection'">
+              <div v-if="collections.length" class="grid grid-cols-5 gap-1">
+                <div
+                  v-for="(url, idx) in collections"
+                  :key="idx"
+                  class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
+                  @click="insertImage(url); focus()"
+                >
+                  <img :src="url" class="size-full object-contain pointer-events-none" loading="lazy" referrerpolicy="no-referrer" />
                 </div>
-              </template>
-            </div>
+              </div>
+              <div v-else class="h-56 ui-flex-y gap-2 text-foreground-dim opacity-60">
+                <div class="i-ri-star-smile-line text-4xl" />
+                <span class="text-xs">暂无收藏</span>
+              </div>
+            </template>
+            <!-- 本地表情 -->
+            <template v-else-if="activeTab === 'local'">
+              <div v-if="localFiles.length" class="grid grid-cols-5 gap-1">
+                <div
+                  v-for="(item, idx) in localFiles"
+                  :key="idx"
+                  class="aspect-square p-1.5 rounded-xl cursor-pointer ui-trans hover:bg-background-sub/50 overflow-hidden"
+                  :title="item.file.name"
+                  @click="handleUpload('img', item.file)"
+                >
+                  <img :src="item.url" class="size-full object-contain pointer-events-none" loading="lazy" />
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
-    </transition>
+    </div>
     <!-- 转发面板 -->
-    <transition
-      enter-active-class="ui-trans duration-200 ease-out"
-      leave-active-class="ui-trans duration-150 ease-in"
-      enter-from-class="opacity-0 translate-y-4 scale-95 origin-bottom"
-      leave-to-class="opacity-0 translate-y-4 scale-95 origin-bottom"
+    <div
+      v-if="isForwarding && isMultiSelect"
+      class="absolute bottom-full left-0 right-0 mx-auto w-[550px] h-[520px] mb-2 origin-bottom"
+      v-motion
+      :initial="{ opacity: 0, y: 20, scale: 0.95 }"
+      :enter="{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+      :leave="{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 150 } }"
     >
-      <div v-if="isForwarding && isMultiSelect" class="absolute bottom-full left-0 right-0 mx-auto w-[550px] h-[520px] mb-2">
-        <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
-           <ForwardSelect/>
-        </div>
+      <div class="flex flex-col h-full overflow-hidden rounded-2xl shadow-2xl border border-border/20 backdrop-blur-2xl backdrop-saturate-150 bg-background-sub/80">
+         <ForwardSelect/>
       </div>
-    </transition>
+    </div>
     <!-- 工具栏 -->
     <div ref="toolbarRef" class="ui-flex-between px-3 pt-2 pb-1 gap-2 select-none">
       <!-- 左侧按钮 -->
@@ -136,20 +137,25 @@
       </div>
       <!-- 右侧按钮 -->
       <div class="ui-flex-x gap-2">
-        <transition enter-active-class="ui-trans" leave-active-class="ui-trans" enter-from-class="opacity-0 scale-90" leave-to-class="opacity-0 scale-90">
-          <div v-if="isMultiSelect" class="ui-flex-x gap-2 max-w-[200px]">
-            <div
-              v-tooltip.top="'选择目标'"
-              class="h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold ui-flex-center gap-2 shadow-sm whitespace-nowrap cursor-pointer hover:bg-primary-hover ui-trans"
-              @click="isForwarding = !isForwarding"
-            >
-              <div class="i-ri-check-double-line" />
-              <span>已选 {{ messageStore.selectedIds.length }}</span>
-              <div :class="isForwarding ? 'i-ri-arrow-down-s-line' : 'i-ri-arrow-up-s-line'" class="text-xs opacity-80" />
-            </div>
-            <Button v-tooltip.top="'退出'" icon="i-ri-close-line text-lg" text rounded class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-primary hover:!bg-background-sub/30" @click="messageStore.setMultiSelect(); isForwarding = false" />
+        <div
+          v-if="isMultiSelect"
+          class="ui-flex-x gap-2 max-w-[200px]"
+          v-motion
+          :initial="{ opacity: 0, scale: 0.9 }"
+          :enter="{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 400, damping: 25 } }"
+          :leave="{ opacity: 0, scale: 0.9, transition: { duration: 150 } }"
+        >
+          <div
+            v-tooltip.top="'选择目标'"
+            class="h-7 px-3 rounded-full bg-primary text-primary-content text-xs font-bold ui-flex-center gap-2 shadow-sm whitespace-nowrap cursor-pointer hover:bg-primary-hover ui-trans"
+            @click="isForwarding = !isForwarding"
+          >
+            <div class="i-ri-check-double-line" />
+            <span>已选 {{ messageStore.selectedIds.length }}</span>
+            <div :class="isForwarding ? 'i-ri-arrow-down-s-line' : 'i-ri-arrow-up-s-line'" class="text-xs opacity-80" />
           </div>
-        </transition>
+          <Button v-tooltip.top="'退出'" icon="i-ri-close-line text-lg" text rounded class="!w-7 !h-7 shrink-0 !border-none !text-foreground-sub hover:!text-primary hover:!bg-background-sub/30" @click="messageStore.setMultiSelect(); isForwarding = false" />
+        </div>
         <Button
           :icon="isExpanded ? 'i-ri-contract-up-down-line text-lg' : 'i-ri-expand-up-down-line text-lg'"
           text rounded
@@ -167,19 +173,24 @@
         @click="focus"
         @keydown.backspace="!editor?.getText() && messageStore.replyTarget && messageStore.setReplyTarget(null)"
       >
-        <transition enter-active-class="ui-trans ui-dur-fast" leave-active-class="ui-trans ui-dur-fast" enter-from-class="opacity-0 -translate-y-2 h-0 m-0" leave-to-class="opacity-0 -translate-y-2 h-0 m-0">
-          <div v-if="messageStore.replyTarget" class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border border-border/10 bg-background-sub/40 ui-flex-between shrink-0 select-none">
-            <div class="ui-flex-x gap-2 overflow-hidden pr-2 text-xs">
-              <div class="w-1 h-3 rounded-full bg-primary shrink-0" />
-              <div class="ui-flex-truncate">
-                <span class="text-foreground-sub">回复 </span>
-                <span class="font-bold text-foreground-main">{{ messageStore.replyTarget.sender.nickname }}</span>
-                <span class="opacity-60 ml-1 truncate">{{ getTextPreview(messageStore.replyTarget.message, messageStore.replyTarget.group_id) }}</span>
-              </div>
+        <div
+          v-if="messageStore.replyTarget"
+          class="mx-1.5 mt-2 px-3 py-1.5 rounded-lg border border-border/10 bg-background-sub/40 ui-flex-between shrink-0 select-none"
+          v-motion
+          :initial="{ opacity: 0, y: -10, height: 0, marginBottom: 0 }"
+          :enter="{ opacity: 1, y: 0, height: 'auto', marginBottom: 8, transition: { type: 'spring', stiffness: 300, damping: 30 } }"
+          :leave="{ opacity: 0, y: -10, height: 0, marginBottom: 0, transition: { duration: 200 } }"
+        >
+          <div class="ui-flex-x gap-2 overflow-hidden pr-2 text-xs">
+            <div class="w-1 h-3 rounded-full bg-primary shrink-0" />
+            <div class="ui-flex-truncate">
+              <span class="text-foreground-sub">回复 </span>
+              <span class="font-bold text-foreground-main">{{ messageStore.replyTarget.sender.nickname }}</span>
+              <span class="opacity-60 ml-1 truncate">{{ getTextPreview(messageStore.replyTarget.message, messageStore.replyTarget.group_id) }}</span>
             </div>
-            <div class="i-ri-close-line text-sm cursor-pointer text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
           </div>
-        </transition>
+          <div class="i-ri-close-line text-sm cursor-pointer text-foreground-dim hover:text-primary ui-trans" @click.stop="messageStore.setReplyTarget(null)" />
+        </div>
         <editor-content
           :editor="editor"
           class="chat-editor flex-1 w-full px-4 py-3 pr-12 text-sm leading-6 text-foreground-main caret-primary ui-scrollbar overflow-y-auto flex flex-col justify-center placeholder:text-foreground-dim"

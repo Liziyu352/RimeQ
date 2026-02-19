@@ -168,24 +168,24 @@
         </template>
       </VirtualScroller>
       <!-- 批量操作栏 -->
-      <Transition
-        enter-active-class="ui-trans duration-200"
-        leave-active-class="ui-trans duration-200"
-        enter-from-class="translate-y-full opacity-0"
-        leave-to-class="translate-y-full opacity-0"
+      <div
+        v-if="isBatchMode"
+        class="absolute bottom-4 left-4 right-4 bg-background-sub/80 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3"
+        v-motion
+        :initial="{ y: 100, opacity: 0 }"
+        :enter="{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+        :leave="{ y: 100, opacity: 0, transition: { duration: 200 } }"
       >
-        <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-sub/80 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3">
-          <!-- 选中状态 -->
-          <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
-            <span>已选 {{ selectedMembers.size }} 人</span>
-          </div>
-          <!-- 功能按钮组 -->
-          <div class="flex items-center gap-2">
-            <Button label="禁言" size="small" severity="warning" class="!px-3" outlined :disabled="selectedMembers.size === 0" @click="openBanDialog()"/>
-            <Button label="踢出" size="small" severity="danger" class="!px-3" :disabled="selectedMembers.size === 0" @click="handleKick(members.filter(m => selectedMembers.has(m.user_id)))"/>
-          </div>
+        <!-- 选中状态 -->
+        <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
+          <span>已选 {{ selectedMembers.size }} 人</span>
         </div>
-      </Transition>
+        <!-- 功能按钮组 -->
+        <div class="flex items-center gap-2">
+          <Button label="禁言" size="small" severity="warning" class="!px-3" outlined :disabled="selectedMembers.size === 0" @click="openBanDialog()"/>
+          <Button label="踢出" size="small" severity="danger" class="!px-3" :disabled="selectedMembers.size === 0" @click="handleKick(members.filter(m => selectedMembers.has(m.user_id)))"/>
+        </div>
+      </div>
     </div>
     <!-- 文本输入弹窗 -->
     <Dialog v-model:visible="textDialog.visible" modal :header="textDialog.title" :style="{ width: '18rem' }">

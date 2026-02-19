@@ -26,7 +26,7 @@
           </div>
           <!-- 群组快捷入口 -->
           <div v-if="isGroup" class="ui-flex-x gap-1 text-foreground-sub">
-             <Button v-for="act in groupActions" :key="act.path" :icon="act.icon" v-tooltip.bottom="act.label" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary hover:!bg-background-sub/50" @click="router.push(`/${id}/${act.path}`)" />
+             <Button v-for="act in groupActions" :key="act.path" v-tooltip.bottom="act.label" :icon="act.icon" text rounded class="!w-9 !h-9 !text-foreground-sub hover:!text-primary hover:!bg-background-sub/50" @click="router.push(`/${id}/${act.path}`)" />
           </div>
         </header>
         <!-- 消息列表滚动区 -->
@@ -74,6 +74,10 @@
         <div
           v-if="showScrollBtn"
           class="absolute bottom-25 right-5 cursor-pointer bg-primary/90 backdrop-blur text-primary-content text-xs px-3 py-2 rounded-full shadow-lg hover:bg-primary-hover active:scale-95 ui-trans ui-flex-x gap-1 select-none z-10 border border-border-main/20"
+          v-motion
+          :initial="{ opacity: 0, y: 10, scale: 0.9 }"
+          :enter="{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+          :leave="{ opacity: 0, y: 10, scale: 0.9, transition: { duration: 200 } }"
           @click="scrollToBottom()"
         >
           <div class="i-ri-arrow-down-double-line" />

@@ -98,19 +98,13 @@
       </main>
       <!-- 右侧侧边栏 -->
       <router-view v-slot="{ Component }" name="sidebar">
-        <Transition
-          enter-active-class="ui-trans duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
-          leave-active-class="ui-trans duration-300 ease-[cubic-bezier(0.25,0.8,0.5,1)]"
-          enter-from-class="translate-x-full md:translate-x-0 md:w-0 md:opacity-0"
-          leave-to-class="translate-x-full md:translate-x-0 md:w-0 md:opacity-0"
+        <aside
+          v-if="Component"
+          class="bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 z-[60] overflow-hidden flex flex-col border border-white/10 shadow-xl ui-trans rounded-2xl absolute inset-y-0 right-0 w-full md:static md:w-[320px] md:shadow-lg md:z-0"
+          v-motion="sidebarMotion"
         >
-          <aside
-            v-if="Component"
-            class="bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 z-[60] overflow-hidden flex flex-col border border-white/10 shadow-xl ui-trans rounded-2xl absolute inset-y-0 right-0 w-full md:static md:w-[320px] md:shadow-lg md:z-0"
-          >
-            <component :is="Component" class="size-full" />
-          </aside>
-        </Transition>
+          <component :is="Component" class="size-full" />
+        </aside>
       </router-view>
     </div>
     <!-- 全局组件 -->
@@ -156,6 +150,23 @@ const userAvatar = computed(() => {
 
 // 数据计算：当前上下文
 const isContentMode = computed(() => route.path !== '/' && route.path !== '/contact')
+
+// 侧边栏动画配置
+const sidebarMotion = computed(() => {
+  if (isMobile.value) {
+    return {
+      initial: { x: '100%', opacity: 0 },
+      enter: { x: '0%', opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+      leave: { x: '100%', opacity: 0, transition: { duration: 300 } }
+    }
+  } else {
+    return {
+      initial: { width: 0, opacity: 0, x: 0 },
+      enter: { width: 320, opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+      leave: { width: 0, opacity: 0, x: 0, transition: { duration: 300 } }
+    }
+  }
+})
 
 // 静态配置：导航菜单
 const navButtons = [

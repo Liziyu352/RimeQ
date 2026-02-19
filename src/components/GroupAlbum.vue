@@ -101,132 +101,129 @@
       </div>
     </div>
     <!-- 详情查看器 -->
-    <transition
-      enter-active-class="transition duration-200 ease-out"
-      leave-active-class="transition duration-200 ease-in"
-      enter-from-class="opacity-0 scale-95"
-      leave-to-class="opacity-0 scale-95"
+    <div
+      v-if="activeMedia"
+      class="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col"
+      v-motion
+      :initial="{ opacity: 0 }"
+      :enter="{ opacity: 1, transition: { duration: 200 } }"
+      :leave="{ opacity: 0, transition: { duration: 200 } }"
+      @click.self="closeViewer"
     >
+      <!-- 顶部栏 -->
+      <header class="absolute top-0 inset-x-0 h-14 flex items-center justify-between gap-3 px-4 z-20">
+        <div class="flex-1 flex items-center gap-3 overflow-hidden text-white">
+          <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${activeMedia.uploader}`" shape="circle" class="!w-8 !h-8 border border-white/20" />
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs font-bold truncate">{{ contactStore.getUserName(activeMedia.uploader) }}</span>
+            <span class="text-[10px] opacity-70 font-mono">{{ formatTime(activeMedia.upload_time * 1000) }}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <Button v-tooltip.bottom="'下载'" icon="i-ri-download-line" text rounded class="!w-8 !h-8 !text-white/70 hover:!text-white hover:!bg-white/10" @click="downloadMedia(activeMedia)" />
+          <Button v-if="backendType === 'NapCat' && canDeleteMedia" v-tooltip.bottom="'删除'" icon="i-ri-delete-bin-line" text rounded class="!w-8 !h-8 !text-white/70 hover:!text-red-400 hover:!bg-white/10" @click="handleDelete('photo', activeMedia!)" />
+        </div>
+      </header>
+      <!-- 主体 -->
       <div
-        v-if="activeMedia"
-        class="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col"
+        class="flex-1 flex flex-col items-center justify-center overflow-hidden group/viewer"
         @click.self="closeViewer"
       >
-        <!-- 顶部栏 -->
-        <header class="absolute top-0 inset-x-0 h-14 flex items-center justify-between gap-3 px-4 z-20">
-          <div class="flex-1 flex items-center gap-3 overflow-hidden text-white">
-            <Avatar :image="`https://q1.qlogo.cn/g?b=qq&s=0&nk=${activeMedia.uploader}`" shape="circle" class="!w-8 !h-8 border border-white/20" />
-            <div class="flex flex-col min-w-0">
-              <span class="text-xs font-bold truncate">{{ contactStore.getUserName(activeMedia.uploader) }}</span>
-              <span class="text-[10px] opacity-70 font-mono">{{ formatTime(activeMedia.upload_time * 1000) }}</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <Button v-tooltip.bottom="'下载'" icon="i-ri-download-line" text rounded class="!w-8 !h-8 !text-white/70 hover:!text-white hover:!bg-white/10" @click="downloadMedia(activeMedia)" />
-            <Button v-if="backendType === 'NapCat' && canDeleteMedia" v-tooltip.bottom="'删除'" icon="i-ri-delete-bin-line" text rounded class="!w-8 !h-8 !text-white/70 hover:!text-red-400 hover:!bg-white/10" @click="handleDelete('photo', activeMedia!)" />
-          </div>
-        </header>
-        <!-- 主体 -->
+        <!-- 切换按钮 -->
         <div
-          class="flex-1 flex flex-col items-center justify-center overflow-hidden group/viewer"
-          @click.self="closeViewer"
+          v-if="ui.activeIndex > 0"
+          class="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full text-white/50 cursor-pointer hover:text-white hover:bg-black/20 transition-all opacity-0 group-hover/viewer:opacity-100"
+          @click.stop="switchMedia(-1)"
         >
-          <!-- 切换按钮 -->
-          <div
-            v-if="ui.activeIndex > 0"
-            class="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full text-white/50 cursor-pointer hover:text-white hover:bg-black/20 transition-all opacity-0 group-hover/viewer:opacity-100"
-            @click.stop="switchMedia(-1)"
-          >
-            <div class="i-ri-arrow-left-s-line text-2xl drop-shadow-md" />
-          </div>
-          <div
-            v-if="ui.activeIndex < data.photos.length - 1"
-            class="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full text-white/50 cursor-pointer hover:text-white hover:bg-black/20 transition-all opacity-0 group-hover/viewer:opacity-100"
-            @click.stop="switchMedia(1)"
-          >
-            <div class="i-ri-arrow-right-s-line text-2xl drop-shadow-md" />
-          </div>
-          <!-- 媒体 -->
-          <div class="relative max-w-[90vw] max-h-[70vh]" @click.stop>
-            <video
-              v-if="activeMedia.type === 1"
-              :key="activeMedia.lloc"
-              :src="getMediaUrl(activeMedia, 'full')"
-              controls
-              autoplay
-              loop
-              playsinline
-              webkit-playsinline
-              class="max-w-full max-h-full object-contain"
-              referrerpolicy="no-referrer"
-            />
-            <img
-              v-else
-              :src="getMediaUrl(activeMedia, 'full')"
-              class="max-w-full max-h-full object-contain transition-transform duration-200"
-              referrerpolicy="no-referrer"
-              draggable="false"
-            />
-          </div>
-          <!-- 页码 -->
-          <div class="mt-2 text-white/80 font-mono text-xs bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm border border-white/10">
-            {{ ui.activeIndex + 1 }} / {{ data.photos.length }}
-          </div>
+          <div class="i-ri-arrow-left-s-line text-2xl drop-shadow-md" />
         </div>
-        <!-- 底部互动栏 -->
         <div
-          v-if="backendType === 'NapCat'"
-          class="absolute bottom-0 inset-x-0 z-20 p-4 pt-12 bg-gradient-to-t from-black/70 to-transparent flex flex-col gap-3 max-h-[50vh] overflow-y-auto ui-scrollbar"
-          @click.stop
+          v-if="ui.activeIndex < data.photos.length - 1"
+          class="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full text-white/50 cursor-pointer hover:text-white hover:bg-black/20 transition-all opacity-0 group-hover/viewer:opacity-100"
+          @click.stop="switchMedia(1)"
         >
-          <div class="flex flex-col">
-             <!-- 图片描述 -->
-             <p v-if="activeMedia.desc && activeMedia.desc.trim()" class="text-xs text-white/90 whitespace-pre-wrap leading-relaxed px-1 mb-2">
-               {{ activeMedia.desc }}
-             </p>
-             <!-- 互动操作 -->
-             <div class="flex justify-between items-center text-white/80 text-xs px-1">
-                <span
-                  class="flex items-center gap-1.5 cursor-pointer hover:text-white"
-                  :class="activeMedia.like?.liked ? 'text-primary' : ''"
-                  @click="handleLike"
-                >
-                  <i :class="activeMedia.like?.liked ? 'i-ri-thumb-up-fill' : 'i-ri-thumb-up-line'"/>
-                  {{ activeMedia.like?.count || 0 }}
-                </span>
-                <span class="flex items-center gap-1.5 cursor-pointer hover:text-white" @click="ui.showComment = !ui.showComment">
-                  <i class="i-ri-chat-1-line"/> {{ activeMedia.comment?.count || 0 }}
-                </span>
-             </div>
-          </div>
-           <!-- 评论输入 -->
-           <transition
-             enter-active-class="transition duration-200 ease-out"
-             leave-active-class="transition duration-150 ease-in"
-             enter-from-class="opacity-0 translate-y-2"
-             leave-to-class="opacity-0 translate-y-2"
-           >
-             <div v-if="ui.showComment" class="flex gap-2 items-center shrink-0">
-               <div class="flex-1 h-8 bg-white/10 rounded-full flex items-center px-3 border border-white/10 focus-within:bg-white/20 focus-within:border-white/30 transition-colors">
-                 <input
-                   v-model="form.comment"
-                   placeholder="发表评论..."
-                   class="bg-transparent border-none outline-none text-xs text-white placeholder-white/40 w-full"
-                   @keyup.enter="sendComment"
-                 />
-               </div>
-               <div
-                 class="w-8 h-8 rounded-full ui-flex-center cursor-pointer transition-colors"
-                 :class="form.comment ? 'bg-primary text-white' : 'bg-white/10 text-white/30'"
-                 @click="sendComment"
-               >
-                 <div class="i-ri-send-plane-fill text-xs" />
-               </div>
-             </div>
-           </transition>
+          <div class="i-ri-arrow-right-s-line text-2xl drop-shadow-md" />
+        </div>
+        <!-- 媒体 -->
+        <div class="relative max-w-[90vw] max-h-[70vh]" @click.stop>
+          <video
+            v-if="activeMedia.type === 1"
+            :key="activeMedia.lloc"
+            :src="getMediaUrl(activeMedia, 'full')"
+            controls
+            autoplay
+            loop
+            playsinline
+            webkit-playsinline
+            class="max-w-full max-h-full object-contain"
+            referrerpolicy="no-referrer"
+          />
+          <img
+            v-else
+            :src="getMediaUrl(activeMedia, 'full')"
+            class="max-w-full max-h-full object-contain transition-transform duration-200"
+            referrerpolicy="no-referrer"
+            draggable="false"
+          />
+        </div>
+        <!-- 页码 -->
+        <div class="mt-2 text-white/80 font-mono text-xs bg-black/30 px-2 py-1 rounded-full backdrop-blur-sm border border-white/10">
+          {{ ui.activeIndex + 1 }} / {{ data.photos.length }}
         </div>
       </div>
-    </transition>
+      <!-- 底部互动栏 -->
+      <div
+        v-if="backendType === 'NapCat'"
+        class="absolute bottom-0 inset-x-0 z-20 p-4 pt-12 bg-gradient-to-t from-black/70 to-transparent flex flex-col gap-3 max-h-[50vh] overflow-y-auto ui-scrollbar"
+        @click.stop
+      >
+        <div class="flex flex-col">
+           <!-- 图片描述 -->
+           <p v-if="activeMedia.desc && activeMedia.desc.trim()" class="text-xs text-white/90 whitespace-pre-wrap leading-relaxed px-1 mb-2">
+             {{ activeMedia.desc }}
+           </p>
+           <!-- 互动操作 -->
+           <div class="flex justify-between items-center text-white/80 text-xs px-1">
+              <span
+                class="flex items-center gap-1.5 cursor-pointer hover:text-white"
+                :class="activeMedia.like?.liked ? 'text-primary' : ''"
+                @click="handleLike"
+              >
+                <i :class="activeMedia.like?.liked ? 'i-ri-thumb-up-fill' : 'i-ri-thumb-up-line'"/>
+                {{ activeMedia.like?.count || 0 }}
+              </span>
+              <span class="flex items-center gap-1.5 cursor-pointer hover:text-white" @click="ui.showComment = !ui.showComment">
+                <i class="i-ri-chat-1-line"/> {{ activeMedia.comment?.count || 0 }}
+              </span>
+           </div>
+        </div>
+         <!-- 评论输入 -->
+         <div
+           v-if="ui.showComment"
+           class="flex gap-2 items-center shrink-0"
+           v-motion
+           :initial="{ opacity: 0, y: 10 }"
+           :enter="{ opacity: 1, y: 0, transition: { duration: 200 } }"
+           :leave="{ opacity: 0, y: 10, transition: { duration: 150 } }"
+         >
+           <div class="flex-1 h-8 bg-white/10 rounded-full flex items-center px-3 border border-white/10 focus-within:bg-white/20 focus-within:border-white/30 transition-colors">
+             <input
+               v-model="form.comment"
+               placeholder="发表评论..."
+               class="bg-transparent border-none outline-none text-xs text-white placeholder-white/40 w-full"
+               @keyup.enter="sendComment"
+             />
+           </div>
+           <div
+             class="w-8 h-8 rounded-full ui-flex-center cursor-pointer transition-colors"
+             :class="form.comment ? 'bg-primary text-white' : 'bg-white/10 text-white/30'"
+             @click="sendComment"
+           >
+             <div class="i-ri-send-plane-fill text-xs" />
+           </div>
+         </div>
+      </div>
+    </div>
     <!-- 隐式文件输入 -->
     <input ref="fileInput" type="file" class="hidden" multiple accept="image/*,video/*" @change="handleUpload">
     <!-- 新建相册弹窗 -->

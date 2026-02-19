@@ -1,7 +1,11 @@
 <template>
   <div
     v-show="isVisible"
-    class="bg-background-sub/80 backdrop-blur-xl rounded-xl shadow-xl border border-border-main/30 overflow-hidden flex flex-col z-50 w-fit min-w-[220px] max-w-[320px] p-1.5 select-none transition-all duration-200 ease-out"
+    class="bg-background-sub/80 backdrop-blur-xl rounded-xl shadow-xl border border-border-main/30 overflow-hidden flex flex-col z-50 w-fit min-w-[220px] max-w-[320px] p-1.5 select-none origin-bottom-left"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.95, y: 10 }"
+    :enter="{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 25 } }"
+    :leave="{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 150 } }"
   >
     <div
       v-if="sortedItems.length"

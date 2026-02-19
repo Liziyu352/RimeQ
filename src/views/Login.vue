@@ -2,7 +2,12 @@
   <!-- 登录页容器 -->
   <div class="min-h-screen w-full ui-flex-center p-4 ui-trans">
     <!-- 登录卡片 -->
-    <div class="w-full max-w-md bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 rounded-3xl shadow-xl overflow-hidden p-8 md:p-10 border border-white/10 ui-trans">
+    <div
+      class="w-full max-w-md bg-background-sub/40 backdrop-blur-2xl backdrop-saturate-150 rounded-3xl shadow-xl overflow-hidden p-8 md:p-10 border border-white/10 ui-trans"
+      v-motion
+      :initial="{ opacity: 0, y: 50, scale: 0.95 }"
+      :enter="{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 20 } }"
+    >
       <!-- 顶部 Logo 区域 -->
       <div class="ui-flex-y mb-8">
         <div class="w-16 h-16 rounded-2xl bg-background-sub/30 backdrop-blur-md shadow-lg border border-white/10 ui-flex-center mb-4 text-primary">

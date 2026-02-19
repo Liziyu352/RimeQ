@@ -66,22 +66,6 @@ export default defineConfig({
         dim: 'rgba(var(--c-text-dim), <alpha-value>)',
       },
     },
-    animation: {
-      keyframes: {
-        'fade-in': `{ from { opacity: 0; } to { opacity: 1; } }`,
-        'fade-out': `{ from { opacity: 1; } to { opacity: 0; } }`,
-        'scale-in': `{ from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }`,
-        'scale-out': `{ from { transform: scale(1); opacity: 1; } to { transform: scale(0.95); opacity: 0; } }`,
-        'slide-in-up': `{ from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`,
-        'slide-in-down': `{ from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`,
-        'slide-out-up': `{ from { transform: translateY(0); opacity: 1; } to { transform: translateY(-20px); opacity: 0; } }`,
-        'slide-out-down': `{ from { transform: translateY(0); opacity: 1; } to { transform: translateY(20px); opacity: 0; } }`,
-        'slide-in-left': `{ from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`,
-        'slide-in-right': `{ from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`,
-        'slide-out-left': `{ from { transform: translateX(0); opacity: 1; } to { transform: translateX(-20px); opacity: 0; } }`,
-        'slide-out-right': `{ from { transform: translateX(0); opacity: 1; } to { transform: translateX(20px); opacity: 0; } }`,
-      }
-    }
   },
   shortcuts: [
     // 布局

@@ -114,25 +114,26 @@
       </VirtualScroller>
     </div>
     <!-- 批量操作栏 -->
-    <Transition
-      enter-active-class="ui-trans duration-200"
-      leave-active-class="ui-trans duration-200"
-      enter-from-class="translate-y-full opacity-0"
-      leave-to-class="translate-y-full opacity-0"
+    <div
+      v-if="isBatchMode"
+      class="absolute bottom-4 left-4 right-4 bg-background-sub/80 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3"
+      v-motion
+      :initial="{ y: 100, opacity: 0 }"
+      :enter="{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+      :leave="{ y: 100, opacity: 0, transition: { duration: 200 } }"
+      @click.stop
     >
-      <div v-if="isBatchMode" class="absolute bottom-4 left-4 right-4 bg-background-sub/80 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl p-3 flex items-center justify-between z-30 gap-3" @click.stop>
-        <div class="ui-flex-x gap-1">
-          <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
-            <span>已选 {{ selectedFiles.size }} 项</span>
-          </div>
-          <Button v-tooltip.top="isAllSelected ? '取消全选' : '全选'" :icon="isAllSelected ? 'i-ri-checkbox-circle-line' : 'i-ri-checkbox-blank-circle-line'" text rounded class="!w-8 !h-8 !text-primary" @click="handleSelectAll" />
+      <div class="ui-flex-x gap-1">
+        <div class="text-xs font-bold text-foreground-main flex items-center gap-1 shrink-0">
+          <span>已选 {{ selectedFiles.size }} 项</span>
         </div>
-        <div class="flex items-center gap-2">
-          <Button v-if="canManage" label="移动" size="small" severity="info" class="!px-3" outlined :disabled="!canBatchMove" @click="moveDialog.visible = true; loadResources('/', moveDialog.folders)" />
-          <Button v-if="canManage" label="删除" size="small" severity="danger" class="!px-3" :disabled="!selectedFiles.size" @click="handleDelete()" />
-        </div>
+        <Button v-tooltip.top="isAllSelected ? '取消全选' : '全选'" :icon="isAllSelected ? 'i-ri-checkbox-circle-line' : 'i-ri-checkbox-blank-circle-line'" text rounded class="!w-8 !h-8 !text-primary" @click="handleSelectAll" />
       </div>
-    </Transition>
+      <div class="flex items-center gap-2">
+        <Button v-if="canManage" label="移动" size="small" severity="info" class="!px-3" outlined :disabled="!canBatchMove" @click="moveDialog.visible = true; loadResources('/', moveDialog.folders)" />
+        <Button v-if="canManage" label="删除" size="small" severity="danger" class="!px-3" :disabled="!selectedFiles.size" @click="handleDelete()" />
+      </div>
+    </div>
     <!-- 右键菜单 -->
     <ContextMenu ref="menu" :model="menuItems" />
     <!-- 文件上传 -->
