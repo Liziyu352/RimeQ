@@ -31,6 +31,7 @@ const props = defineProps<{
   segment: VideoSegment
   groupId?: number
 }>()
+const retried = ref(false)
 const videoFailed = ref(false)
 
 // 计算视频链接
@@ -53,8 +54,13 @@ const currentUrl = ref(initialUrl.value)
 
 // 加载失败处理
 const onError = async () => {
+  if (retried.value) {
+    videoFailed.value = true
+    return
+  }
   const url = currentUrl.value
   if (url.includes('multimedia.nt.qq.com.cn')) {
+    retried.value = true
     const type = props.groupId ? 'group' : 'private'
     const newUrl = await refreshUrl(url, type, true)
     if (newUrl !== currentUrl.value) {
@@ -69,5 +75,6 @@ const onError = async () => {
 watch(initialUrl, (newUrl) => {
   currentUrl.value = newUrl
   videoFailed.value = false
+  retried.value = false
 }, { immediate: true })
 </script>
