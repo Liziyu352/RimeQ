@@ -196,6 +196,7 @@ import type { MenuItem } from 'primevue/menuitem'
 import { bot } from '@/api'
 import { useContactStore, useSettingStore } from '@/stores'
 import { formatFileSize, getFileIcon } from '@/utils/format'
+import { uploadFile } from '@/utils/file'
 
 const router = useRouter()
 const route = useRoute()
@@ -333,17 +334,14 @@ const handleUploadFile = async (e: Event) => {
   if (!file) return;
   (e.target as HTMLInputElement).value = ''
   toast.add({ severity: 'info', summary: '正在上传...', detail: file.name, life: 3000 })
-  const reader = new FileReader()
-  reader.onload = async (ev) => {
-    if (ev.target?.result) {
-      try {
-        await bot.uploadFile('group', groupId.value, `base64://${(ev.target.result as string).split(',')[1]}`, file.name, currentFolderId.value === '/' ? undefined : currentFolderId.value)
-        toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
-        loadResources(currentFolderId.value, items.value, true)
-      } catch (err) { toast.add({ severity: 'error', summary: '上传失败', detail: String(err), life: 3000 }) }
-    }
+  try {
+    const folder = currentFolderId.value === '/' ? undefined : currentFolderId.value
+    await uploadFile('group', groupId.value, file, folder)
+    toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
+    loadResources(currentFolderId.value, items.value, true)
+  } catch (err) {
+    toast.add({ severity: 'error', summary: '上传失败', detail: String(err), life: 3000 })
   }
-  reader.readAsDataURL(file)
 }
 
 // 提交输入

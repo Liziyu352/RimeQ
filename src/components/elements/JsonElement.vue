@@ -173,6 +173,19 @@ const meta = computed(() => {
       result.url = `https://map.qq.com/m/place/search?query=${encodeURIComponent(metaData?.name)}&pointx=${metaData?.lng}&pointy=${metaData?.lat}`
       result.source = '位置'
       break
+    // 小世界
+    case obj.app === 'com.tencent.xsj.publish':
+      result.title = obj.prompt
+      result.desc = obj.config?.tips
+      result.preview = metaData?.preview
+      result.source = '小世界'
+      break
+    // 游戏
+    case obj.app === 'com.tencent.gamecenter.qqsy':
+      result.title = metaData?.btnText || obj.prompt
+      result.desc = obj.desc
+      result.source = '游戏'
+      break
     // 默认
     default:
       result.title = metaData?.title || obj.prompt

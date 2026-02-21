@@ -77,7 +77,7 @@ const togglePlay = async () => {
     else audio.pause()
     return
   }
-  // 加载并播放
+  // 加载播放
   isLoading.value = true
   try {
     const res = await bot.getRecord(props.segment.data.file, 'mp3')
@@ -85,7 +85,7 @@ const togglePlay = async () => {
     await nextTick()
     await audioRef.value?.play()
   } catch (e) {
-    console.error('[Record] 获取或播放音频失败:', e)
+    console.error('[Record] 获取音频失败:', e)
     audioFailed.value = true
   } finally {
     isLoading.value = false

@@ -235,6 +235,7 @@ import { useMessageStore, useSettingStore, useSessionStore, useContactStore } fr
 import { useChatEditor } from '@/utils/editor'
 import { QFace } from '@/utils/qface'
 import { getTextPreview } from '@/utils/format'
+import { uploadFile, uploadMedia } from '@/utils/file'
 import { SegType, type Segment, type NodeSegment } from '@/types'
 import ForwardSelect from './ForwardSelect.vue'
 
@@ -363,24 +364,18 @@ async function handleUpload(type: 'img' | 'file', payload: Event | File) {
   const file = payload instanceof Event ? (payload.target as HTMLInputElement).files?.[0] : payload
   if (!file) return
   if (payload instanceof Event) (payload.target as HTMLInputElement).value = ''
-  if (type === 'img') {
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      insertImage(ev.target?.result as string)
+  try {
+    if (type === 'img') {
+      const fileUrl = await uploadMedia(file)
+      insertImage(fileUrl)
       focus()
-    }
-    reader.readAsDataURL(file)
-  } else {
-    toast.add({ severity: 'info', summary: '正在上传', detail: file.name, life: 3000 })
-    try {
-      const buffer = await file.arrayBuffer()
-      const b64 = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
-      await bot.uploadFile(props.isGroup ? 'group' : 'private', props.chatId, 'base64://' + b64, file.name);
-      emit('send')
+    } else {
+      await uploadFile(props.isGroup ? 'group' : 'private', props.chatId, file)
       toast.add({ severity: 'success', summary: '上传成功', life: 3000 })
-    } catch (err) {
-      toast.add({ severity: 'error', summary: '上传失败', detail: String(err), life: 3000 })
+      emit('send')
     }
+  } catch (err) {
+    toast.add({ severity: 'error', summary: '上传失败', detail: err, life: 3000 })
   }
 }
 

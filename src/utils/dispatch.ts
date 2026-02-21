@@ -1,5 +1,6 @@
 import { useContactStore, useMessageStore, useSessionStore, useSettingStore } from '@/stores'
 import { getTextPreview } from './format'
+import { streamFile } from './file'
 import type { Message, Notice, Request, OneBotEvent } from '@/types'
 
 /**
@@ -102,9 +103,13 @@ function noticeEvent(data: Notice) {
  * 全局 WebSocket 消息事件处理器
  * 负责将 OneBot 事件分发到各个 Store
  */
-export function dispatchEvent(data: OneBotEvent) {
+export function dispatchEvent(data: OneBotEvent | any) {
   // const settingStore = useSettingStore()
   // if (settingStore.config.debugMode) console.log('[Dispatch] 原始事件:', data)
+  if (data.stream === 'stream-action' || (data.data && data.data.type === 'stream')) {
+    streamFile.handleStreamPacket(data)
+    return
+  }
   switch (data.post_type) {
     case 'message':
     case 'message_sent':

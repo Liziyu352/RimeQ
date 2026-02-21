@@ -773,7 +773,7 @@ export class ExtendedClient extends BaseClient {
    * @description 用于分片上传大文件
    */
   uploadFileStream(stream_id?: string, chunk_data?: string, chunk_index?: number, total_chunks?: number, file_size?: number, file_name?: string, is_complete?: boolean) {
-    return this.request<{ stream_id: string, file_path?: string }>('upload_file_stream', { stream_id, chunk_data, chunk_index, total_chunks, file_size, file_name, is_complete })
+    return this.request<{ stream_id: string, file_path?: string, status?: string }>('upload_file_stream', { stream_id, chunk_data, chunk_index, total_chunks, file_size, file_name, is_complete })
   }
 
   /**
