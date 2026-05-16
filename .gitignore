@@ -29,12 +29,12 @@ yarn.lock
 pnpm-workspace.yaml
 
 dist
-app
 dev-dist
 *.local
 
 *.tsbuildinfo
 .eslintcache
+
 
 # Auto imports
 auto-imports.d.ts
